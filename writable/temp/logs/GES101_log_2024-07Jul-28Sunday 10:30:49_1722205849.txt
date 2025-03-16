@@ -1,0 +1,21 @@
+Process started Sunday July 28, 2024 10:30:49
+Course Manager: Prof. Admin Super
+Username: tmp
+User Agent: PostmanRuntime/7.40.0
+Browser:  Version: 
+IP Address: ::1
+Platform: Unknown Platform
+Hostname: holynation-hp-envy-x360
+Course Code: GES101 - "GES101 - Use of English"
+Academic Session: 2021/2022
+_____________________________________________________________________________
+
+
+New Record has been inserted for Matric number E043691 as follows: CA - 20 Exam - 45 Total - 65
+New Record has been inserted for Matric number E048224 as follows: CA - 30 Exam - 45 Total - 75
+_____________________________________________________________________________
+
+
+Total Uploaded: 2Total Error: 0Total Insertion: 2Total Updated: 0Total Success: 2_____________________________________________________________________________
+
+

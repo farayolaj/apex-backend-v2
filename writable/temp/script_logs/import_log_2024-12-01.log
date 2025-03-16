@@ -1,0 +1,1691 @@
+[2024-12-01 02:22:21][INFO] Script execution started
+[2024-12-01 02:22:21][INFO] Successfully connected to database: mc403
+[2024-12-01 02:22:21][INFO] Successfully connected to database: lms_remote_mood
+[2024-12-01 02:22:21][INFO] Processing batch 1, offset: 0
+[2024-12-01 02:22:21][INFO] Batch 1 completed. Processed: 500, Matches: 51, Updates: 51, Errors: 0
+[2024-12-01 02:22:21][INFO] Processing batch 2, offset: 500
+[2024-12-01 02:22:22][INFO] Batch 2 completed. Processed: 1000, Matches: 102, Updates: 102, Errors: 0
+[2024-12-01 02:22:22][INFO] Processing batch 3, offset: 1000
+[2024-12-01 02:22:22][INFO] Batch 3 completed. Processed: 1500, Matches: 148, Updates: 148, Errors: 0
+[2024-12-01 02:22:22][INFO] Processing batch 4, offset: 1500
+[2024-12-01 02:22:22][INFO] Batch 4 completed. Processed: 2000, Matches: 199, Updates: 199, Errors: 0
+[2024-12-01 02:22:22][INFO] Processing batch 5, offset: 2000
+[2024-12-01 02:22:24][INFO] Batch 5 completed. Processed: 2500, Matches: 425, Updates: 425, Errors: 0
+[2024-12-01 02:22:24][INFO] Processing batch 6, offset: 2500
+[2024-12-01 02:22:24][INFO] Batch 6 completed. Processed: 2860, Matches: 524, Updates: 524, Errors: 0
+[2024-12-01 02:22:24][INFO] Processing completed. Final statistics:
+[2024-12-01 02:22:24][INFO] Total batches processed: 6
+[2024-12-01 02:22:24][INFO] Total records processed: 2860
+[2024-12-01 02:22:24][INFO] Total matches found: 524
+[2024-12-01 02:22:24][INFO] Successful updates: 524
+[2024-12-01 02:22:24][INFO] Errors encountered: 0
+[2024-12-01 02:22:24][INFO] DB1 connection closed
+[2024-12-01 02:22:24][INFO] DB2 connection closed
+[2024-12-01 02:22:24][INFO] Script execution completed
+[2024-12-01 09:57:08][INFO] Script execution started
+[2024-12-01 09:57:08][INFO] Successfully connected to database: mc403
+[2024-12-01 09:57:08][INFO] Successfully connected to database: lms_remote_mood
+[2024-12-01 09:57:08][INFO] Processing batch 1, offset: 0
+[2024-12-01 09:57:08][INFO] Batch 1 completed. Processed: 500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 09:57:08][INFO] Processing batch 2, offset: 500
+[2024-12-01 09:57:08][INFO] Batch 2 completed. Processed: 1000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 09:57:08][INFO] Processing batch 3, offset: 1000
+[2024-12-01 09:57:08][INFO] Batch 3 completed. Processed: 1500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 09:57:08][INFO] Processing batch 4, offset: 1500
+[2024-12-01 09:57:08][INFO] Batch 4 completed. Processed: 2000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 09:57:08][INFO] Processing batch 5, offset: 2000
+[2024-12-01 09:57:08][INFO] Batch 5 completed. Processed: 2500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 09:57:08][INFO] Processing batch 6, offset: 2500
+[2024-12-01 09:57:09][INFO] Batch 6 completed. Processed: 3000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 09:57:09][INFO] Processing batch 7, offset: 3000
+[2024-12-01 09:57:09][INFO] Batch 7 completed. Processed: 3097, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 09:57:09][INFO] Processing completed. Final statistics:
+[2024-12-01 09:57:09][INFO] Total batches processed: 7
+[2024-12-01 09:57:09][INFO] Total records processed: 3097
+[2024-12-01 09:57:09][INFO] Total matches found: 0
+[2024-12-01 09:57:09][INFO] Successful updates: 0
+[2024-12-01 09:57:09][INFO] Errors encountered: 0
+[2024-12-01 09:57:09][INFO] DB1 connection closed
+[2024-12-01 09:57:09][INFO] DB2 connection closed
+[2024-12-01 09:57:09][INFO] Script execution completed
+[2024-12-01 10:33:03][INFO] Script execution started
+[2024-12-01 10:33:03][INFO] Successfully connected to database: mc403
+[2024-12-01 10:33:03][INFO] Processing batch 1, offset: 0
+[2024-12-01 10:33:03][INFO_DEBUG] UPDATE mdl_user SET 
+                                email = 'nifemimiracle1@gmail.com', lastname = 'ABIOLA'
+                                WHERE id = '36854' 
+UPDATE mdl_user SET 
+                                email = 'julianahabayomi56@gmail.com', lastname = 'ABAYOMI'
+                                WHERE id = '36855' 
+UPDATE mdl_user SET 
+                                email = 'oabdulrasheed240@gmail.com', lastname = 'ABDULRASHEED'
+                                WHERE id = '36856' 
+UPDATE mdl_user SET 
+                                email = 'abdullahiabdulrouf358@gmail.com', lastname = 'ABDULROUF'
+                                WHERE id = '36857' 
+UPDATE mdl_user SET 
+                                email = 'abdulsomodghallib@gmail.com', lastname = 'ABDULSOMOD'
+                                WHERE id = '36858' 
+UPDATE mdl_user SET 
+                                email = 'abeebbarakat6@gmail.com', lastname = 'ABEEB'
+                                WHERE id = '36859' 
+UPDATE mdl_user SET 
+                                email = 'e053458.abejide@dlc.ui.edu.ng', lastname = 'ABEJIDE'
+                                WHERE id = '36860' 
+UPDATE mdl_user SET 
+                                email = 'fathiaabiodun38@gmail.com', lastname = 'ABIODUN'
+                                WHERE id = '36861' 
+UPDATE mdl_user SET 
+                                email = 'abodundrinolufemi@gmail.com', lastname = 'ABODUNRIN'
+                                WHERE id = '36862' 
+UPDATE mdl_user SET 
+                                email = 'aboladeewatomi4@gmail.com', lastname = 'ABOLADE'
+                                WHERE id = '36863' 
+UPDATE mdl_user SET 
+                                email = 'olumideayodeji731@gmail.com', lastname = 'ABU'
+                                WHERE id = '36864' 
+UPDATE mdl_user SET 
+                                email = 'ogbeniaje@gmail.com', lastname = 'ADEBAYO'
+                                WHERE id = '36865' 
+UPDATE mdl_user SET 
+                                email = 'habeebadey0@gmail.com', lastname = 'ADEBIMPE'
+                                WHERE id = '36866' 
+UPDATE mdl_user SET 
+                                email = 'maryayomideadebisi@gmail.com', lastname = 'ADEBISI'
+                                WHERE id = '36867' 
+UPDATE mdl_user SET 
+                                email = 'adebowaleoyindamola468@gmail.com', lastname = 'ADEBOWALE'
+                                WHERE id = '36868' 
+UPDATE mdl_user SET 
+                                email = 'e054330.adediran@dlc.ui.edu.ng', lastname = 'ADEDIRAN'
+                                WHERE id = '36869' 
+UPDATE mdl_user SET 
+                                email = 'oe1020270@gmail.com', lastname = 'ADEGBASA'
+                                WHERE id = '36870' 
+UPDATE mdl_user SET 
+                                email = 'ademola.adegbola99@gmail.com', lastname = 'ADEGBOLA'
+                                WHERE id = '36872' 
+UPDATE mdl_user SET 
+                                email = 'arasheedatadejoke@gmail.com', lastname = 'ADEGOKE'
+                                WHERE id = '36873' 
+UPDATE mdl_user SET 
+                                email = 'adejimiadetiloye234@gmail.com', lastname = 'ADEJIMI'
+                                WHERE id = '36874' 
+UPDATE mdl_user SET 
+                                email = 'adejumofehintola44@gmail.com', lastname = 'ADEJUMO'
+                                WHERE id = '36875' 
+UPDATE mdl_user SET 
+                                email = 'adejumobiadedoyin54@gmail.com', lastname = 'ADEJUMOBI'
+                                WHERE id = '36876' 
+UPDATE mdl_user SET 
+                                email = 'adeolaadekanmi67@gmail.com', lastname = 'ADEKANMI'
+                                WHERE id = '36877' 
+UPDATE mdl_user SET 
+                                email = 'preciousleta@gmail.com', lastname = 'ADEKEYE'
+                                WHERE id = '36878' 
+UPDATE mdl_user SET 
+                                email = 'adekunleelizabeth699@gmail.com', lastname = 'ADEKUNLE'
+                                WHERE id = '36879' 
+UPDATE mdl_user SET 
+                                email = 'famousmike29@gmail.com', lastname = 'ADELAKIN'
+                                WHERE id = '36880' 
+UPDATE mdl_user SET 
+                                email = 'adelekeahmed577@gmail.com', lastname = 'ADELEKE'
+                                WHERE id = '36881' 
+UPDATE mdl_user SET 
+                                email = 'adeleyemicheal607@gmail.com', lastname = 'ADELEYE'
+                                WHERE id = '36882' 
+UPDATE mdl_user SET 
+                                email = 'adenijifiyinfoluwatolulope@gmail.com', lastname = 'ADENIJI'
+                                WHERE id = '36883' 
+UPDATE mdl_user SET 
+                                email = 'samuelayom775@gmail.com', lastname = 'ADENIYAN'
+                                WHERE id = '36884' 
+UPDATE mdl_user SET 
+                                email = 'adenleprecious5@gmail.com', lastname = 'ADENLE'
+                                WHERE id = '36885' 
+UPDATE mdl_user SET 
+                                email = 'boluwatifetoluwalase14@gmail.com', lastname = 'ADENUGA'
+                                WHERE id = '36886' 
+UPDATE mdl_user SET 
+                                email = 'bayorex16@gmail.com', lastname = 'ADEOGUN'
+                                WHERE id = '36887' 
+UPDATE mdl_user SET 
+                                email = 'adeosunomolara365@gmail.com', lastname = 'ADEOSUN'
+                                WHERE id = '36888' 
+UPDATE mdl_user SET 
+                                email = 'anuoluwapoademide007@gmail.com', lastname = 'ADEOYE'
+                                WHERE id = '36889' 
+UPDATE mdl_user SET 
+                                email = 'adepojusewa29@gmail.com', lastname = 'ADEPOJU'
+                                WHERE id = '36890' 
+UPDATE mdl_user SET 
+                                email = 'e053623.aderemi@dlc.ui.edu.ng', lastname = 'ADEREMI'
+                                WHERE id = '36891' 
+UPDATE mdl_user SET 
+                                email = 'ayomideaderibigbe24@gmail.com', lastname = 'ADERIBIGBE'
+                                WHERE id = '36892' 
+UPDATE mdl_user SET 
+                                email = 'aderoyejechristianah@gmail.com', lastname = 'ADEROYEJE'
+                                WHERE id = '36893' 
+UPDATE mdl_user SET 
+                                email = 'graceadesanmi518@gmail.com', lastname = 'ADESANMI'
+                                WHERE id = '36894' 
+UPDATE mdl_user SET 
+                                email = 'adeyinkaayobami17@gmail.com', lastname = 'ADESEMOWO'
+                                WHERE id = '36895' 
+UPDATE mdl_user SET 
+                                email = 'alilatadesokan29@gmail.com', lastname = 'ADESOKAN'
+                                WHERE id = '36896' 
+UPDATE mdl_user SET 
+                                email = 'adetonasemilore53@gmail.com', lastname = 'ADETONA'
+                                WHERE id = '36897' 
+UPDATE mdl_user SET 
+                                email = 'abiolaadetunji2017@gmail.com', lastname = 'ADETUNJI'
+                                WHERE id = '36898' 
+UPDATE mdl_user SET 
+                                email = 'abosedeesther324@gmail.com', lastname = 'ADEWALE'
+                                WHERE id = '36899' 
+UPDATE mdl_user SET 
+                                email = 'samueladewunmi407@gmail.com', lastname = 'ADEWUNMI'
+                                WHERE id = '36900' 
+UPDATE mdl_user SET 
+                                email = 'rofiatadewusi30@gmail.com', lastname = 'ADEWUSI'
+                                WHERE id = '36901' 
+UPDATE mdl_user SET 
+                                email = 'lwtsnadeyeye@gmail.com', lastname = 'ADEYEYE'
+                                WHERE id = '36902' 
+UPDATE mdl_user SET 
+                                email = 'favouradigun67@gmail.com', lastname = 'ADIGUN'
+                                WHERE id = '36903' 
+UPDATE mdl_user SET 
+                                email = 'adunolaesther2@gmail.com', lastname = 'ADUNOLA'
+                                WHERE id = '36904' 
+UPDATE mdl_user SET 
+                                email = 'rashmakconsult1@gmail.com', lastname = 'AFOLABI'
+                                WHERE id = '36905' 
+UPDATE mdl_user SET 
+                                email = 'bukolaagbolade235@gmail.com', lastname = 'AGBOLADE'
+                                WHERE id = '36906' 
+UPDATE mdl_user SET 
+                                email = 'amohammedagbomojo@gmail.com', lastname = 'AGBOMOJO'
+                                WHERE id = '36907' 
+UPDATE mdl_user SET 
+                                email = 'odunolaagboola777@gmail.com', lastname = 'AGBOOLA'
+                                WHERE id = '36908' 
+UPDATE mdl_user SET 
+                                email = 'hajarahahmad18@gmail.com', lastname = 'AHMAD'
+                                WHERE id = '36909' 
+UPDATE mdl_user SET 
+                                email = 'osamarvelll@gmail.com', lastname = 'AIRIAGBON'
+                                WHERE id = '36910' 
+UPDATE mdl_user SET 
+                                email = 'ayodeleajakaye11@gmail.com', lastname = 'AJAKAYE'
+                                WHERE id = '36911' 
+UPDATE mdl_user SET 
+                                email = 'adejareajao@gmail.com', lastname = 'AJAO'
+                                WHERE id = '36912' 
+UPDATE mdl_user SET 
+                                email = 'oluwafisayoajayi5@gmail.com', lastname = 'AJAYI'
+                                WHERE id = '36913' 
+UPDATE mdl_user SET 
+                                email = 'e054339.ajibade@dlc.ui.edu.ng', lastname = 'AJIBADE'
+                                WHERE id = '36914' 
+UPDATE mdl_user SET 
+                                email = 'milkid200406@gmail.com', lastname = 'AKANBI'
+                                WHERE id = '36915' 
+UPDATE mdl_user SET 
+                                email = 'akanjioluwaferanmi2@gmail.com', lastname = 'AKANJI'
+                                WHERE id = '36917' 
+UPDATE mdl_user SET 
+                                email = 'akinbilequdus@gmail.com', lastname = 'AKINBILE'
+                                WHERE id = '36918' 
+UPDATE mdl_user SET 
+                                email = 'anikeakinbobola15@gmail.com', lastname = 'AKINBOBOLA'
+                                WHERE id = '36919' 
+UPDATE mdl_user SET 
+                                email = 'akinfosilesamuel62@gmail.com', lastname = 'AKINFOSILE'
+                                WHERE id = '36920' 
+UPDATE mdl_user SET 
+                                email = 'michaelakinkunowo@gmail.com', lastname = 'AKINKUNOWO'
+                                WHERE id = '36921' 
+UPDATE mdl_user SET 
+                                email = 'aramideakinola00@gmail.com', lastname = 'AKINLABI'
+                                WHERE id = '36922' 
+UPDATE mdl_user SET 
+                                email = 'akinpelugoodness7@gmail.com', lastname = 'AKINPELU'
+                                WHERE id = '36923' 
+UPDATE mdl_user SET 
+                                email = 'imizee2006@gmail.com', lastname = 'AKINSANYA'
+                                WHERE id = '36924' 
+UPDATE mdl_user SET 
+                                email = 'olopadeprecious@gmail.com', lastname = 'AKINTAYO'
+                                WHERE id = '36925' 
+UPDATE mdl_user SET 
+                                email = 'oreoluwaakintunde3@gmail.com', lastname = 'AKINTUNDE'
+                                WHERE id = '36926' 
+UPDATE mdl_user SET 
+                                email = 'digitalportal417@gmail.com', lastname = 'AKINWALE-OJO'
+                                WHERE id = '36927' 
+UPDATE mdl_user SET 
+                                email = 'akinyemigraceoluwapelumi@gmail.com', lastname = 'AKINYEMI'
+                                WHERE id = '36928' 
+UPDATE mdl_user SET 
+                                email = 'alabiadeola229@gmail.com', lastname = 'ALABI'
+                                WHERE id = '36929' 
+UPDATE mdl_user SET 
+                                email = 'taiwoomobankealade@gmail.com', lastname = 'ALADE'
+                                WHERE id = '36930' 
+UPDATE mdl_user SET 
+                                email = 'jenniferibukunoluwa@gmai.com', lastname = 'ALAUSA'
+                                WHERE id = '36931' 
+UPDATE mdl_user SET 
+                                email = 'darasimialawode43@gmail.com', lastname = 'ALAWODE'
+                                WHERE id = '36932' 
+UPDATE mdl_user SET 
+                                email = 'akinleyeayomide904@gmai.com', lastname = 'ALIYAH'
+                                WHERE id = '36933' 
+UPDATE mdl_user SET 
+                                email = 'e054352.alowonle@dlc.ui.edu.ng', lastname = 'ALOWONLE'
+                                WHERE id = '36934' 
+UPDATE mdl_user SET 
+                                email = 'justinaloveth13@gmail.com', lastname = 'AMOO'
+                                WHERE id = '36935' 
+UPDATE mdl_user SET 
+                                email = 'olaoluamosu@gmail.com', lastname = 'AMOSU'
+                                WHERE id = '36936' 
+UPDATE mdl_user SET 
+                                email = 'oliviaanachu@gmail.com', lastname = 'ANACHU'
+                                WHERE id = '36937' 
+UPDATE mdl_user SET 
+                                email = 'kelechigeorge5real@gmail.com', lastname = 'ANYANWU'
+                                WHERE id = '36938' 
+UPDATE mdl_user SET 
+                                email = 'arowolooluwaferanmi7@gmail.com', lastname = 'AROWOLO'
+                                WHERE id = '36940' 
+UPDATE mdl_user SET 
+                                email = 'ayodeleashcroft@gmail.com', lastname = 'ASHCROFT'
+                                WHERE id = '36941' 
+UPDATE mdl_user SET 
+                                email = 'taimanjatt22@gmail.com', lastname = 'ASIYANBI'
+                                WHERE id = '36942' 
+UPDATE mdl_user SET 
+                                email = 'olarewajuasojo@gmail.com', lastname = 'ASOJO'
+                                WHERE id = '36943' 
+UPDATE mdl_user SET 
+                                email = 'jelilahatilola@gmail.com', lastname = 'ATILOLA'
+                                WHERE id = '36944' 
+UPDATE mdl_user SET 
+                                email = 'audumariam527@gmail.com', lastname = 'AUDU'
+                                WHERE id = '36945' 
+UPDATE mdl_user SET 
+                                email = 'awokedaniel047@gmail.com', lastname = 'AWOKE'
+                                WHERE id = '36947' 
+UPDATE mdl_user SET 
+                                email = 'awotundemoses5@gmail.com', lastname = 'AWOTUNDE'
+                                WHERE id = '36948' 
+UPDATE mdl_user SET 
+                                email = 'e053244.ayegba@dlc.ui.edu.ng', lastname = 'AYEGBA'
+                                WHERE id = '36949' 
+UPDATE mdl_user SET 
+                                email = 'ayenidamilola18@gmail.com', lastname = 'AYENI'
+                                WHERE id = '36950' 
+UPDATE mdl_user SET 
+                                email = 'favourayoola420@gmail.com', lastname = 'AYOOLA'
+                                WHERE id = '36952' 
+UPDATE mdl_user SET 
+                                email = 'azeezjumoke685@gmail.com', lastname = 'AZEEZ'
+                                WHERE id = '36953' 
+UPDATE mdl_user SET 
+                                email = 'babalolasemilore8@gmail.com', lastname = 'BABALOLA'
+                                WHERE id = '36954' 
+UPDATE mdl_user SET 
+                                email = 'omotoyosibabatunde10@gmail.com', lastname = 'BABATUNDE'
+                                WHERE id = '36955' 
+UPDATE mdl_user SET 
+                                email = 'bakaremustapha2@gmail.com', lastname = 'BAKARE'
+                                WHERE id = '36956' 
+UPDATE mdl_user SET 
+                                email = 'nasrhato@gmail.com', lastname = 'BALOGUN'
+                                WHERE id = '36957' 
+UPDATE mdl_user SET 
+                                email = 'omololaodunayo123@gmail.com', lastname = 'BAMIDELE'
+                                WHERE id = '36958' 
+UPDATE mdl_user SET 
+                                email = 'e054356.bamigbola@dlc.ui.edu.ng', lastname = 'BAMIGBOLA'
+                                WHERE id = '36959' 
+UPDATE mdl_user SET 
+                                email = 'bamigboyejoel533@gmail.com', lastname = 'BAMIGBOYE'
+                                WHERE id = '36960' 
+UPDATE mdl_user SET 
+                                email = 'eniolabamikole3@gmail.com', lastname = 'BAMIKOLE'
+                                WHERE id = '36961' 
+UPDATE mdl_user SET 
+                                email = 'banjotemitope649@gmail.com', lastname = 'BANJO'
+                                WHERE id = '36962' 
+UPDATE mdl_user SET 
+                                email = 'bellosusan71@gmail.com', lastname = 'BELLO'
+                                WHERE id = '36963' 
+UPDATE mdl_user SET 
+                                email = 'joy668979@gmail.com', lastname = 'BENJAMIN'
+                                WHERE id = '36964' 
+UPDATE mdl_user SET 
+                                email = 'e053618.borokini@dlc.ui.edu.ng', lastname = 'BOROKINI'
+                                WHERE id = '36965' 
+UPDATE mdl_user SET 
+                                email = 'oluchij592@gmail.com', lastname = 'CHUKWUEDOZIE'
+                                WHERE id = '36966' 
+UPDATE mdl_user SET 
+                                email = 'ruthchukwuekwu619@gmail.com', lastname = 'CHUKWUEKWU'
+                                WHERE id = '36967' 
+UPDATE mdl_user SET 
+                                email = 'cokerayomide16@gmail.com', lastname = 'COKER'
+                                WHERE id = '36968' 
+UPDATE mdl_user SET 
+                                email = 'akinosunoluwagbotemi@gmail.com', lastname = 'COMFORT'
+                                WHERE id = '36969' 
+UPDATE mdl_user SET 
+                                email = 'dadataiwo064@gmail.com', lastname = 'DADA'
+                                WHERE id = '36970' 
+UPDATE mdl_user SET 
+                                email = 'daniapeace2020@gmail.com', lastname = 'DANIA'
+                                WHERE id = '36971' 
+UPDATE mdl_user SET 
+                                email = 'e054065.echefu@dlc.ui.edu.ng', lastname = 'ECHEFU'
+                                WHERE id = '36972' 
+UPDATE mdl_user SET 
+                                email = 'effiongblessing147@gmail.com', lastname = 'EFFIONG'
+                                WHERE id = '36973' 
+UPDATE mdl_user SET 
+                                email = 'onomeejokpa@gmail.com', lastname = 'EJOKPA'
+                                WHERE id = '36974' 
+UPDATE mdl_user SET 
+                                email = 'ekanememmanuel61@gmail.com', lastname = 'EKANEM'
+                                WHERE id = '36975' 
+UPDATE mdl_user SET 
+                                email = 'ekundayomarytitilayo@gmail.com', lastname = 'EKUNDAYO'
+                                WHERE id = '36976' 
+UPDATE mdl_user SET 
+                                email = 'preciousemeka114@gmail.com', lastname = 'EMEKA'
+                                WHERE id = '36977' 
+UPDATE mdl_user SET 
+                                email = 'emmanuelbukola2024@gmail.com', lastname = 'EMMANUEL'
+                                WHERE id = '36978' 
+UPDATE mdl_user SET 
+                                email = 'ciendianna@gmail.com', lastname = 'ENIRAYETAN'
+                                WHERE id = '36979' 
+UPDATE mdl_user SET 
+                                email = 'etiksonglobalresources@gmail.com', lastname = 'ETIKO'
+                                WHERE id = '36980' 
+UPDATE mdl_user SET 
+                                email = 'e053257.etukudo@dlc.ui.edu.ng', lastname = 'ETUKUDO'
+                                WHERE id = '36981' 
+UPDATE mdl_user SET 
+                                email = 'ezebuemaryann9@gmail.com', lastname = 'EZEBUE'
+                                WHERE id = '36982' 
+UPDATE mdl_user SET 
+                                email = 'ezebuenyifaith@gmail.com', lastname = 'EZEBUENYI'
+                                WHERE id = '36983' 
+UPDATE mdl_user SET 
+                                email = 'e054011.ezemandu@dlc.ui.edu.ng', lastname = 'EZEMANDU'
+                                WHERE id = '36984' 
+UPDATE mdl_user SET 
+                                email = 'feranmifafowora93@gmail.com', lastname = 'FAFOWORA'
+                                WHERE id = '36985' 
+UPDATE mdl_user SET 
+                                email = 'sandrafagbamila@gmail.com', lastname = 'FAGBAMILA'
+                                WHERE id = '36986' 
+UPDATE mdl_user SET 
+                                email = 'jamesfagbenjo@gmail.com', lastname = 'FAGBENJO'
+                                WHERE id = '36987' 
+UPDATE mdl_user SET 
+                                email = 'priscafaleye@gmail.com', lastname = 'FALEYE'
+                                WHERE id = '36988' 
+UPDATE mdl_user SET 
+                                email = 'ruthfasasi3@gmail.com', lastname = 'FASASI'
+                                WHERE id = '36989' 
+UPDATE mdl_user SET 
+                                email = 'omolarafashola3@gmail.com', lastname = 'FASHOLA'
+                                WHERE id = '36990' 
+UPDATE mdl_user SET 
+                                email = 'adeshewahsmart@gmail.com', lastname = 'FATAI'
+                                WHERE id = '36991' 
+UPDATE mdl_user SET 
+                                email = 'kasopefawehinmi@gmail.com', lastname = 'FAWEHINMI'
+                                WHERE id = '36993' 
+UPDATE mdl_user SET 
+                                email = 'fowowesekemi28@gmail.com', lastname = 'FOWOWE'
+                                WHERE id = '36994' 
+UPDATE mdl_user SET 
+                                email = 'akudogabriel090@gmail.com', lastname = 'GABRIEL'
+                                WHERE id = '36995' 
+UPDATE mdl_user SET 
+                                email = 'wahabgafar209@gmail.com', lastname = 'GAFAR'
+                                WHERE id = '36996' 
+UPDATE mdl_user SET 
+                                email = 'ganiyutkehinde28@gmail.com', lastname = 'GANIYU'
+                                WHERE id = '36997' 
+UPDATE mdl_user SET 
+                                email = 'hassanhorlayhemi@gmail.com', lastname = 'HASSAN'
+                                WHERE id = '36999' 
+UPDATE mdl_user SET 
+                                email = 'bukasibekwe@gmail.com', lastname = 'IBEKWE'
+                                WHERE id = '37000' 
+UPDATE mdl_user SET 
+                                email = 'titilopebalogun2021@gmail.com', lastname = 'IBIDUN'
+                                WHERE id = '37001' 
+UPDATE mdl_user SET 
+                                email = 'itunuolamicomfort@gmail.com', lastname = 'IBITOYE'
+                                WHERE id = '37002' 
+UPDATE mdl_user SET 
+                                email = 'ambassadorkamalmopelola@gmail.com', lastname = 'IDOWU'
+                                WHERE id = '37003' 
+UPDATE mdl_user SET 
+                                email = 'igweasumpta518@gmail.com', lastname = 'IGWE'
+                                WHERE id = '37004' 
+UPDATE mdl_user SET 
+                                email = 'adeezycloud10@gmail.com', lastname = 'IKE'
+                                WHERE id = '37005' 
+UPDATE mdl_user SET 
+                                email = 'mackelly1995@gmail.com', lastname = 'ILODUBA'
+                                WHERE id = '37006' 
+UPDATE mdl_user SET 
+                                email = 'modupeipinyomi38@gmail.com', lastname = 'IPINYOMI'
+                                WHERE id = '37007' 
+UPDATE mdl_user SET 
+                                email = 'oluwapelumijames69@gmail.com', lastname = 'JAMES'
+                                WHERE id = '37008' 
+UPDATE mdl_user SET 
+                                email = 'jimmyanuoluwa16@gmail.com', lastname = 'JIMMY'
+                                WHERE id = '37009' 
+UPDATE mdl_user SET 
+                                email = 'mercyeniola2004@gmail.com', lastname = 'JIMOH'
+                                WHERE id = '37010' 
+UPDATE mdl_user SET 
+                                email = 'brightmichaels1910@gmail.com', lastname = 'JOHN'
+                                WHERE id = '37011' 
+UPDATE mdl_user SET 
+                                email = 'mercyshalom1898@gmail.com', lastname = 'JOHNSON'
+                                WHERE id = '37012' 
+UPDATE mdl_user SET 
+                                email = 'ayomidelove04@gmail.com', lastname = 'JOSEPH'
+                                WHERE id = '37013' 
+UPDATE mdl_user SET 
+                                email = 'jibby822@gmail.com', lastname = 'KEHINDE'
+                                WHERE id = '37014' 
+UPDATE mdl_user SET 
+                                email = 'favourlalla01@gmail.com', lastname = 'LALLA'
+                                WHERE id = '37015' 
+UPDATE mdl_user SET 
+                                email = 'temmynoimot@gmail.com', lastname = 'LATEEF'
+                                WHERE id = '37016' 
+UPDATE mdl_user SET 
+                                email = 'lukmanshakirat2@gmail.com', lastname = 'LUKMAN'
+                                WHERE id = '37017' 
+UPDATE mdl_user SET 
+                                email = 'ayodejimelody12@gmail.com', lastname = 'MAJEKODUNMI'
+                                WHERE id = '37018' 
+UPDATE mdl_user SET 
+                                email = 'e053159.mann@dlc.ui.edu.ng', lastname = 'MANN'
+                                WHERE id = '37019' 
+UPDATE mdl_user SET 
+                                email = 'debbymartins07@gmail.com', lastname = 'MARTINS'
+                                WHERE id = '37020' 
+UPDATE mdl_user SET 
+                                email = 'bintamiracle3@gmail.com', lastname = 'MORIS'
+                                WHERE id = '37022' 
+UPDATE mdl_user SET 
+                                email = 'e053833.moshood@dlc.ui.edu.ng', lastname = 'MOSHOOD'
+                                WHERE id = '37023' 
+UPDATE mdl_user SET 
+                                email = 'ustaadhakewi@gmail.com', lastname = 'MUHALLIYY'
+                                WHERE id = '37024' 
+UPDATE mdl_user SET 
+                                email = 'muhbashirdhikroh@gmail.com', lastname = 'MUHBASHIR'
+                                WHERE id = '37025' 
+UPDATE mdl_user SET 
+                                email = 'e053664.muibi@dlc.ui.edu.ng', lastname = 'MUIBI'
+                                WHERE id = '37026' 
+UPDATE mdl_user SET 
+                                email = 'halimatomoyeni123.com@gmail.com', lastname = 'MUSTAPHA'
+                                WHERE id = '37027' 
+UPDATE mdl_user SET 
+                                email = 'oreofematthew@gmail.com', lastname = 'NDASODE'
+                                WHERE id = '37028' 
+UPDATE mdl_user SET 
+                                email = 'antoclare321@gmail.com', lastname = 'NDIVE'
+                                WHERE id = '37029' 
+UPDATE mdl_user SET 
+                                email = 'oluwaseunvictor439@gmail.com', lastname = 'NDUBUISI'
+                                WHERE id = '37030' 
+UPDATE mdl_user SET 
+                                email = 'chisomconstant01@gmail.com', lastname = 'NDUKA'
+                                WHERE id = '37031' 
+UPDATE mdl_user SET 
+                                email = 'chiamakag380@gmail.com', lastname = 'NWAFOR'
+                                WHERE id = '37032' 
+UPDATE mdl_user SET 
+                                email = 'princessesyunique@gmail.com', lastname = 'NWAKANMA'
+                                WHERE id = '37033' 
+UPDATE mdl_user SET 
+                                email = 'okwudirinwali838@gmail.com', lastname = 'NWALI'
+                                WHERE id = '37034' 
+UPDATE mdl_user SET 
+                                email = 'obadinaoluwatobiloba7@gmail.com', lastname = 'OBADINA'
+                                WHERE id = '37035' 
+UPDATE mdl_user SET 
+                                email = 'rashmakconsult@gmail.com', lastname = 'OBAWA'
+                                WHERE id = '37036' 
+UPDATE mdl_user SET 
+                                email = 'obayemidamilola34@gmail.com', lastname = 'OBAYEMI'
+                                WHERE id = '37037' 
+UPDATE mdl_user SET 
+                                email = 'presh9094@gmail.com', lastname = 'OBIOBANYA'
+                                WHERE id = '37038' 
+UPDATE mdl_user SET 
+                                email = 'odetundehabeeb3@gmail.com', lastname = 'ODETUNDE'
+                                WHERE id = '37039' 
+UPDATE mdl_user SET 
+                                email = 'erhaborfaith6@gmail.com', lastname = 'ODEY'
+                                WHERE id = '37041' 
+UPDATE mdl_user SET 
+                                email = 'olamiderhoda240@gmail.com', lastname = 'ODEYEMI'
+                                WHERE id = '37042' 
+UPDATE mdl_user SET 
+                                email = 'iyanuodunlade@gmail.com', lastname = 'ODUNLADE'
+                                WHERE id = '37043' 
+UPDATE mdl_user SET 
+                                email = 'simmywarship@gmail.com', lastname = 'OFEM'
+                                WHERE id = '37044' 
+UPDATE mdl_user SET 
+                                email = 'timothyogonodi347@gmail.com', lastname = 'OGONODI'
+                                WHERE id = '37045' 
+UPDATE mdl_user SET 
+                                email = 'rachealoluwanifemiogunbiyi@gmail.com', lastname = 'OGUNBIYI'
+                                WHERE id = '37046' 
+UPDATE mdl_user SET 
+                                email = 'ogunbodesegun62@gmail.com', lastname = 'OGUNBODE'
+                                WHERE id = '37047' 
+UPDATE mdl_user SET 
+                                email = 'tundeayoade4@gmail.com', lastname = 'OGUNDEPO'
+                                WHERE id = '37048' 
+UPDATE mdl_user SET 
+                                email = 'ogunmuyiwaokikijesu@gmail.com', lastname = 'OGUNMUYIWA'
+                                WHERE id = '37049' 
+UPDATE mdl_user SET 
+                                email = 'davidogunnusi9@gmail.com', lastname = 'OGUNNUSI'
+                                WHERE id = '37050' 
+UPDATE mdl_user SET 
+                                email = 'omowunmipeace05@gmail.com', lastname = 'OGUNRONBI'
+                                WHERE id = '37051' 
+UPDATE mdl_user SET 
+                                email = 'e054101.ojegoke@dlc.ui.edu.ng', lastname = 'OJEGOKE'
+                                WHERE id = '37052' 
+UPDATE mdl_user SET 
+                                email = 'rasheedatojekunle@gmail.com', lastname = 'OJEKUNLE'
+                                WHERE id = '37053' 
+UPDATE mdl_user SET 
+                                email = 'tunmisesamuel09@gmail.com', lastname = 'OJO'
+                                WHERE id = '37054' 
+UPDATE mdl_user SET 
+                                email = 'okaforchioma1424@gmail.com', lastname = 'OKAFOR'
+                                WHERE id = '37055' 
+UPDATE mdl_user SET 
+                                email = 'okeyemijanet9@gmail.com', lastname = 'OKEYEMI'
+                                WHERE id = '37057' 
+UPDATE mdl_user SET 
+                                email = 'goodnessokriyin@gmail.com', lastname = 'OKRIYIN'
+                                WHERE id = '37058' 
+UPDATE mdl_user SET 
+                                email = 'olamihteju2507@gmail.com', lastname = 'OKUNOLA'
+                                WHERE id = '37059' 
+UPDATE mdl_user SET 
+                                email = 'taiwocomfort83@gmail.com', lastname = 'OLADEEBO'
+                                WHERE id = '37060' 
+UPDATE mdl_user SET 
+                                email = 'peculiarlizzy23@gmail.com', lastname = 'OLADEJO'
+                                WHERE id = '37061' 
+UPDATE mdl_user SET 
+                                email = 'anjolaoluwaoladimeji@gmail.com', lastname = 'OLADIMEJI'
+                                WHERE id = '37063' 
+UPDATE mdl_user SET 
+                                email = 'oladititimileyin05@gmail.com', lastname = 'OLADITI'
+                                WHERE id = '37064' 
+UPDATE mdl_user SET 
+                                email = 'oladokunshallomoluwapelumi01@gmail.com', lastname = 'OLADOKUN'
+                                WHERE id = '37065' 
+UPDATE mdl_user SET 
+                                email = 'reachygold123@gmail.com', lastname = 'OLADOSU'
+                                WHERE id = '37066' 
+UPDATE mdl_user SET 
+                                email = 'semiioreprecious99@gmail.com', lastname = 'OLADOYIN'
+                                WHERE id = '37067' 
+UPDATE mdl_user SET 
+                                email = 'ahmed_adediran@yahoo.com', lastname = 'OLALEKAN'
+                                WHERE id = '37068' 
+UPDATE mdl_user SET 
+                                email = 'olalererebecca@gmail.com', lastname = 'OLALERE'
+                                WHERE id = '37069' 
+UPDATE mdl_user SET 
+                                email = 'olaleyed234@gmail.com', lastname = 'OLALEYE'
+                                WHERE id = '37070' 
+UPDATE mdl_user SET 
+                                email = 'olaludeayomide69@gmail.com', lastname = 'OLALUDE'
+                                WHERE id = '37071' 
+UPDATE mdl_user SET 
+                                email = 'temihollah@gmail.com', lastname = 'OLANIYAN'
+                                WHERE id = '37072' 
+UPDATE mdl_user SET 
+                                email = 'motunrayooluwadamilola0@gmail.com', lastname = 'OLAOGUN'
+                                WHERE id = '37073' 
+UPDATE mdl_user SET 
+                                email = 'samadolaosun07@gmail.com', lastname = 'OLAOSUN'
+                                WHERE id = '37074' 
+UPDATE mdl_user SET 
+                                email = 'olasindehabeeb123@gmail.com', lastname = 'OLASINDE'
+                                WHERE id = '37075' 
+UPDATE mdl_user SET 
+                                email = 'josephbanks2419@gmail.com', lastname = 'OLATUNDE'
+                                WHERE id = '37076' 
+UPDATE mdl_user SET 
+                                email = 'koredeolatunji541@gmail.com', lastname = 'OLATUNJI'
+                                WHERE id = '37077' 
+UPDATE mdl_user SET 
+                                email = 'janettitilolaoyekale@gmail.com', lastname = 'OLAWALE'
+                                WHERE id = '37078' 
+UPDATE mdl_user SET 
+                                email = 'olusolaolowu07@gmail.com', lastname = 'OLAWOORE'
+                                WHERE id = '37079' 
+UPDATE mdl_user SET 
+                                email = 'oabdulazeez804@gmail.com', lastname = 'OLAYEMI'
+                                WHERE id = '37080' 
+UPDATE mdl_user SET 
+                                email = 'e053210.olayiwola@dlc.ui.edu.ng', lastname = 'OLAYIWOLA'
+                                WHERE id = '37081' 
+UPDATE mdl_user SET 
+                                email = 'kehindeoliseh123@gmail.com', lastname = 'OLISEH'
+                                WHERE id = '37082' 
+UPDATE mdl_user SET 
+                                email = 'morufoliyide@gmail.com', lastname = 'OLIYIDE'
+                                WHERE id = '37083' 
+UPDATE mdl_user SET 
+                                email = 'miracleayanfeoluwa@gmail.com', lastname = 'OLORUNLEYE'
+                                WHERE id = '37084' 
+UPDATE mdl_user SET 
+                                email = 'kenoluecn2002@gmail.com', lastname = 'OLU'
+                                WHERE id = '37085' 
+UPDATE mdl_user SET 
+                                email = 'oluwafemiolanrewaju19@gmail.com', lastname = 'OLUWAFEMI'
+                                WHERE id = '37086' 
+UPDATE mdl_user SET 
+                                email = 'olusinaoluwale9@gmail.com', lastname = 'OLUWALE'
+                                WHERE id = '37088' 
+UPDATE mdl_user SET 
+                                email = 'imisioluwaprecious9@gmail.com', lastname = 'OLUWOLE'
+                                WHERE id = '37089' 
+UPDATE mdl_user SET 
+                                email = 'omisakinoluwaseun3@gmail.com', lastname = 'OMISAKIN'
+                                WHERE id = '37090' 
+UPDATE mdl_user SET 
+                                email = 'talk2praisesope@gmail.com', lastname = 'OMISOPE'
+                                WHERE id = '37091' 
+UPDATE mdl_user SET 
+                                email = 'ruthomoloye487@gmail.com', lastname = 'OMOLOYE'
+                                WHERE id = '37092' 
+UPDATE mdl_user SET 
+                                email = 'fomoniyi205@gmail.com', lastname = 'OMONIYI'
+                                WHERE id = '37093' 
+UPDATE mdl_user SET 
+                                email = 'biolafajemilehin5@gmail.com', lastname = 'OMONOBA'
+                                WHERE id = '37094' 
+UPDATE mdl_user SET 
+                                email = 'ayomidemercy018@gmail.com', lastname = 'OMOWAYE'
+                                WHERE id = '37095' 
+UPDATE mdl_user SET 
+                                email = 'ireoluwatomiwa1211@gmail.com', lastname = 'ONIFADE'
+                                WHERE id = '37096' 
+UPDATE mdl_user SET 
+                                email = 'deniyidebayo7844@gmail.com', lastname = 'ONYEBUCHI'
+                                WHERE id = '37098' 
+UPDATE mdl_user SET 
+                                email = 'opadiranabosede@gmail.co', lastname = 'OPADIRAN'
+                                WHERE id = '37099' 
+UPDATE mdl_user SET 
+                                email = 'e053890.opadola@dlc.ui.edu.ng', lastname = 'OPADOLA'
+                                WHERE id = '37100' 
+UPDATE mdl_user SET 
+                                email = 'e054069.oredugba@dlc.ui.edu.ng', lastname = 'OREDUGBA'
+                                WHERE id = '37101' 
+UPDATE mdl_user SET 
+                                email = 'e054220.osademe@dlc.ui.edu.ng', lastname = 'OSADEME'
+                                WHERE id = '37102' 
+UPDATE mdl_user SET 
+                                email = 'osanyintolaabidemi@gmail.com', lastname = 'OSANYINTOLA'
+                                WHERE id = '37103' 
+UPDATE mdl_user SET 
+                                email = 'emmaosemen3@gmail.com', lastname = 'OSEMEN'
+                                WHERE id = '37104' 
+UPDATE mdl_user SET 
+                                email = 'oyindamolaamos1@gmail.com', lastname = 'OSHINYEMI'
+                                WHERE id = '37105' 
+UPDATE mdl_user SET 
+                                email = 'ayokaositelu@gmail.com', lastname = 'OSITELU'
+                                WHERE id = '37106' 
+UPDATE mdl_user SET 
+                                email = 'ajayiakinsola872@gmail.com', lastname = 'OSUWE'
+                                WHERE id = '37107' 
+UPDATE mdl_user SET 
+                                email = 'owoadeshukhuroh@gmail.com', lastname = 'OWOADE'
+                                WHERE id = '37108' 
+UPDATE mdl_user SET 
+                                email = 'angel.owokalade@gmail.com', lastname = 'OWOKALADE'
+                                WHERE id = '37109' 
+UPDATE mdl_user SET 
+                                email = 'tofunmilayo@yahoo.com', lastname = 'OWONIFARI'
+                                WHERE id = '37110' 
+UPDATE mdl_user SET 
+                                email = 'ayubaoyedele9@gmail.com', lastname = 'OYEDELE'
+                                WHERE id = '37111' 
+UPDATE mdl_user SET 
+                                email = 'ilerioluwakiiye6@gmail.com', lastname = 'OYEKANMI'
+                                WHERE id = '37112' 
+UPDATE mdl_user SET 
+                                email = 'oluwafunmilayo513@gmail.com', lastname = 'OYELEYE'
+                                WHERE id = '37113' 
+UPDATE mdl_user SET 
+                                email = 'favouroyere65@gmail.com', lastname = 'OYERE'
+                                WHERE id = '37114' 
+UPDATE mdl_user SET 
+                                email = 'samueloyewole892@gmail.com', lastname = 'OYEWOLE'
+                                WHERE id = '37115' 
+UPDATE mdl_user SET 
+                                email = 'adebowaleoyinloye81@gmail.com', lastname = 'OYINLOYE'
+                                WHERE id = '37116' 
+UPDATE mdl_user SET 
+                                email = 'ucheloveth298@gmail.com', lastname = 'OZIOMA'
+                                WHERE id = '37117' 
+UPDATE mdl_user SET 
+                                email = 'phillipsfavour9@gmail.com', lastname = 'PHILLIPS'
+                                WHERE id = '37119' 
+UPDATE mdl_user SET 
+                                email = 'e054336.rabiu@dlc.ui.edu.ng', lastname = 'RABIU'
+                                WHERE id = '37120' 
+UPDATE mdl_user SET 
+                                email = 'saheedkhosiah@gmail.com', lastname = 'SAHEED'
+                                WHERE id = '37122' 
+UPDATE mdl_user SET 
+                                email = 'aishatsaka64@gmail.com', lastname = 'SAKA'
+                                WHERE id = '37123' 
+UPDATE mdl_user SET 
+                                email = 'e053444.salami@dlc.ui.edu.ng', lastname = 'SALAMI'
+                                WHERE id = '37124' 
+UPDATE mdl_user SET 
+                                email = 'olamidesalimonu2@gmail.com', lastname = 'SALIMONU'
+                                WHERE id = '37125' 
+UPDATE mdl_user SET 
+                                email = 'ooreofe445@gmail.com', lastname = 'SALIU'
+                                WHERE id = '37126' 
+UPDATE mdl_user SET 
+                                email = 'favourdamo_2025@gmail.com', lastname = 'SAMSON'
+                                WHERE id = '37127' 
+UPDATE mdl_user SET 
+                                email = 'olabimijisamuel27@gmail.com', lastname = 'SAMUEL'
+                                WHERE id = '37128' 
+UPDATE mdl_user SET 
+                                email = 'sanusiayuba04@gmail.com', lastname = 'SANUSI'
+                                WHERE id = '37129' 
+UPDATE mdl_user SET 
+                                email = 'blessingseriki3@gmail.com', lastname = 'SERIKI'
+                                WHERE id = '37130' 
+UPDATE mdl_user SET 
+                                email = 'aidatshaibusalami@gmail.com', lastname = 'SHAIBU-SALAMI'
+                                WHERE id = '37131' 
+UPDATE mdl_user SET 
+                                email = 'shobayoolamide223@gmail.com', lastname = 'SHOBAYO'
+                                WHERE id = '37132' 
+UPDATE mdl_user SET 
+                                email = 'e053581.somide@dlc.ui.edu.ng', lastname = 'SOMIDE'
+                                WHERE id = '37133' 
+UPDATE mdl_user SET 
+                                email = 'boluwatifesoremekun07@gmail.com', lastname = 'SOREMEKUN'
+                                WHERE id = '37135' 
+UPDATE mdl_user SET 
+                                email = 'olabimpesoyombo@gmail.com', lastname = 'SOYOMBO'
+                                WHERE id = '37136' 
+UPDATE mdl_user SET 
+                                email = 'sulymanabdulganiyy@gmail.com', lastname = 'SULYMAN'
+                                WHERE id = '37138' 
+UPDATE mdl_user SET 
+                                email = 'yetundesunmonu49@gmail.com', lastname = 'SUNMONU'
+                                WHERE id = '37139' 
+UPDATE mdl_user SET 
+                                email = 'e053866.surajudeen@dlc.ui.edu.ng', lastname = 'SURAJUDEEN'
+                                WHERE id = '37140' 
+UPDATE mdl_user SET 
+                                email = 'wahabtaiwo169@gmail.com', lastname = 'TAIWO'
+                                WHERE id = '37142' 
+UPDATE mdl_user SET 
+                                email = 'tajudeenibrahim18@gmail.com', lastname = 'TAJUDEEN'
+                                WHERE id = '37143' 
+UPDATE mdl_user SET 
+                                email = 'e054036.talabi@dlc.ui.edu.ng', lastname = 'TALABI'
+                                WHERE id = '37144' 
+UPDATE mdl_user SET 
+                                email = 'tayerukoyah2021@gmail.com', lastname = 'TAYE'
+                                WHERE id = '37145' 
+UPDATE mdl_user SET 
+                                email = 'atilola328@gmail.com', lastname = 'TAYLOR'
+                                WHERE id = '37146' 
+UPDATE mdl_user SET 
+                                email = 'tiamiyuis24@gmail.com', lastname = 'TIAMIYU'
+                                WHERE id = '37147' 
+UPDATE mdl_user SET 
+                                email = 'tijanisophiaayokunmi@gmail.com', lastname = 'TIJANI'
+                                WHERE id = '37148' 
+UPDATE mdl_user SET 
+                                email = 'olamidetomomewo57@gmail.com', lastname = 'TOMOMEWO'
+                                WHERE id = '37149' 
+UPDATE mdl_user SET 
+                                email = 'marveloustonyakinlosotu@gmail.com', lastname = 'TONY-AKINLOSOTU'
+                                WHERE id = '37150' 
+UPDATE mdl_user SET 
+                                email = 'udohsarahimaobong@gmail.com', lastname = 'UDOH'
+                                WHERE id = '37151' 
+UPDATE mdl_user SET 
+                                email = 'dondusky001@gmail.com', lastname = 'UKO'
+                                WHERE id = '37152' 
+UPDATE mdl_user SET 
+                                email = 'iboyivictor2018@gmail.com', lastname = 'VICTOR'
+                                WHERE id = '37153' 
+UPDATE mdl_user SET 
+                                email = 'wesleyboluwatife@gmail.com', lastname = 'WESLEY'
+                                WHERE id = '37154' 
+UPDATE mdl_user SET 
+                                email = 'williamsdavidadebayo@gmail.com', lastname = 'WILLIAMS'
+                                WHERE id = '37155' 
+UPDATE mdl_user SET 
+                                email = 'akanoajibolaisaac@gmail.com', lastname = 'WOMILOJU'
+                                WHERE id = '37156' 
+UPDATE mdl_user SET 
+                                email = 'hafeezhamzat83@gmail.com', lastname = 'YEKEEN'
+                                WHERE id = '37157' 
+UPDATE mdl_user SET 
+                                email = 'yunusabasiratomowunmi@gmail.com', lastname = 'YUNUSA'
+                                WHERE id = '37158' 
+UPDATE mdl_user SET 
+                                email = 'ayomideyusuf060@gmail.com', lastname = 'YUSUF'
+                                WHERE id = '37159' 
+UPDATE mdl_user SET 
+                                email = 'abdrasheedsukurat@gmail.com', lastname = 'ABDRASHEED'
+                                WHERE id = '37160' 
+UPDATE mdl_user SET 
+                                email = 'aishatromoke01@gmail.com', lastname = 'ABDULATEEF'
+                                WHERE id = '37161' 
+UPDATE mdl_user SET 
+                                email = 'ephraimabiojiega@gmail.com', lastname = 'ABIOJIEGA'
+                                WHERE id = '37162' 
+UPDATE mdl_user SET 
+                                email = 'rachaeladedara3@gmail.com', lastname = 'ADEDARA'
+                                WHERE id = '37163' 
+UPDATE mdl_user SET 
+                                email = 'adedokunadedeji266@gmail.com', lastname = 'ADEDOKUN'
+                                WHERE id = '37164' 
+UPDATE mdl_user SET 
+                                email = 'olaitanademilola@gmail.com', lastname = 'ADEMILOLA'
+                                WHERE id = '37165' 
+UPDATE mdl_user SET 
+                                email = 'adeyidamilare247@gmail.com', lastname = 'ADEYI'
+                                WHERE id = '37166' 
+UPDATE mdl_user SET 
+                                email = 'e054212.aforma@dlc.ui.edu.ng', lastname = 'AFORMA'
+                                WHERE id = '37167' 
+UPDATE mdl_user SET 
+                                email = 'davidagadele@gmail.com', lastname = 'AGADELE'
+                                WHERE id = '37168' 
+UPDATE mdl_user SET 
+                                email = 'ajaladeborah2023@gmail.com', lastname = 'AJALA'
+                                WHERE id = '37169' 
+UPDATE mdl_user SET 
+                                email = 'akerequeen2020@gmail.com', lastname = 'AKERE'
+                                WHERE id = '37170' 
+UPDATE mdl_user SET 
+                                email = 'akimstephen277@gmail.com', lastname = 'AKIM'
+                                WHERE id = '37171' 
+UPDATE mdl_user SET 
+                                email = 'mercyakinade0@gmail.com', lastname = 'AKINADE'
+                                WHERE id = '37172' 
+UPDATE mdl_user SET 
+                                email = 'akindeleboluwatife13@gmail.com', lastname = 'AKINDELE'
+                                WHERE id = '37173' 
+UPDATE mdl_user SET 
+                                email = 'e054350.akinjole@dlc.ui.edu.ng', lastname = 'AKINJOLE'
+                                WHERE id = '37174' 
+UPDATE mdl_user SET 
+                                email = 'imoleayolexy065@gmail.com', lastname = 'AKINLOYE'
+                                WHERE id = '37175' 
+UPDATE mdl_user SET 
+                                email = 'oluwafunmilayoolowo94@gmail.com', lastname = 'AKINSIKU'
+                                WHERE id = '37176' 
+UPDATE mdl_user SET 
+                                email = 'alukoadeife2@gmail.com', lastname = 'ALUKO'
+                                WHERE id = '37177' 
+UPDATE mdl_user SET 
+                                email = 'ashebevictory@gmail.com', lastname = 'ASHEBE'
+                                WHERE id = '37178' 
+UPDATE mdl_user SET 
+                                email = 'ayinlagrace90@gmail.com', lastname = 'AYINLA'
+                                WHERE id = '37180' 
+UPDATE mdl_user SET 
+                                email = 'admotrustobey@gmail.com', lastname = 'AYOKUNLE'
+                                WHERE id = '37181' 
+UPDATE mdl_user SET 
+                                email = 'e054223.bosede@dlc.ui.edu.ng', lastname = 'BOSEDE'
+                                WHERE id = '37182' 
+UPDATE mdl_user SET 
+                                email = 'daudaomolola6@gmail.com', lastname = 'DAUDA'
+                                WHERE id = '37184' 
+UPDATE mdl_user SET 
+                                email = 'oluwabunmijoy6@gmail.com', lastname = 'EBUKUYO'
+                                WHERE id = '37185' 
+UPDATE mdl_user SET 
+                                email = 'lizzyrakel@gmail.com', lastname = 'ETEKAMBA'
+                                WHERE id = '37186' 
+UPDATE mdl_user SET 
+                                email = 'jfadugba7@gmail.com', lastname = 'FADUGBA'
+                                WHERE id = '37187' 
+UPDATE mdl_user SET 
+                                email = 'oluwanbegbonegun15@gmail.com', lastname = 'GBONEGUN'
+                                WHERE id = '37188' 
+UPDATE mdl_user SET 
+                                email = 'febiruth22@gmail.com', lastname = 'GIDEON'
+                                WHERE id = '37189' 
+UPDATE mdl_user SET 
+                                email = 'ikotunboluwatife318@gmail.com', lastname = 'IKOTUN'
+                                WHERE id = '37190' 
+UPDATE mdl_user SET 
+                                email = 'ikudehinbupatience@gmail.com', lastname = 'IKUDEHINBU'
+                                WHERE id = '37191' 
+UPDATE mdl_user SET 
+                                email = 'lawalkhadijat049@gmail.com', lastname = 'LAWAL'
+                                WHERE id = '37192' 
+UPDATE mdl_user SET 
+                                email = 'favournzete12@gmail.com', lastname = 'NZETE'
+                                WHERE id = '37193' 
+UPDATE mdl_user SET 
+                                email = 'obadelemercy555@gmail.com', lastname = 'OBADELE'
+                                WHERE id = '37194' 
+UPDATE mdl_user SET 
+                                email = 'ebubew476@gmail.com', lastname = 'OBEAGU'
+                                WHERE id = '37195' 
+UPDATE mdl_user SET 
+                                email = 'odunjot1@gmail.com', lastname = 'ODUNJO'
+                                WHERE id = '37196' 
+UPDATE mdl_user SET 
+                                email = 'victorworshipogar@gmail.com', lastname = 'OGAR'
+                                WHERE id = '37197' 
+UPDATE mdl_user SET 
+                                email = 'ogunwemimoisreal@gmail.com', lastname = 'OGUNWEMIMO'
+                                WHERE id = '37198' 
+UPDATE mdl_user SET 
+                                email = 'preciousojolum5@gmail.com', lastname = 'OJOLUM'
+                                WHERE id = '37199' 
+UPDATE mdl_user SET 
+                                email = 'okubanjoomotayoolajumoke@gmail.com', lastname = 'OKUBANJO'
+                                WHERE id = '37200' 
+UPDATE mdl_user SET 
+                                email = 'morayookuwoga44@gmail.com', lastname = 'OKUWOGA'
+                                WHERE id = '37201' 
+UPDATE mdl_user SET 
+                                email = 'oladenisuliyateniola@gmail.com', lastname = 'OLADENI'
+                                WHERE id = '37202' 
+UPDATE mdl_user SET 
+                                email = 'oreoluwaoladunni03@gmail.com', lastname = 'OLADUNNI'
+                                WHERE id = '37203' 
+UPDATE mdl_user SET 
+                                email = 'abiolaolanipekun22222@gmail.com', lastname = 'OLANIPEKUN'
+                                WHERE id = '37204' 
+UPDATE mdl_user SET 
+                                email = 'jesufe25jpts@gmail.com', lastname = 'OLANIYI'
+                                WHERE id = '37205' 
+UPDATE mdl_user SET 
+                                email = 'olubodeaanuoluwapo@gmail.com', lastname = 'OLUBODE'
+                                WHERE id = '37206' 
+UPDATE mdl_user SET 
+                                email = 'oludelechristianah75@gmail.com', lastname = 'OLUDELE'
+                                WHERE id = '37207' 
+UPDATE mdl_user SET 
+                                email = 'e054359.olukotun@dlc.ui.edu.ng', lastname = 'OLUKOTUN'
+                                WHERE id = '37208' 
+UPDATE mdl_user SET 
+                                email = 'olumidejoseph12@gmail.com', lastname = 'OLUMIDE'
+                                WHERE id = '37209' 
+UPDATE mdl_user SET 
+                                email = 'oluwabamiseolunuga@gmail.com', lastname = 'OLUNUGA'
+                                WHERE id = '37210' 
+UPDATE mdl_user SET 
+                                email = 'mayorrichy2024@gmail.com', lastname = 'OLUSEGUN'
+                                WHERE id = '37211' 
+UPDATE mdl_user SET 
+                                email = 'samueltom24@gmail.com', lastname = 'OLUWAFEMI-DANIEL'
+                                WHERE id = '37212' 
+UPDATE mdl_user SET 
+                                email = 'taiwoomisore627@gmail.com', lastname = 'OMISORE'
+                                WHERE id = '37213' 
+UPDATE mdl_user SET 
+                                email = 'eniolaomotoso01@gmail.com', lastname = 'OMOTOSO'
+                                WHERE id = '37214' 
+UPDATE mdl_user SET 
+                                email = 'perryvibez09@gmail.com', lastname = 'OPEYEMI'
+                                WHERE id = '37215' 
+UPDATE mdl_user SET 
+                                email = 'peculiarvessel97@gmail.com', lastname = 'OSUNSINA'
+                                WHERE id = '37216' 
+UPDATE mdl_user SET 
+                                email = 'e054093.otitolere@dlc.ui.edu.ng', lastname = 'OTITOLERE'
+                                WHERE id = '37217' 
+UPDATE mdl_user SET 
+                                email = 'owiegodwin45@gmail.com', lastname = 'OWIE'
+                                WHERE id = '37218' 
+UPDATE mdl_user SET 
+                                email = 'emaactive355@gmail.com', lastname = 'OYENIYI'
+                                WHERE id = '37219' 
+UPDATE mdl_user SET 
+                                email = 'omowumioyesainu@gmail.com', lastname = 'OYESAINU'
+                                WHERE id = '37220' 
+UPDATE mdl_user SET 
+                                email = 'e054236.peter@dlc.ui.edu.ng', lastname = 'PETER'
+                                WHERE id = '37221' 
+UPDATE mdl_user SET 
+                                email = 'raifuoyinkansola38@gmail.com', lastname = 'RAIFU'
+                                WHERE id = '37222' 
+UPDATE mdl_user SET 
+                                email = 'rufaipelumi2@gmail.com', lastname = 'RUFAI'
+                                WHERE id = '37223' 
+UPDATE mdl_user SET 
+                                email = 'e054275.sakariyah@dlc.ui.edu.ng', lastname = 'SAKARIYAH'
+                                WHERE id = '37224' 
+UPDATE mdl_user SET 
+                                email = 'shofumadea@gmail.com', lastname = 'SHOFU'
+                                WHERE id = '37225' 
+UPDATE mdl_user SET 
+                                email = 'honeypeach507@gmail.com', lastname = 'UDEH'
+                                WHERE id = '37226' 
+UPDATE mdl_user SET 
+                                email = 'assehsamuel421@gmail.com', lastname = 'ASSEH'
+                                WHERE id = '37227' 
+UPDATE mdl_user SET 
+                                email = 'bimboodeniyi6@gmail.com', lastname = 'ODENIYI'
+                                WHERE id = '37228' 
+UPDATE mdl_user SET 
+                                email = 'olaosebikanismail12@gmail.com', lastname = 'OLAOSEBIKAN'
+                                WHERE id = '37229' 
+UPDATE mdl_user SET 
+                                email = 'oloyedeb039@gmail.com', lastname = 'OLOYEDE'
+                                WHERE id = '37230' 
+UPDATE mdl_user SET 
+                                email = 'omoyeleiseoluwa1998@gmail.com', lastname = 'OMOYELE'
+                                WHERE id = '37231' 
+UPDATE mdl_user SET 
+                                email = 'wuraolaraufu@gmail.com', lastname = 'RAUFU'
+                                WHERE id = '37232' 
+UPDATE mdl_user SET 
+                                email = 'ashagreenclothings@gmail.com', lastname = 'TOGUNDE'
+                                WHERE id = '37233' 
+UPDATE mdl_user SET 
+                                email = 'ademolapaulademola@gmail.com', lastname = 'ADEJOKUN'
+                                WHERE id = '37234' 
+UPDATE mdl_user SET 
+                                email = 'e054039.adesanya@dlc.ui.edu.ng', lastname = 'ADESANYA'
+                                WHERE id = '37235' 
+UPDATE mdl_user SET 
+                                email = 'aadeyemi547@gmail.com', lastname = 'ADEYEMI'
+                                WHERE id = '37236' 
+UPDATE mdl_user SET 
+                                email = 'ajuwonazeez230@gmail.com', lastname = 'AJUWON'
+                                WHERE id = '37237' 
+UPDATE mdl_user SET 
+                                email = 'graceakinlua@gmail.com', lastname = 'AKINLUA'
+                                WHERE id = '37238' 
+UPDATE mdl_user SET 
+                                email = 'gakinsowon@gmail.com', lastname = 'AKINSOWON'
+                                WHERE id = '37239' 
+UPDATE mdl_user SET 
+                                email = 'animashaunibrahim4080@gmail.com', lastname = 'ANIMASHAUN'
+                                WHERE id = '37240' 
+UPDATE mdl_user SET 
+                                email = 'arowosegbesamuel145@gmail.com', lastname = 'AROWOSEGBE'
+                                WHERE id = '37241' 
+UPDATE mdl_user SET 
+                                email = 'vicklaralove@gmail.com', lastname = 'DAIRO'
+                                WHERE id = '37242' 
+UPDATE mdl_user SET 
+                                email = 'tundedonald3@gmail.com', lastname = 'DONALD'
+                                WHERE id = '37243' 
+UPDATE mdl_user SET 
+                                email = 'adefunken@gmail.com', lastname = 'HAMMED'
+                                WHERE id = '37244' 
+UPDATE mdl_user SET 
+                                email = 'ikumsakorede2019@gmail.com', lastname = 'IKUMOGUNNIYI'
+                                WHERE id = '37245' 
+UPDATE mdl_user SET 
+                                email = 'seyifunmikabiru@gmail.com', lastname = 'KABIRU'
+                                WHERE id = '37246' 
+UPDATE mdl_user SET 
+                                email = 'bolajimathewsamuel@gmail.com', lastname = 'MATHEW'
+                                WHERE id = '37247' 
+UPDATE mdl_user SET 
+                                email = 'deboraholushola3@gmail.com', lastname = 'MUKAILA'
+                                WHERE id = '37248' 
+UPDATE mdl_user SET 
+                                email = 'e053744.ogundare@dlc.ui.edu.ng', lastname = 'OGUNDARE'
+                                WHERE id = '37249' 
+UPDATE mdl_user SET 
+                                email = 'dorcas2008015@gmail.com', lastname = 'OGUNKEYEDE'
+                                WHERE id = '37250' 
+UPDATE mdl_user SET 
+                                email = 'jenniferoke26@gmail.com', lastname = 'OKE'
+                                WHERE id = '37251' 
+UPDATE mdl_user SET 
+                                email = 'yisauibrahimolanrewaju@gmail.com', lastname = 'OLANREWAJU'
+                                WHERE id = '37252' 
+UPDATE mdl_user SET 
+                                email = 'olasunkanmiebunoluwa8@gmail.com', lastname = 'OLASUNKANMI'
+                                WHERE id = '37253' 
+UPDATE mdl_user SET 
+                                email = 'oluborodeelijahtobiloba@gmail.com', lastname = 'OLUBORODE'
+                                WHERE id = '37254' 
+UPDATE mdl_user SET 
+                                email = 'johnolusola399@gmail.com', lastname = 'OLUSOLA'
+                                WHERE id = '37255' 
+UPDATE mdl_user SET 
+                                email = 'tobi.otesanya2017@gmail.com', lastname = 'OTESANYA'
+                                WHERE id = '37256' 
+UPDATE mdl_user SET 
+                                email = 'owoichoanita@gmail.com', lastname = 'OWOICHO'
+                                WHERE id = '37257' 
+UPDATE mdl_user SET 
+                                email = 'e053667.oyeniran@dlc.ui.edu.ng', lastname = 'OYENIRAN'
+                                WHERE id = '37258' 
+UPDATE mdl_user SET 
+                                email = 'gibsonbest9@gmail.com', lastname = 'RAJI'
+                                WHERE id = '37259' 
+UPDATE mdl_user SET 
+                                email = 'rodemadeoyindamola55@gmail.com', lastname = 'RODEMADE'
+                                WHERE id = '37260' 
+UPDATE mdl_user SET 
+                                email = 'myfavoritestasha11@gmail.com', lastname = 'VINCENT'
+                                WHERE id = '37261' 
+UPDATE mdl_user SET 
+                                email = 'odesanmioliwatosinrachael@gmail.com', lastname = 'ADELEGAN'
+                                WHERE id = '37262' 
+UPDATE mdl_user SET 
+                                email = 'praiseakinshiku@gmail.com', lastname = 'AKINSHIKU'
+                                WHERE id = '37263' 
+UPDATE mdl_user SET 
+                                email = 'rofiatfatokun7@gmail.com', lastname = 'FATOKUN'
+                                WHERE id = '37264' 
+UPDATE mdl_user SET 
+                                email = 'salamuthman2307@gmail.com', lastname = 'OLATUNBOSUN'
+                                WHERE id = '37265' 
+UPDATE mdl_user SET 
+                                email = 'olladcash2020@gmail.com', lastname = 'SALAWU'
+                                WHERE id = '37266' 
+UPDATE mdl_user SET 
+                                email = 'abdulwakeelabdullahiishola@gmail.com', lastname = 'ABDULWAKEEL'
+                                WHERE id = '37267' 
+UPDATE mdl_user SET 
+                                email = 'abidoyeomowumi211@gmail.com', lastname = 'ABIDOYE'
+                                WHERE id = '37268' 
+UPDATE mdl_user SET 
+                                email = 'adebanjopromise52@gmail.com', lastname = 'ADEBANJO'
+                                WHERE id = '37269' 
+UPDATE mdl_user SET 
+                                email = 'oluwatosinadebiyi02@gmail.com', lastname = 'ADEBIYI'
+                                WHERE id = '37270' 
+UPDATE mdl_user SET 
+                                email = 'boluwatifekemisola93@gmai.com', lastname = 'ADEJUYIGBE'
+                                WHERE id = '37271' 
+UPDATE mdl_user SET 
+                                email = 'aderojuomodasola99@gmail.com', lastname = 'ADEROJU'
+                                WHERE id = '37272' 
+UPDATE mdl_user SET 
+                                email = 'estheradesunmbo@gmail.com', lastname = 'ADESUNMIBO'
+                                WHERE id = '37273' 
+UPDATE mdl_user SET 
+                                email = 'lizzy4christ19879@gmail.com', lastname = 'ADEWUYI'
+                                WHERE id = '37274' 
+UPDATE mdl_user SET 
+                                email = 'hogoholuwar41@gmail.com', lastname = 'AGI'
+                                WHERE id = '37275' 
+UPDATE mdl_user SET 
+                                email = 'agunucharity1@gmail.com', lastname = 'AGUNU'
+                                WHERE id = '37276' 
+UPDATE mdl_user SET 
+                                email = 'omolaraogunrinde1111@gmail.com', lastname = 'AJANI'
+                                WHERE id = '37277' 
+UPDATE mdl_user SET 
+                                email = 'akanniolabisi42@gmail.com', lastname = 'AKANNI'
+                                WHERE id = '37278' 
+UPDATE mdl_user SET 
+                                email = 'awerelivestock@gmail.com', lastname = 'AWERE'
+                                WHERE id = '37279' 
+UPDATE mdl_user SET 
+                                email = 'e053685.ayuba@dlc.ui.edu.ng', lastname = 'AYUBA'
+                                WHERE id = '37280' 
+UPDATE mdl_user SET 
+                                email = 'e054357.bashar@dlc.ui.edu.ng', lastname = 'BASHAR'
+                                WHERE id = '37281' 
+UPDATE mdl_user SET 
+                                email = 'marveloustabitha60006@gmail.com', lastname = 'BILAU'
+                                WHERE id = '37282' 
+UPDATE mdl_user SET 
+                                email = 'folashadehassan25@gmail.com', lastname = 'DIPO-HASSAN'
+                                WHERE id = '37283' 
+UPDATE mdl_user SET 
+                                email = 'osokununofafrancisfolorunsho@gmail.com', lastname = 'FOLORUNSHO'
+                                WHERE id = '37284' 
+UPDATE mdl_user SET 
+                                email = 'abrahamikyo@gmail.com', lastname = 'IKYO'
+                                WHERE id = '37285' 
+UPDATE mdl_user SET 
+                                email = 'jesuladeglory06@gmail.com', lastname = 'JESULADE'
+                                WHERE id = '37286' 
+UPDATE mdl_user SET 
+                                email = 'kofiololade@gmail.com', lastname = 'KOFI'
+                                WHERE id = '37287' 
+UPDATE mdl_user SET 
+                                email = 'e053666.makanjuola@dlc.ui.edu.ng', lastname = 'MAKANJUOLA'
+                                WHERE id = '37288' 
+UPDATE mdl_user SET 
+                                email = 'hopecent3@gmail.com', lastname = 'OBAJI'
+                                WHERE id = '37290' 
+UPDATE mdl_user SET 
+                                email = 'ewaifedupe@gmail.com', lastname = 'ODUNLAMI'
+                                WHERE id = '37291' 
+UPDATE mdl_user SET 
+                                email = 'funmilayoogunfayo@gmail.com', lastname = 'OGUNFAYO'
+                                WHERE id = '37292' 
+UPDATE mdl_user SET 
+                                email = 'ogunjobismaila95@gmail.com', lastname = 'OGUNJOBI'
+                                WHERE id = '37293' 
+UPDATE mdl_user SET 
+                                email = 'josefolu72@gmail.com', lastname = 'OGUNWUMI'
+                                WHERE id = '37294' 
+UPDATE mdl_user SET 
+                                email = 'mojoyinolaoisamaye@gmail.com', lastname = 'OISAMAYE'
+                                WHERE id = '37295' 
+UPDATE mdl_user SET 
+                                email = 'ojeniyibabatunde6@gmail.com', lastname = 'OJENIYI'
+                                WHERE id = '37296' 
+UPDATE mdl_user SET 
+                                email = 'damilolamakinwa2022@gmail.com', lastname = 'OLABAMIJI'
+                                WHERE id = '37297' 
+UPDATE mdl_user SET 
+                                email = 'adukeade22446688@gmail.com', lastname = 'OLAREWAJU-OLUWASEMIPE'
+                                WHERE id = '37298' 
+UPDATE mdl_user SET 
+                                email = 'mayorfrosh62@gmail.com', lastname = 'OLUGBENGA'
+                                WHERE id = '37299' 
+UPDATE mdl_user SET 
+                                email = 'patrickdivine777@gmail.com', lastname = 'PATRICK'
+                                WHERE id = '37300' 
+UPDATE mdl_user SET 
+                                email = 'ibnsolahudeen@gmail.com', lastname = 'SOLAHUDEEN'
+                                WHERE id = '37301' 
+UPDATE mdl_user SET 
+                                email = 'oshota4real@gmail.com', lastname = 'TAOFEEK'
+                                WHERE id = '37302' 
+UPDATE mdl_user SET 
+                                email = 'abdulazeezokiki70@gmail.com', lastname = 'ABDULAZEEZ'
+                                WHERE id = '37303' 
+UPDATE mdl_user SET 
+                                email = 'seyidaholabisi@gmail.com', lastname = 'ABDULHAMEED'
+                                WHERE id = '37304' 
+UPDATE mdl_user SET 
+                                email = 'abideenumar10@gmail.com', lastname = 'ABIDDEN'
+                                WHERE id = '37306' 
+UPDATE mdl_user SET 
+                                email = 'adedekeadewunmi@gmail.com', lastname = 'ADEDEKE'
+                                WHERE id = '37307' 
+UPDATE mdl_user SET 
+                                email = 'favouradeife888@gmail.com', lastname = 'ADEIFE'
+                                WHERE id = '37308' 
+UPDATE mdl_user SET 
+                                email = 'adejobiadesola99@gmail.com', lastname = 'ADEJOBI'
+                                WHERE id = '37309' 
+UPDATE mdl_user SET 
+                                email = 'fatimohahamod@gmail.com', lastname = 'AHAMOD'
+                                WHERE id = '37310' 
+UPDATE mdl_user SET 
+                                email = 'taiworosemary4@gmail.com', lastname = 'AKANMU'
+                                WHERE id = '37311' 
+UPDATE mdl_user SET 
+                                email = 'alusiangela223@gmail.com', lastname = 'ALUSI'
+                                WHERE id = '37312' 
+UPDATE mdl_user SET 
+                                email = 'ayotundeeunice78@gmail.com', lastname = 'AYOTUNDE'
+                                WHERE id = '37313' 
+UPDATE mdl_user SET 
+                                email = 'bolarinwaabiodunmahruf@gmail.com', lastname = 'BOLARINWA'
+                                WHERE id = '37314' 
+UPDATE mdl_user SET 
+                                email = 'dawoodabdulrahmanayomide@gmail.com', lastname = 'DAWOOD'
+                                WHERE id = '37315' 
+UPDATE mdl_user SET 
+                                email = 'gduru1590@gmail.com', lastname = 'DURUOSIMIRI'
+                                WHERE id = '37316' 
+UPDATE mdl_user SET 
+                                email = 'zannuseun@gmail.com', lastname = 'IPINMOROTI'
+                                WHERE id = '37318' 
+UPDATE mdl_user SET 
+                                email = 'ismaheelramotallahi19@gmail.com', lastname = 'ISMAHEEL'
+                                WHERE id = '37319' 
+UPDATE mdl_user SET 
+                                email = 'isolaopeoluwaabosede93@gmail.com', lastname = 'ISOLA'
+                                WHERE id = '37320' 
+UPDATE mdl_user SET 
+                                email = 'mosunmolawumi1@gmail.com', lastname = 'JAGUNDINA'
+                                WHERE id = '37321' 
+UPDATE mdl_user SET 
+                                email = 'martinkem4god@gmail.com', lastname = 'OGBEINYAMA'
+                                WHERE id = '37322' 
+UPDATE mdl_user SET 
+                                email = 'olalekanogundipe0@gmail.com', lastname = 'OGUNDIPE'
+                                WHERE id = '37323' 
+UPDATE mdl_user SET 
+                                email = 'morayolekan1@gmail.com', lastname = 'OGUNWOLE'
+                                WHERE id = '37324' 
+UPDATE mdl_user SET 
+                                email = 'designateddebby23@gmail.com', lastname = 'OKERINU'
+                                WHERE id = '37325' 
+UPDATE mdl_user SET 
+                                email = 'okojiehappiness2000@gmail.com', lastname = 'OKOJIE'
+                                WHERE id = '37326' 
+UPDATE mdl_user SET 
+                                email = 'olagokeelisha2019@gmail.com', lastname = 'OLAGOKE'
+                                WHERE id = '37328' 
+UPDATE mdl_user SET 
+                                email = 'bolanleolaiya2@gmail.com', lastname = 'OLAIYA'
+                                WHERE id = '37329' 
+UPDATE mdl_user SET 
+                                email = 'olarindeesther2@gmail.com', lastname = 'OLARINDE'
+                                WHERE id = '37330' 
+UPDATE mdl_user SET 
+                                email = 'olatunbosuntosin2017@gmail.com', lastname = 'OLATUBOSUN'
+                                WHERE id = '37331' 
+UPDATE mdl_user SET 
+                                email = 'happyolyco@gmail.com', lastname = 'OLYCO'
+                                WHERE id = '37333' 
+UPDATE mdl_user SET 
+                                email = 'damioshinfowokan@gmail.com', lastname = 'OSHINFOWOKAN'
+                                WHERE id = '37334' 
+UPDATE mdl_user SET 
+                                email = 'oyatokioluwajuwonlo540@gmail.com', lastname = 'OYATOKI'
+                                WHERE id = '37335' 
+UPDATE mdl_user SET 
+                                email = 'marvelousoyebanji257@gmail.com', lastname = 'OYEBANJI'
+                                WHERE id = '37336' 
+UPDATE mdl_user SET 
+                                email = 'popoolayetundeoluwaseun@gmail.com', lastname = 'POPOOLA'
+                                WHERE id = '37337' 
+UPDATE mdl_user SET 
+                                email = 'waliyatidowu4@gmail.com', lastname = 'RASAQ'
+                                WHERE id = '37338' 
+UPDATE mdl_user SET 
+                                email = 'waheedsulaimon96@yahoo.com', lastname = 'WAHEED'
+                                WHERE id = '37339' 
+UPDATE mdl_user SET 
+                                email = 'alaladetemidayo@gmail.com', lastname = 'ALALADE-OLA'
+                                WHERE id = '37340' 
+UPDATE mdl_user SET 
+                                email = 'alamukehinde777@gmail.com', lastname = 'ALAMU'
+                                WHERE id = '37341' 
+UPDATE mdl_user SET 
+                                email = 'princiyi39@gmail.com', lastname = 'AYANYINKA'
+                                WHERE id = '37342' 
+UPDATE mdl_user SET 
+                                email = 'adewalediyaolu@gmail.com', lastname = 'DIYAOLU'
+                                WHERE id = '37343' 
+UPDATE mdl_user SET 
+                                email = 'bibitayoadebayo04@gmail.com', lastname = 'IBITAYO'
+                                WHERE id = '37344' 
+UPDATE mdl_user SET 
+                                email = 'awashimahelen51@gmail.com', lastname = 'MAKIR'
+                                WHERE id = '37345' 
+UPDATE mdl_user SET 
+                                email = 'nofisatmoruff2@gmail.com', lastname = 'MORUFF'
+                                WHERE id = '37346' 
+UPDATE mdl_user SET 
+                                email = 'faithogunoye778@gmail.com', lastname = 'OGUNOYE'
+                                WHERE id = '37347' 
+UPDATE mdl_user SET 
+                                email = 'osemwegie1234@gmail.com', lastname = 'OSEMWEGIE'
+                                WHERE id = '37348' 
+UPDATE mdl_user SET 
+                                email = 'smalloracle12@gmail.com', lastname = 'OSUNNIYI'
+                                WHERE id = '37349' 
+UPDATE mdl_user SET 
+                                email = 'skytee2016@gmail.com', lastname = 'OYEJIDE'
+                                WHERE id = '37350' 
+UPDATE mdl_user SET 
+                                email = 'shalomachodor6@gmail.com', lastname = 'ACHODOR'
+                                WHERE id = '37351' 
+UPDATE mdl_user SET 
+                                email = 'e053739.adeniran@dlc.ui.edu.ng', lastname = 'ADENIRAN'
+                                WHERE id = '37352' 
+UPDATE mdl_user SET 
+                                email = 'kamaldeenadekunle74@gmail.com', lastname = 'ADESINA'
+                                WHERE id = '37353' 
+UPDATE mdl_user SET 
+                                email = 'ainarebecca002@gmail.com', lastname = 'AINA'
+                                WHERE id = '37354' 
+UPDATE mdl_user SET 
+                                email = 'ajibolatomisin8@gmail.com', lastname = 'AJIBOLA'
+                                WHERE id = '37355' 
+UPDATE mdl_user SET 
+                                email = 'e054372.akaa@dlc.ui.edu.ng', lastname = 'AKAA'
+                                WHERE id = '37356' 
+UPDATE mdl_user SET 
+                                email = 'jessicaclementina8@gmail.com', lastname = 'AKAEHOMHEN'
+                                WHERE id = '37357' 
+UPDATE mdl_user SET 
+                                email = 'naomidav26@gmail.com', lastname = 'AKHAGBEMHE'
+                                WHERE id = '37358' 
+UPDATE mdl_user SET 
+                                email = 'orchardofpeace@gmail.com', lastname = 'AMINU'
+                                WHERE id = '37359' 
+UPDATE mdl_user SET 
+                                email = 'stellaanumba9@gmail.com', lastname = 'ANUMBA'
+                                WHERE id = '37360' 
+UPDATE mdl_user SET 
+                                email = 'arikewuyoabdsalam@gmail.com', lastname = 'ARIKEWUYO'
+                                WHERE id = '37361' 
+UPDATE mdl_user SET 
+                                email = 'e054344.aseme@dlc.ui.edu.ng', lastname = 'ASEME'
+                                WHERE id = '37362' 
+UPDATE mdl_user SET 
+                                email = 'oluwatimilehinbabatola@gmail.com', lastname = 'BABATOLA'
+                                WHERE id = '37363' 
+UPDATE mdl_user SET 
+                                email = 'oluwasayo.badero1@gmail.com', lastname = 'BADERO'
+                                WHERE id = '37364' 
+UPDATE mdl_user SET 
+                                email = 'bomolara247@gmail.com', lastname = 'BOLATITO'
+                                WHERE id = '37365' 
+UPDATE mdl_user SET 
+                                email = 'edehcatherine57@gmail.com', lastname = 'EDEH'
+                                WHERE id = '37366' 
+UPDATE mdl_user SET 
+                                email = 'osaroehibor@gmail.com', lastname = 'EHIBOR'
+                                WHERE id = '37367' 
+UPDATE mdl_user SET 
+                                email = 'oluwatayodeborah79@gmail.com', lastname = 'ENITILO'
+                                WHERE id = '37368' 
+UPDATE mdl_user SET 
+                                email = 'irene2envy@yahoo.com', lastname = 'ERHABOR'
+                                WHERE id = '37369' 
+UPDATE mdl_user SET 
+                                email = 'prettybunmi90@yahoo.com', lastname = 'FAGBUYI'
+                                WHERE id = '37370' 
+UPDATE mdl_user SET 
+                                email = 'titilayogodwin4me2@gmail.com', lastname = 'GODWIN'
+                                WHERE id = '37371' 
+UPDATE mdl_user SET 
+                                email = 'rafiat.a.ibrahim@gmail.com', lastname = 'IBRAHIM'
+                                WHERE id = '37372' 
+UPDATE mdl_user SET 
+                                email = 'iwuchukwuoluchi85@gmail.com', lastname = 'IWUCHUKWUOBIORA'
+                                WHERE id = '37373' 
+UPDATE mdl_user SET 
+                                email = 'fadesewajayeoba@gmail.com', lastname = 'JAYEOBA'
+                                WHERE id = '37374' 
+UPDATE mdl_user SET 
+                                email = 'muhammedgbemi1994@gmail.com', lastname = 'MUHAMMED'
+                                WHERE id = '37375' 
+UPDATE mdl_user SET 
+                                email = 'e054331.nzere@dlc.ui.edu.ng', lastname = 'NZERE'
+                                WHERE id = '37376' 
+UPDATE mdl_user SET 
+                                email = 'ketimueroje@gmail.com', lastname = 'OBASUYI'
+                                WHERE id = '37377' 
+UPDATE mdl_user SET 
+                                email = 'oduqueen694@gmail.com', lastname = 'ODU'
+                                WHERE id = '37378' 
+[2024-12-01 10:37:24][INFO] Script execution started
+[2024-12-01 10:37:24][INFO] Successfully connected to database: mc403
+[2024-12-01 10:37:24][INFO] Processing batch 1, offset: 0
+[2024-12-01 10:37:25][INFO] Batch 1 completed. Processed: 500, Matches: 500, Updates: 500, Errors: 0
+[2024-12-01 10:37:25][INFO] Processing batch 2, offset: 500
+[2024-12-01 10:37:25][INFO] Batch 2 completed. Processed: 889, Matches: 889, Updates: 889, Errors: 0
+[2024-12-01 10:37:25][INFO] Processing completed. Final statistics:
+[2024-12-01 10:37:25][INFO] Total batches processed: 2
+[2024-12-01 10:37:25][INFO] Total records processed: 889
+[2024-12-01 10:37:25][INFO] Total matches found: 889
+[2024-12-01 10:37:25][INFO] Successful updates: 889
+[2024-12-01 10:37:25][INFO] Errors encountered: 0
+[2024-12-01 10:37:25][INFO] DB1 connection closed
+[2024-12-01 10:37:25][INFO] Script execution completed
+[2024-12-01 10:37:25][INFO] 
+
+[2024-12-01 10:37:25][INFO] 
+
+[2024-12-01 10:46:12][INFO] Script execution started
+[2024-12-01 10:46:12][INFO] Successfully connected to database: mc403
+[2024-12-01 10:46:12][INFO] Processing batch 1, offset: 0
+[2024-12-01 10:46:13][INFO] Batch 1 completed. Processed: 500, Matches: 500, Updates: 500, Errors: 0
+[2024-12-01 10:46:13][INFO] Processing completed. Final statistics:
+[2024-12-01 10:46:13][INFO] Total batches processed: 1
+[2024-12-01 10:46:13][INFO] Total records processed: 500
+[2024-12-01 10:46:13][INFO] Total matches found: 500
+[2024-12-01 10:46:13][INFO] Successful updates: 500
+[2024-12-01 10:46:13][INFO] Errors encountered: 0
+[2024-12-01 10:46:13][INFO] DB1 connection closed
+[2024-12-01 10:46:13][INFO] Script execution completed
+[2024-12-01 10:46:13][INFO] 
+
+[2024-12-01 10:46:13][INFO] 
+
+[2024-12-01 10:56:20][INFO] Script execution started
+[2024-12-01 10:56:20][INFO] Successfully connected to database: mc403
+[2024-12-01 10:56:20][INFO] Successfully connected to database: lms_remote_mood
+[2024-12-01 10:56:20][INFO] Processing batch 1, offset: 0
+[2024-12-01 10:56:20][INFO] Batch 1 completed. Processed: 500, Matches: 1, Updates: 1, Errors: 0
+[2024-12-01 10:56:20][INFO] Processing batch 2, offset: 500
+[2024-12-01 10:56:20][INFO] Batch 2 completed. Processed: 1000, Matches: 1, Updates: 1, Errors: 0
+[2024-12-01 10:56:20][INFO] Processing batch 3, offset: 1000
+[2024-12-01 10:56:21][INFO] Batch 3 completed. Processed: 1500, Matches: 4, Updates: 4, Errors: 0
+[2024-12-01 10:56:21][INFO] Processing batch 4, offset: 1500
+[2024-12-01 10:56:21][INFO] Batch 4 completed. Processed: 2000, Matches: 4, Updates: 4, Errors: 0
+[2024-12-01 10:56:21][INFO] Processing batch 5, offset: 2000
+[2024-12-01 10:56:21][INFO] Batch 5 completed. Processed: 2500, Matches: 111, Updates: 111, Errors: 0
+[2024-12-01 10:56:21][INFO] Processing batch 6, offset: 2500
+[2024-12-01 10:56:23][INFO] Batch 6 completed. Processed: 3000, Matches: 303, Updates: 303, Errors: 0
+[2024-12-01 10:56:23][INFO] Processing completed. Final statistics:
+[2024-12-01 10:56:23][INFO] Total batches processed: 6
+[2024-12-01 10:56:23][INFO] Total records processed: 3000
+[2024-12-01 10:56:23][INFO] Total matches found: 303
+[2024-12-01 10:56:23][INFO] Successful updates: 303
+[2024-12-01 10:56:23][INFO] Errors encountered: 0
+[2024-12-01 10:56:23][INFO] DB1 connection closed
+[2024-12-01 10:56:23][INFO] DB2 connection closed
+[2024-12-01 10:56:23][INFO] Script execution completed
+[2024-12-01 10:56:23][INFO] 
+
+[2024-12-01 11:04:39][INFO] Script execution started
+[2024-12-01 11:04:39][INFO] Successfully connected to database: mc403
+[2024-12-01 11:04:39][INFO] Successfully connected to database: lms_remote_mood
+[2024-12-01 11:04:39][INFO] Processing batch 1, offset: 0
+[2024-12-01 11:04:39][INFO] Batch 1 completed. Processed: 500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:04:39][INFO] Processing batch 2, offset: 500
+[2024-12-01 11:04:39][INFO] Batch 2 completed. Processed: 1000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:04:39][INFO] Processing batch 3, offset: 1000
+[2024-12-01 11:04:39][INFO] Batch 3 completed. Processed: 1500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:04:39][INFO] Processing batch 4, offset: 1500
+[2024-12-01 11:04:39][INFO] Batch 4 completed. Processed: 2000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:04:39][INFO] Processing batch 5, offset: 2000
+[2024-12-01 11:04:39][INFO] Batch 5 completed. Processed: 2500, Matches: 35, Updates: 35, Errors: 0
+[2024-12-01 11:04:39][INFO] Processing batch 6, offset: 2500
+[2024-12-01 11:04:40][INFO] Batch 6 completed. Processed: 2811, Matches: 49, Updates: 49, Errors: 0
+[2024-12-01 11:04:40][INFO] Processing completed. Final statistics:
+[2024-12-01 11:04:40][INFO] Total batches processed: 6
+[2024-12-01 11:04:40][INFO] Total records processed: 2811
+[2024-12-01 11:04:40][INFO] Total matches found: 49
+[2024-12-01 11:04:40][INFO] Successful updates: 49
+[2024-12-01 11:04:40][INFO] Errors encountered: 0
+[2024-12-01 11:04:40][INFO] DB1 connection closed
+[2024-12-01 11:04:40][INFO] DB2 connection closed
+[2024-12-01 11:04:40][INFO] Script execution completed
+[2024-12-01 11:04:40][INFO] 
+
+[2024-12-01 11:05:15][INFO] Script execution started
+[2024-12-01 11:05:15][INFO] Successfully connected to database: mc403
+[2024-12-01 11:05:15][INFO] Successfully connected to database: lms_remote_mood
+[2024-12-01 11:05:15][INFO] Processing batch 1, offset: 0
+[2024-12-01 11:05:15][INFO] Batch 1 completed. Processed: 500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:15][INFO] Processing batch 2, offset: 500
+[2024-12-01 11:05:15][INFO] Batch 2 completed. Processed: 1000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:15][INFO] Processing batch 3, offset: 1000
+[2024-12-01 11:05:15][INFO] Batch 3 completed. Processed: 1500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:15][INFO] Processing batch 4, offset: 1500
+[2024-12-01 11:05:16][INFO] Batch 4 completed. Processed: 2000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:16][INFO] Processing batch 5, offset: 2000
+[2024-12-01 11:05:16][INFO] Batch 5 completed. Processed: 2500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:16][INFO] Processing batch 6, offset: 2500
+[2024-12-01 11:05:16][INFO] Batch 6 completed. Processed: 2799, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:16][INFO] Processing completed. Final statistics:
+[2024-12-01 11:05:16][INFO] Total batches processed: 6
+[2024-12-01 11:05:16][INFO] Total records processed: 2799
+[2024-12-01 11:05:16][INFO] Total matches found: 0
+[2024-12-01 11:05:16][INFO] Successful updates: 0
+[2024-12-01 11:05:16][INFO] Errors encountered: 0
+[2024-12-01 11:05:16][INFO] DB1 connection closed
+[2024-12-01 11:05:16][INFO] DB2 connection closed
+[2024-12-01 11:05:16][INFO] Script execution completed
+[2024-12-01 11:05:16][INFO] 
+
+[2024-12-01 11:05:56][INFO] Script execution started
+[2024-12-01 11:05:56][INFO] Successfully connected to database: mc403
+[2024-12-01 11:05:56][INFO] Successfully connected to database: lms_remote_mood
+[2024-12-01 11:05:56][INFO] Processing batch 1, offset: 0
+[2024-12-01 11:05:56][INFO] Batch 1 completed. Processed: 500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:56][INFO] Processing batch 2, offset: 500
+[2024-12-01 11:05:56][INFO] Batch 2 completed. Processed: 1000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:56][INFO] Processing batch 3, offset: 1000
+[2024-12-01 11:05:56][INFO] Batch 3 completed. Processed: 1500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:56][INFO] Processing batch 4, offset: 1500
+[2024-12-01 11:05:56][INFO] Batch 4 completed. Processed: 2000, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:56][INFO] Processing batch 5, offset: 2000
+[2024-12-01 11:05:56][INFO] Batch 5 completed. Processed: 2500, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:56][INFO] Processing batch 6, offset: 2500
+[2024-12-01 11:05:57][INFO] Batch 6 completed. Processed: 2799, Matches: 0, Updates: 0, Errors: 0
+[2024-12-01 11:05:57][INFO] Processing completed. Final statistics:
+[2024-12-01 11:05:57][INFO] Total batches processed: 6
+[2024-12-01 11:05:57][INFO] Total records processed: 2799
+[2024-12-01 11:05:57][INFO] Total matches found: 0
+[2024-12-01 11:05:57][INFO] Successful updates: 0
+[2024-12-01 11:05:57][INFO] Errors encountered: 0
+[2024-12-01 11:05:57][INFO] DB1 connection closed
+[2024-12-01 11:05:57][INFO] DB2 connection closed
+[2024-12-01 11:05:57][INFO] Script execution completed
+[2024-12-01 11:05:57][INFO] 
+

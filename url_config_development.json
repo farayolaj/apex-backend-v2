@@ -1,0 +1,6 @@
+{
+	"localhost": "http://localhost:8081",
+	"dlcportal.ui.edu.ng": "https://",
+	"staging": "https://edutech-student-portal.herokuapp.com",
+	"production": "https://"
+}

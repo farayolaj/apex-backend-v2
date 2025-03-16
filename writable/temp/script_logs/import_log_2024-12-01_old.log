@@ -1,0 +1,85 @@
+[2024-12-01 00:46:11][INFO] Script execution started
+[2024-12-01 00:46:11][INFO] Successfully connected to database: mc403
+[2024-12-01 00:46:11][INFO] Successfully connected to database: lms_remote_mood
+[2024-12-01 00:46:11][INFO] Processing batch 1, offset: 0
+[2024-12-01 00:46:11][INFO_DEBUG] UPDATE mdl_user SET 
+                                email = e048237.muhammed@dlc.ui.edu.ng
+                                WHERE email = 'oyindaakeem01@gmail.com'
+UPDATE mdl_user SET 
+                                email = e048282.anwo@dlc.ui.edu.ng
+                                WHERE email = 'emmaanwo@yahoo.com'
+UPDATE mdl_user SET 
+                                email = e048573.daniel@dlc.ui.edu.ng
+                                WHERE email = 'eslidaniel16@gmail.com'
+UPDATE mdl_user SET 
+                                email = e048648.ganiyu@dlc.ui.edu.ng
+                                WHERE email = 'ganiyusodiqeniola@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049480.folorunsho@dlc.ui.edu.ng
+                                WHERE email = 'opdara@yahoo.co.uk'
+UPDATE mdl_user SET 
+                                email = e049720.onalaja-adenaike@dlc.ui.edu.ng
+                                WHERE email = 'ramoeleyun40@gmail.com'
+UPDATE mdl_user SET 
+                                email = e051473.adeiza@dlc.ui.edu.ng
+                                WHERE email = 'adepetfoods@gmail.com'
+UPDATE mdl_user SET 
+                                email = e052202.ishola@dlc.ui.edu.ng
+                                WHERE email = 'isholaridwanadisa@gmail.com'
+UPDATE mdl_user SET 
+                                email = e052270.awotikun@dlc.ui.edu.ng
+                                WHERE email = 'azeemoladimeji@gmail.com'
+UPDATE mdl_user SET 
+                                email = e052106.iwatan@dlc.ui.edu.ng
+                                WHERE email = 'iwatankafayat@gmail.com'
+UPDATE mdl_user SET 
+                                email = e048631.olanrewaju@dlc.ui.edu.ng
+                                WHERE email = 'olanrewajudestiny3@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049779.gbeke@dlc.ui.edu.ng
+                                WHERE email = 'destinygbeke6@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049866.babatunde@dlc.ui.edu.ng
+                                WHERE email = 'babatundezaccheaus87@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049975.oteniya@dlc.ui.edu.ng
+                                WHERE email = 'oteniyacaroline@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049143.balogun@dlc.ui.edu.ng
+                                WHERE email = 'isholaism@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049498.aigbodion@dlc.ui.edu.ng
+                                WHERE email = 'ykdee2006@yahoo.com'
+UPDATE mdl_user SET 
+                                email = e049796.adekoya@dlc.ui.edu.ng
+                                WHERE email = 'emmanuelaadekemi@gmail.com'
+UPDATE mdl_user SET 
+                                email = e048395.akanji@dlc.ui.edu.ng
+                                WHERE email = 'akanjigbolahan3@gmail.com'
+UPDATE mdl_user SET 
+                                email = e050199.indyor@dlc.ui.edu.ng
+                                WHERE email = 'mosesindyor1999@gmail.com'
+UPDATE mdl_user SET 
+                                email = e048609.adepoju@dlc.ui.edu.ng
+                                WHERE email = 'romokeadepoju2905@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049556.kamoru@dlc.ui.edu.ng
+                                WHERE email = 'kkayode43@gmail.com'
+UPDATE mdl_user SET 
+                                email = e048540.adedeji@dlc.ui.edu.ng
+                                WHERE email = 'adedejisaheed101@gmail.com'
+UPDATE mdl_user SET 
+                                email = e048644.olugidi@dlc.ui.edu.ng
+                                WHERE email = 'olugidi2022@gmail.com'
+UPDATE mdl_user SET 
+                                email = myeducationpursuit@gmail.com
+                                WHERE email = 'myeducationpursuit@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049561.babatunde@dlc.ui.edu.ng
+                                WHERE email = 'kennycruiz2015@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049725.afolayan@dlc.ui.edu.ng
+                                WHERE email = 'elcyafolayan@gmail.com'
+UPDATE mdl_user SET 
+                                email = e049787.ojo@dlc.ui.edu.ng
+                                WHERE email = 'olalekanayomide4eva@gmail.com'

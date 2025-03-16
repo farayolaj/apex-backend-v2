@@ -1,0 +1,6 @@
+{
+	"localhost" : "https://d93a-105-113-126-50.ngrok-free.app",
+	"dlcportal.ui.edu.ng" : "https://",
+	"staging" : "https://edutech-student-portal.herokuapp.com",
+	"production" : "https://"
+}
