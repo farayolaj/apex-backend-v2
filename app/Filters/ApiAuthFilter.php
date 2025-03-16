@@ -2,11 +2,16 @@
 
 namespace App\Filters;
 
+use App\Enums\AuthEnum;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\I18n\Time;
 use Exception;
+use App\Entities\Users_new;
+use App\Entities\Students;
+use App\Entities\Applicants;
+use App\Models\WebSessionManager;
 
 class ApiAuthFilter implements FilterInterface
 {
@@ -30,7 +35,7 @@ class ApiAuthFilter implements FilterInterface
             return $response->setStatusCode(405)->setJSON(['status' => false, 'message' => 'Authorization denied']);
         }
 
-        if (!$this->canProceed($request, $request->getUri()->getSegments(), $message)) {
+        if (!$this->canProceed($request, $request->getUri()->getSegments(), $type, $message)) {
             $message = $message ?? 'Authorization denied';
             return $response->setStatusCode(401)->setJSON(['status' => false, 'message' => $message]);
         }
@@ -60,10 +65,15 @@ class ApiAuthFilter implements FilterInterface
         $apiKey = null;
         if ($type === 'admin') {
             $apiKey = getenv('xAppAdminKey');
-        } else {
-            $apiKey = getenv('xAppCandidateKey');
+        }else if ($type === 'student') {
+            $apiKey = getenv('xAppStudentKey');
+        }else if ($type === 'web-finance') {
+            $apiKey = getenv('xAppFinanceKey');
+        }else if ($type === 'apex') {
+            $apiKey = getenv('xAppApexKey');
         }
-        return (array_key_exists('HTTP_X_APP_KEY', $_SERVER) && $request->getServer('HTTP_X_APP_KEY') == $apiKey);
+        return (array_key_exists('HTTP_X_APP_KEY', $_SERVER) && $request->getServer('HTTP_X_APP_KEY') == $apiKey ||
+            array_key_exists('HTTP_ACESS_TOKEN', $_SERVER) && $request->getServer('HTTP_ACESS_TOKEN') == $apiKey);
     }
 
     /**
@@ -72,13 +82,13 @@ class ApiAuthFilter implements FilterInterface
      * @param array $args [description]
      * @return bool [type]          [description]
      */
-    private function canProceed(object $request, array $args, &$message=null): bool
+    private function canProceed(object $request, array $args, string $type, &$message=null): bool
     {
         if ($this->isExempted($request, $args)) {
             return true;
         }
 
-        return $this->validateAPIRequest($message);
+        return $this->validateAPIRequest($type, $message);
     }
 
     /**
@@ -90,7 +100,14 @@ class ApiAuthFilter implements FilterInterface
     private function isExempted(object $request, array $arguments): bool
     {
         $exemptionList = [
+            'POST::register',
+            'POST::request_change',
+            'POST::change_pass',
+            'POST::reset_password',
+            'GET::baseUrl',
+            'POST::applicant_fee_details',
             'POST::authenticate',
+            'POST::validate_student',
         ];
         $argument = $arguments[1];
         $argPath = strtoupper($request->getMethod()) . '::' . $argument;
@@ -98,26 +115,66 @@ class ApiAuthFilter implements FilterInterface
         return in_array($argPath, $exemptionList);
     }
 
-    private function validateAPIRequest(&$message = ''): bool
+    private function validateAPIRequest(string $userType = 'student', &$message = ''): bool
     {
         try {
             $token = getBearerToken();
             $token = decodeJwtToken($token);
-            $decodedToken = $token->data;
-            $id = $decodedToken->user_table_id; // the real users_id and any other users
-            $userType = $decodedToken->user_type;
-            $userType = loadClass($userType);
-            $tempUser = new $userType(array('id' => $id));
+            $token_array = (array) $token;
+            $user_id = isset($token_array['data']) ? $token_array['data']->id : $token_array['sub'];
+            $user_type = isset($token_array['data']) ? $token_array['data']->type : ($token_array['acc_type'] ?? null);
 
-            if (!$tempUser->load()) {
+            // coming from the auth server
+            if(isset($token_array['acc_type'])){
+                $userNew = new Users_new;
+                $userNew->id = $token_array['acc_type'];
+                if(!$userNew->load()){
+                    return false;
+                }
+                $token_array['data'] = $userNew->toArray();
+            }
+
+            $currentUser = false;
+            if ($user_type === AuthEnum::STUDENT->value) {
+                $students = new Students;
+                $tempUser = $students->getWhere(['id' => $user_id], $c, 0, null, false);
+                $tempUser[0]->password = null;
+                $tempUser[0]->user_pass = null;
+                $currentUser = $tempUser[0];
+            }
+
+            if ($user_type === AuthEnum::APPLICANT->value) {
+                $applicants = new Applicants;
+                $tempUser = $applicants->getWhere(['id' => $user_id], $c, 0, null, false);
+                $currentUser = $tempUser[0];
+            }
+
+            if ($user_type === AuthEnum::ADMIN->value) {
+                $value = (array) $token_array['data'];
+                $currentUser = new Users_new($value);
+            }
+
+            if ($user_type === AuthEnum::FINANCE_OUTFLOW->value) {
+                $value = (array) $token_array['data'];
+                $currentUser = new Users_new($value);
+            }
+
+            if ($user_type === AuthEnum::CONTRACTOR->value) {
+                $value = (array) $token_array['data'];
+                $currentUser = new Users_new($value);
+            }
+            // this auth type here is for apex mobile
+            if ($user_type === AuthEnum::APEX->value) {
+                $value = (array) $token_array['data'];
+                $currentUser = new Users_new($value);
+            }
+
+            if (!$currentUser) {
                 return false;
             }
-            $newUser = $tempUser;
-            if (isset($decodedToken->user_type)) {
-                $newUser->user_type = $decodedToken->user_type;
-                $newUser->user_id = $decodedToken->id;
-            }
-            $_SERVER['CURRENT_USER'] = $newUser;
+
+            // load current user and user type in the server global variable
+            WebSessionManager::rememberUser($currentUser, $user_type);
             return true;
 
         } catch (Exception $e) {

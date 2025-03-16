@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Crud;
 use CodeIgniter\Model;
+use Exception;
 
 class WebSessionManager
 {
@@ -16,10 +17,28 @@ class WebSessionManager
     }
 
     /**
+     * @throws Exception
+     */
+    public static function rememberUser(Crud $user, $user_type): void
+    {
+        $allowed = ['student', 'applicant', 'admin', 'contractor', 'apex', 'web-finance'];
+        if (!in_array($user_type, $allowed)) {
+            throw new Exception("$user_type is not accepted");
+        }
+        $_SERVER['CURRENT_USER'] = $user;
+        $_SERVER['USER_TYPE'] = $user_type;
+    }
+
+    public static function currentAPIUser()
+    {
+        return $_SERVER['CURRENT_USER'] ?? null;
+    }
+
+    /**
      * This function save the current user into the session
      * @param Crud $user [The user object needed to be saved in the session]
      * @param bool $return
-     * @return array|false               void
+     * @return array|void|null
      */
     public function saveCurrentUser(Crud $user, bool $return = false)
     {
