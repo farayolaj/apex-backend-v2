@@ -3,8 +3,8 @@
 return
 	[
 		'paths' => [
-			'migrations' => '%%PHINX_CONFIG_DIR%%/application/db/migrations',
-			'seeds' => '%%PHINX_CONFIG_DIR%%/application/db/seeds',
+			'migrations' => '%%PHINX_CONFIG_DIR%%/app/db/migrations',
+			'seeds' => '%%PHINX_CONFIG_DIR%%/app/db/seeds',
 		],
 		'environments' => [
 			'default_migration_table' => 'phinxlog',
@@ -22,10 +22,10 @@ return
 			'development' => [
 				'migration_table' => 'phinxlog',
 				'adapter' => 'mysql',
-				'host' => 'localhost',
-				'name' => 'edutech_live',
-				'user' => 'root',
-				'pass' => 'Since_feb_2015',
+                'host' => "127.0.0.1",
+                'name' => "edutech_live",
+                'user' => "root",
+                'pass' => "Since_feb_2015",
 				'port' => '3306',
 				'charset' => 'utf8',
 			],

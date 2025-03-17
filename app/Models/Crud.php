@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Entities;
 use App\Traits\CrudInfo;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\BaseResult;
@@ -20,7 +19,6 @@ class Crud {
     protected array $array = []; // array containing the field and value of object
 
     protected string $foreignKeyEnd = '_id';
-
 
 	protected BaseConnection $db;
 

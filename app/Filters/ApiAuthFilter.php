@@ -195,7 +195,7 @@ class ApiAuthFilter implements FilterInterface
         $uri = $uri->getPath();
         $db = db_connect();
         $builder = $db->table('audit_logs');
-        $customer = currentAPIUser();
+        $customer = WebSessionManager::currentAPIUser();
         $customer = $customer ? $customer->user_id : '';
         $time = Time::createFromTimestamp($request->getServer('REQUEST_TIME'));
         $time = $time->format('Y-m-d H:i:s');

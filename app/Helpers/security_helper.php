@@ -14,9 +14,10 @@ if(!function_exists('isTimeExpired')){
  * Encode the token to JWT
  */
 if(!function_exists('generateJwtToken')){
-    function generateJwtToken($payload, $expiration=null): string
+    function generateJwtToken($payload): string
     {
         $key = getenv('jwtKey');
+        $expiration = time() + (60 * getenv('tokenExpiration'));
         // Make an array for the JWT Payload
         $payload = array(
             "iss" => base_url(),

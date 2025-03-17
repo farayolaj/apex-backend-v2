@@ -1,14 +1,5 @@
 <?php
 
-//function for sending post http request using curl
-function currentAPIUser()
-{
-    if (isset($_SERVER['CURRENT_USER']) && $_SERVER['CURRENT_USER']) {
-        return $_SERVER['CURRENT_USER'];
-    }
-    return null;
-}
-
 function curlRequest(string $url, string $type, array $headers, string $param = null, $return = false, &$output = null, &$errorMessage = '')
 {
     $res = curl_init($url);

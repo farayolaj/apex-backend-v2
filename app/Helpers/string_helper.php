@@ -1,5 +1,64 @@
 <?php
 
+if (!function_exists('userImagePath')) {
+    function userImagePath(string $passport, string $path = null): string
+    {
+        if ($passport) {
+            $config = config('ImagePath');
+            $configPath = $config->userPassportPath;
+
+            if($path === 'retire_advance_path'){
+                $configPath = $config->retireAdvancePath;
+            }else if($path === 'cac_certificate_path'){
+                $configPath = $config->cacCertificatePath;
+            }else if($path === 'payment_voucher_path'){
+                $configPath = $config->paymentVoucherPath;
+            }
+            return base_url($configPath . $passport);
+        }
+        return $passport;
+    }
+}
+
+if (!function_exists('studentImagePath')) {
+    function studentImagePath($passport, $object = null): string
+    {
+        $config = config('ImagePath');
+        if (strpos($passport, 'passport') !== false) {
+            return "https://apex.ui.edu.ng/" . $config->studentPassportPath . $passport;
+        }
+
+        if (strpos($passport, 'assets') !== false) {
+            return "https://dlcoffice.ui.edu.ng/{$passport}";
+        }
+
+        if (strpos($passport, 'passport') === false) {
+            return "https://apex.ui.edu.ng/" . $config->studentPassportPath . $passport;
+        } else {
+            return "https://dlcoffice.ui.edu.ng/assets/images/student/passports/{$passport}";
+        }
+    }
+}
+
+if(!function_exists('logAction')){
+    function logAction($db, $action, $user = null, $student = null, $oldData = null, $newData = null)
+    {
+        $data = array(
+            'username' => $user ?? null,
+            'action_performed' => $action,
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+            'user_ip' => $_SERVER['REMOTE_ADDR'],
+            'user_long' => '',
+            'user_lat' => '',
+            'date_performed' => date('Y-m-d H:i:s'),
+            'student_id' => $student,
+            'old_data' => $oldData,
+            'new_data' => $newData,
+        );
+        return create_record($db, 'users_log', $data);
+    }
+}
+
 if (!function_exists('currentSession')) {
     function currentSession()
     {
@@ -33,7 +92,7 @@ if (!function_exists('create_record')) {
         if ($db->table($table_name)->insert($data)) {
             return $db->insertID();
         } else {
-            return false;
+            return null;
         }
     }
 }
@@ -126,9 +185,9 @@ if (!function_exists('get_setting')) {
     function get_setting(string $settings_name)
     {
         $db = db_connect();
-        $query = $db->table('settings')->getWhere(array('setting_name' => $settings_name));
+        $query = $db->table('settings')->getWhere(array('settings_name' => $settings_name));
         $query = $query->getRow();
-        return $query->setting_value;
+        return $query->settings_value;
     }
 }
 
@@ -174,11 +233,17 @@ if (!function_exists('getLastTableData')) {
 if (!function_exists('sendApiResponse')) {
     function sendApiResponse(bool $status, string $message, $payload = null)
     {
-        return displayJson($status, $message, $payload);
+        $param = [
+            'status' => $status,
+            'message' => $message,
+            'payload' => $payload
+        ];
+        echo json_encode($param);
+        return true;
     }
 }
 
-if (!function_exists('ddd')) {
+if (!function_exists('dddump')) {
     function dddump($data)
     {
         print_r($data);

@@ -1,6 +1,8 @@
 <?php
 
-require_once('application/models/Crud.php');
+namespace App\Entities;
+
+use App\Models\Crud;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -387,7 +389,7 @@ class Staffs extends Crud
 
 	public function getStaffDepartment($user_department)
 	{
-		return $this->db->get_where('department', ['id' => $user_department])->row();
+		return $this->db->table('department')->getWhere(['id' => $user_department])->getRow();
 	}
 
 

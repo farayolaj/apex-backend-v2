@@ -1,5 +1,7 @@
 <?php
-require_once('application/models/Crud.php');
+
+namespace App\Entities;
+use App\Models\Crud;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the roles_permission table.
@@ -79,10 +81,10 @@ class Roles_permission extends Crud
 			$query = "SELECT * from roles_permission where permission not like 'apex_mobile_%' or permission like 'apex_mobile_%'";
 		}
 		$query = $this->db->query($query);
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return [];
 		}
-		$temp = $query->result_array();
+		$temp = $query->getResultArray();
 		$result = [];
 		foreach ($temp as $res) {
 			$roles = json_decode($res['role_id'], true);
@@ -110,16 +112,15 @@ class Roles_permission extends Crud
 	/**
 	 * Check if users has a role permission assigned to them *
 	 * @param  [type] $userID [description]
-	 * @return false [type]         [description]
 	 */
 	private function getUserRoleId($userID)
 	{
-		$query = $this->db->get_where('roles_user', array('user_id' => $userID));
-		if ($query->num_rows() > 0) {
-			$user = $query->row();
+		$query = $this->db->table('roles_user')->getWhere(array('user_id' => $userID));
+		if ($query->getNumRows() > 0) {
+			$user = $query->getRow();
 			return $user->role_id;
 		}
-		return false;
+		return null;
 	}
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool

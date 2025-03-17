@@ -2,11 +2,14 @@
 
 namespace App\Controllers;
 
+use App\Entities\Staffs;
+use App\Entities\Students;
 use App\Enums\AuthEnum;
-use App\Models\Mailer1;
+use App\Models\Mailer;
 use App\Models\WebSessionManager;
 use CodeIgniter\HTTP\RedirectResponse;
 use Exception;
+use App\Enums\AuthEnum as AuthType;
 
 /**
  * This is the authentication class handler for the web
@@ -19,310 +22,224 @@ class Auth extends BaseController
     public function __construct()
     {
         $this->webSessionManager = new WebSessionManager;
-        $this->mailer = new Mailer1;
+        $this->mailer = new Mailer;
     }
 
     /**
-     * @param string $userType
-     * @return bool
+     * @throws Exception
      */
-    private function allowOnlyMainEntity(string $userType): bool
+    private function getUser(string $table, string $ruser = 'user_login', string $rpass = 'user_pass',
+                             string $usernameField = 'user_login', string $passwordField = 'user_pass', $hasActive = 1)
     {
-        $result = ['nlrc'];
-        if (in_array($userType, $result)) {
-            return false;
+        $username = $this->request->getPost($usernameField);
+        $password = $this->request->getPost($passwordField);
+        if (!($username || $password)) {
+            return sendApiResponse(false, 'Invalid entry data');
         }
-        return true;
+
+        $tableObj = loadClass($table);
+        $param = [
+            $ruser => $username,
+        ];
+
+        if ($hasActive) {
+            $param['active'] = 1;
+        }
+
+        if ($table == 'students') {
+            $query = "SELECT students.* from students where user_login=? and students.active = '1' or 
+                exists (select * from academic_record where student_id=students.id and 
+                (matric_number=? or application_number = ?))";
+
+            $result = $this->db->query($query, [$username, $username, $username]);
+            if ($result->getNumRows() > 0) {
+                $user = $result->getResultArray();
+                $user = [new Students($user[0])];
+            }
+        } else {
+            // tableObj here would be Users_new class
+            $user = $tableObj->getWhere($param, $c, 0, null, false);
+        }
+
+        if (!$user) {
+            return sendApiResponse(false, 'Invalid username or password');
+        }
+
+        $user = $user[0];
+        if ($table === 'users_new') {
+            $user->last_logged_in = date('Y-m-d H:i:s');
+            $user->update();
+            logAction($this->db, 'auth_user_login', $user->user_login);
+        }
+
+        if (!decode_password($password, $user->$rpass)) {
+            return sendApiResponse(false, 'Invalid username or password');
+        }
+        return $user;
     }
 
     /**
-     * This is to return the user based dashboard
      *
-     * @param string $userType
-     * @return string
-     */
-    private function getUserPage(string $userType): string
-    {
-        $link = array(
-            'admin' => 'vc/admin/dashboard',
-        );
-        return $link[$userType];
-    }
-
-    /**
-     * @return string|array|false|null
+     * THIS METHOD HANDLES APEX AUTH LOGIN
      * @throws Exception
      */
     public function web()
     {
-        $validation = \Config\Services::validation();
-        $validation->setRules([
-            'email' => 'required',
-            'password' => 'required',
-            'isajax' => 'required',
-        ]);
-
-        $validateData = $this->request->getPost();
-        $isAjax = isset($_POST['isajax']) && $_POST['isajax'] == "true";
-        if (!$validation->run($validateData)) {
-            $errors = $validation->getErrors();
-            foreach ($errors as $error) {
-                if ($isAjax) {
-                    return buildResponse(false, $error);
-                } else {
-                    $this->webSessionManager->setFlashMessage('error', $error);
-                    redirect(base_url('auth/login'));
-                }
-            }
-        }
-        $validData = $validation->getValidated();
-        $username = $validData['email'];
-        $password = $validData['password'];
-        $remember = null;
-
-        $user = loadClass('user');
-        if (!$user->findBoth2($username)) {
-            if ($isAjax) {
-                return buildResponse(false, 'Invalid email or password');
-            } else {
-                $this->webSessionManager->setFlashMessage('error', 'invalid email or password');
-                redirect(base_url('auth/login'));
-            }
-        }
-        $user = $user->data();
-        if ($user->status == '0') {
-            return buildResponse(false, 'Your account is not activated');
-        }
-        $checkPass = decode_password(trim($password), $user->password);
-        if (!$checkPass) {
-            if ($isAjax) {
-                return buildResponse(false, 'Invalid email or password');
-            } else {
-                $this->webSessionManager->setFlashMessage('error', 'invalid email or password');
-                redirect(base_url('auth/login'));
-            }
-        }
-        if ($user->user_type != 'admin' && $user->user_type != 'superagent' && $user->user_type != 'nlrc' && $user->user_type != 'influencer' && $user->user_type != 'promoter') {
-            return buildResponse(false, 'Oops, invalid username or password');
-        }
-        $baseurl = base_url();
-        if ($this->allowOnlyMainEntity($user->user_type)) {
-            $this->webSessionManager->saveCurrentUser($user);
-        } else {
-            $this->webSessionManager->saveOnlyCurrentUser($user);
-        }
-        $baseurl .= $this->getUserPage($user->user_type);
-        $user->last_login = formatToUTC();
-        $user->update();
-
-        if ($isAjax) {
-            return buildResponse(true, $baseurl);
-        } else {
-            redirect($baseurl);
-            exit;
-        }
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function login()
-    {
-        $validation = service('validation');
-        $validation->setRules([
-            'username' => [
-                'label' => 'username',
-                'rules' => 'required',
-            ],
-            'password' => [
-                'label' => 'password',
-                'rules' => 'required',
-            ],
-        ]);
-
-        $validateData = $this->request->getPost();
-        if (!$validation->run($validateData)) {
-            $errors = $validation->getErrors();
-            foreach ($errors as $error) {
-                return sendApiResponse(false, $error);
-            }
-        }
-
-        $validData = $validation->getValidated();
-        $username = $validData['username'];
-        $password = $validData['password'];
-
-        $user = loadClass('users');
-        if (!$user->findUser($username, 'admin')) {
-            return sendApiResponse(false, 'Invalid username or password');
-        }
-        $user = $user->data();
-        if ($user->status == '0') {
-            return sendApiResponse(false, 'Your account is not activated');
-        }
-        if (!decode_password($password, $user->password)) {
-            return sendApiResponse(false, 'Invalid username or password');
-        }
-        $payload = $this->userPayloadData($user, $message);
-        if (!$payload) {
-            return sendApiResponse(false, $message);
-        }
-        return sendApiResponse(true, "You're successfully authenticated", $payload);
-    }
-
-    /**
-     * This return the user payload data
-     * @param object $user [description]
-     * @param null $message
-     * @return array|false [type]       [description]
-     * @throws Exception
-     */
-    private function userPayloadData(object $user , &$message=null): bool|array
-    {
-        $tokens = $this->db->table('user_tokens')->getWhere(['user_id' => $user->id]);
-        $expiration = time() + (60 * getenv('tokenExpiration'));
-
-        if($tokens->getNumRows() > 0){
-            $tokens = $tokens->getLastRow();
-            if(!isTimeExpired($tokens->expiration)){
-                if($tokens->status == '1'){
-                    return [
-                        'token' => $tokens->token,
-                        'details' => json_decode($tokens->payload, true)
-                    ];
-                }
-            }
-            $this->db->table('user_tokens')->update(['status'=>0], ['user_id'=>$user->id]);
-        }
-        $userType = $this->webSessionManager->saveCurrentUser($user,true);
-        if(!$userType){
-            $message = "Oops, it appears your account is deactivated at the moment.";
+        $user = $this->getUser('users_new', 'user_login', 'password', 'username', 'password');
+        if (!$user) {
             return false;
         }
-        unset($userType['password']);
-        $payload = $userType;
-        $payload['type'] = AuthEnum::ADMIN;
+        $payload = $user->toArray() ?? null;
+        $userID = $user->id;
+        $payload['id'] = $userID;
+        unset($payload['user_pass'], $payload['password']);
+
+        $payload['type'] = AuthType::ADMIN->value;
         $payload['origin'] = base_url();
-
-        $builder = $this->db->table('users');
-        $builder->update(['last_login'=>formatToUTC()], ['id'=>$payload['id']]);
-        $token = generateJwtToken($payload, $expiration);
-        unset($payload['user_table_id']);
-
-        $this->db->table('user_tokens')->insert([
-            'user_id' => $payload['id'],
-            'token' => $token,
-            'payload' => json_encode($payload),
-            'status' => 1,
-            'expiration' => $expiration
-        ]);
-        return [
-            'token' => $token,
-            'details' => $payload
+        $arr = [
+            'token' => generateJwtToken($payload),
+            'profile' => $payload,
         ];
+        return sendApiResponse(true, "You've successfully logged in", $arr);
     }
 
     /**
-     * @throws Exception
+     * This is to validate the student user login first, after wards password
+     * @return true
      */
-    public function voterLogin()
+    public function validate_student()
     {
-        if ( $this->request->getPost('username') != 'demo' && get_setting('disable_login') == 0) {
-            return sendAPiResponse(false, "The system is currently not available, please try again later.");
+        $userLogin = $this->request->getPost('user_login');
+        $query = "SELECT students.* from students where user_login=? and students.active = '1' or exists 
+		    (select * from academic_record where student_id=students.id and (matric_number=? or application_number = ?))";
+        $result = $this->db->query($query, [$userLogin, $userLogin, $userLogin]);
+        if ($result->getNumRows() <= 0) {
+            return sendApiResponse(false, 'No matching record found. Contact school administrator');
         }
-
-        $validation = service('validation');
-        $validation->setRules([
-            'username' => [
-                'label' => 'username',
-                'rules' => 'required',
-            ],
-            'password' => [
-                'label' => 'password',
-                'rules' => 'required',
-            ],
-        ]);
-
-        $validateData = $this->request->getPost();
-        if (!$validation->run($validateData)) {
-            $errors = $validation->getErrors();
-            foreach ($errors as $error) {
-                return sendApiResponse(false, $error);
-            }
-        }
-
-        $validData = $validation->getValidated();
-        $username = $validData['username'];
-        $password = $validData['password'];
-
-        $user = loadClass('users');
-        if (!$user->findUser($username, 'voters')) {
-            return sendApiResponse(false, 'Invalid username or password');
-        }
-        $user = $user->data();
-        if ($user->status == '0') {
-            return sendApiResponse(false, 'Your account is not activated');
-        }
-        if (!decode_password($password, $user->password)) {
-            return sendApiResponse(false, 'Invalid username or password');
-        }
-        $payload = $this->voterPayloadData($user, $message);
-        if (!$payload) {
-            return sendApiResponse(false, $message);
-        }
-        return sendApiResponse(true, "You're successfully authenticated", $payload);
+        return sendApiResponse(true, 'Validate success');
     }
 
     /**
+     * This is the student validation auth code
+     * @return true
      * @throws Exception
      */
-    private function voterPayloadData(object $user , &$message=null): bool|array
+    public function student()
     {
-        $tokens = $this->db->table('user_tokens')->getWhere(['user_id' => $user->id]);
-        if($tokens->getNumRows() > 0){
-            $tokens = $tokens->getLastRow();
-            if($tokens->status == '1'){
-                return [
-                    'token' => $tokens->token,
-                    'details' => json_decode($tokens->payload, true)
-                ];
-            }
-            $message = "It appears your account had already voted";
-            return false;
+        $student = $this->getUser('students', $ruser = 'user_login', $rpass = 'password');
+        if (!$student) {
+            return sendApiResponse(false, 'Invalid username or password');
         }
-        $userType = $this->webSessionManager->saveCurrentUser($user,true);
-        if(!$userType){
-            $message = "Oops, it appears your account is deactivated at the moment.";
-            return false;
-        }
-        unset($userType['password']);
-        $payload = $userType;
-        $payload['type'] = AuthEnum::VOTER;
-        $payload['origin'] = base_url();
-
-        $builder = $this->db->table('users');
-        $builder->update(['last_login'=>formatToUTC()], ['id'=>$payload['id']]);
+        $payload = [
+            'id' => $student->id,
+            'type' => AuthType::STUDENT->value,
+            'firstname' => $student->firstname,
+            'lastname' => $student->lastname,
+            'othernames' => $student->lastname,
+            'origin' => base_url()
+        ];
         $token = generateJwtToken($payload);
-        unset($payload['user_table_id']);
+        $academicRecord = $student->academic_record;
+        $student->updatePassportPath();
+        $student->orientation_attendance_date = $student->getFacultyAttendance($student, $academicRecord->programme_id);
+        $student = $student->toArray() ?? null;
+        unset($student['password'], $student['id'], $student['user_pass'], $student['session_key']);
 
-        $this->db->table('user_tokens')->insert([
-            'user_id' => $payload['id'],
+        $payload = [
             'token' => $token,
-            'payload' => json_encode($payload),
-            'status' => 1,
-        ]);
-        return [
-            'token' => $token,
-            'details' => $payload
+            'profile' => $student
         ];
+        return sendApiResponse(true, 'success', $payload);
+    }
+
+    private function getUserDetails(object $user)
+    {
+        $content = [
+            'staff' => 'staffs',
+            'contractor' => 'contractors',
+        ];
+        $entity = $user->user_type ?? 'staff';
+        $entity = strtolower($entity);
+        $entity = $content[$entity] ?? null;
+        if ($entity) {
+            $entityObj = loadClass($entity);
+            $entity = $entityObj->getWhere(['id' => $user->user_table_id], $c, 0, null, false);
+            if ($entity) {
+                $entity = $entity[0];
+            }
+        }
+        return $entity;
+    }
+
+    /**
+     *
+     * THIS METHOD HANDLES TRANSACTION OUTFLOW AUTH LOGIN
+     * @throws Exception
+     */
+    public function financeAuth()
+    {
+        $user = $this->getUser('users_new', 'user_login', 'password', 'username', 'password');
+        if (!$user) {
+            return false;
+        }
+        $userDetails = $this->getUserDetails($user, $user->user_type);
+        $payload = $user->toArray() ?? null;
+        $userID = $user->id;
+        $userRoleSlug = null;
+        if ($userDetails) {
+            $userRoleSlug = @$userDetails->outflow_slug ?? null;
+            $payload = array_merge($payload, $userDetails->toArray());
+        }
+
+        if (isset($payload['units_id']) && $payload['units_id'] != 0) {
+            $staffObj = new Staffs;
+            $payload['unit'] = $staffObj->getStaffDepartment($payload['units_id'])->name;
+        }
+
+        if (isset($payload['avatar'])) {
+            $payload['avatar'] = userImagePath($payload['avatar']);
+        }
+
+        $payload['id'] = $userID;
+        unset($payload['user_pass'], $payload['password']);
+        $payload['type'] = AuthType::FINANCE_OUTFLOW;
+        $payload['origin'] = base_url();
+        $payload['user_role'] = $userRoleSlug;
+
+        $payload = [
+            'token' => generateJwtToken($payload),
+            'profile' => $payload,
+        ];
+        return sendApiResponse(true , "You've successfully logged in", $payload);
+    }
+
+    /**
+     * @deprecated - There is tendency that this method will be removed, as no usage was found
+     * THIS METHOD HANDLES CONTRACTOR AUTH LOGIN
+     * @throws Exception
+     */
+    public function contractorAuth(string $entity)
+    {
+        $user = $this->getUser('users_new', 'user_login', 'password', 'username', 'password');
+        $baseurl = base_url();
+
+        $arr['status'] = true;
+        $arr['message'] = $baseurl;
+        $payload = $user->toArray() ?? null;
+        unset($payload['user_pass'], $payload['password']);
+        $payload['type'] = AuthType::CONTRACTOR->value;
+        $payload['origin'] = base_url();
+        $token = generateJwtToken($payload);
+        $arr['payload'] = [
+            'token' => $token,
+            'profile' => $payload
+        ];
+        return sendApiResponse(true, $arr['message'], $arr['payload']);
     }
 
     public function logout()
     {
-        $currentUser = currentAPIUser();
-        if($currentUser){
-            $this->db->table('user_tokens')->update(['status'=>0], ['user_id'=>$currentUser->user_id]);
-        }
+        $currentUser = WebSessionManager::currentAPIUser();
         $this->webSessionManager->logout();
         return sendApiResponse(true, 'You have successfully logged out');
     }
