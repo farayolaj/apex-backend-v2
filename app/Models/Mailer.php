@@ -2,164 +2,207 @@
 
 namespace App\Models;
 
+use CodeIgniter\Model;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
+use Config\Services;
 
-/**
- * The model for sending emails
- */
-class Mailer
+class Mailer extends Model
 {
-	private PHPMailer $mailer;
+    private PHPMailer $mailer;
 
-	/**
-	 * @throws Exception
-	 */
-	public function __construct()
-	{
-		$this->mailer = new PHPMailer(true);
-		$this->privateMailConfig();
-        helper('string');
-	}
+    /**
+     * Constructor to initialize PHPMailer and configure it.
+     *
+     * @throws Exception
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->mailer = new PHPMailer(true);
+        $this->privateMailConfig();
+    }
 
-	/**
-	 * @throws Exception
-	 */
-	private function privateMailConfig(): void
-	{
-		$this->mailer->addCustomHeader('useragent', 'Infosys');
-		// $this->mailer->SMTPDebug = SMTP::DEBUG_OFF;
-		$this->mailer->SMTPDebug = SMTP::DEBUG_SERVER | SMTP::DEBUG_CONNECTION;
-		$this->mailer->isSMTP();
-		$this->mailer->CharSet = "utf-8";
-		$this->mailer->Host = get_setting('email_server_url');
-		$this->mailer->SMTPAuth = true;
-		$this->mailer->AuthType = 'LOGIN';
-		$this->mailer->Username = get_setting('email_server_url_username');
-		$this->mailer->Password = get_setting('email_server_url_password');
-		$this->mailer->SMTPSecure = false;
-		$this->mailer->SMTPAutoTLS = false;
-		$this->mailer->Port = get_setting('email_server_port');
-		$this->mailer->isHTML(true);
+    /**
+     * Configures PHPMailer with SMTP settings.
+     *
+     * @throws Exception
+     */
+    private function privateMailConfig(): void
+    {
+        $this->mailer->addCustomHeader('useragent', 'Infosys');
+        $this->mailer->SMTPDebug = SMTP::DEBUG_SERVER | SMTP::DEBUG_CONNECTION; // Debugging enabled
+        // $this->mailer->SMTPDebug = SMTP::DEBUG_OFF;
+        $this->mailer->isSMTP();
+        $this->mailer->CharSet = "utf-8";
+        $this->mailer->Host = get_setting('email_server_url');
+        $this->mailer->SMTPAuth = true;
+        $this->mailer->AuthType = 'LOGIN';
+        $this->mailer->Username = get_setting('email_server_url_username');
+        $this->mailer->Password = get_setting('email_server_url_password');
+        $this->mailer->SMTPSecure = false;
+        $this->mailer->SMTPAutoTLS = false;
+        $this->mailer->Port = get_setting('email_server_port');
+        $this->mailer->isHTML(true);
+    }
 
-	}
+    /**
+     * Sends an email notification for upload copy.
+     *
+     * @param string $recipient The recipient email address.
+     * @param array $variables Variables to replace in the email template.
+     * @param string $subject The email subject.
+     * @param array $ccList CC recipients.
+     * @param mixed $attachment Attachment file(s).
+     * @return bool|null
+     */
+    public function sendUploadCopyEmailNotification(string $recipient, array $variables, string $subject, array $ccList, $attachment = null): ?bool
+    {
+        return $this->sendNewMail('score-upload-log', $recipient, $variables, $subject, $ccList, $attachment);
+    }
 
-	public function sendUploadCopyEmailNotification(string $recipient, array $variables, string $subject, array $ccList, $attachment = null): ?bool
-	{
-		return $this->send_new_mail('score-upload-log', $recipient, $variables, $subject, $ccList, $attachment);
-	}
+    /**
+     * Sends an email using a template from the database.
+     *
+     * @param string $template The template slug.
+     * @param mixed $to Recipient(s).
+     * @param array|string $variables Variables to replace in the template.
+     * @param string|null $custom_subject Custom email subject.
+     * @param array|null $cc CC recipients.
+     * @param mixed $attachment Attachment file(s).
+     * @return bool
+     */
+    public function sendNewMail(string $template, $to, $variables = '', ?string $custom_subject = null, ?array $cc = null, $attachment = null): bool
+    {
+        $parser = Services::parser();
+        $db = db_connect();
 
-	/**
-	 * This picks mail content from the db to send mail
-	 */
-	public function send_new_mail($template, $to, $variables = '', $custom_subject = null, $cc = null, $attachment = null)
-	{
-		$this->load->library('parser');
-		$query = $this->db->get_where('templates', array('slug' => $template, 'type' => 'email', 'active' => 1));
-		$mailer = $this->mailer;
-		$emailDomain = $template . '@' . get_setting('email_domain');
-		$emailDomainName = get_setting('email_domain_name');
-		try {
-			foreach ($query->result() as $row) {
-				$mailer->clearAddresses();
-				$mailer->clearAttachments();
-				$mailer->clearCCs();
+        // Fetch the email template from the database
+        $query = $db->table('templates')
+            ->where('slug', $template)
+            ->where('type', 'email')
+            ->where('active', 1)
+            ->get();
 
-				$subject = ($custom_subject != null) ? $custom_subject : $row->name;
-				$message = base64_decode($row->content);
-				if ($variables) {
-					$message = $this->parser->parse_string($message, $variables, TRUE);
-				}
-				$mailer->setFrom($emailDomain, $emailDomainName);
+        $emailDomain = $template . '@' . get_setting('email_domain');
+        $emailDomainName = get_setting('email_domain_name');
 
-				if (is_array($to)) {
-					foreach ($to as $recipient) {
-						$mailer->addAddress($recipient);
-					}
-				} else {
-					$mailer->addAddress($to);
-				}
+        try {
+            foreach ($query->getResult() as $row) {
+                $this->mailer->clearAddresses();
+                $this->mailer->clearAttachments();
+                $this->mailer->clearCCs();
 
-				if ($cc) {
-					foreach ($cc as $c) {
-						$mailer->addCC($c);
-					}
-				}
+                $subject = $custom_subject ?? $row->name;
+                $message = base64_decode($row->content);
 
-				if ($attachment) {
-					if (is_array($attachment)) {
-						foreach ($attachment as $attach) {
-							$mailer->addAttachment($attach);
-						}
-					} else {
-						$mailer->addAttachment($attachment);
-					}
-				}
-				$mailer->Subject = $subject;
-				$mailer->Body = $message;
-				$mailer->send();
-				return true;
-			}
+                if ($variables) {
+                    $message = $parser->setData($variables)->renderString($message);
+                }
+                $this->mailer->setFrom($emailDomain, $emailDomainName);
 
-		} catch (Exception $e) {
-			// echo 'Message could not be sent.';
-			$message = 'Edutech::Mailer:Error: ' . $mailer->ErrorInfo;
-			log_message('error', $message);
-			return false;
-		}
+                if (is_array($to)) {
+                    foreach ($to as $recipient) {
+                        $this->mailer->addAddress($recipient);
+                    }
+                } else {
+                    $this->mailer->addAddress($to);
+                }
 
-	}
+                if ($cc) {
+                    foreach ($cc as $c) {
+                        $this->mailer->addCC($c);
+                    }
+                }
 
-	/**
-	 * This send mail getting the content directly
-	 */
-	public function sendMail($template, $to, $subject, $content, $cc = array(), $attachment = false)
-	{
-		try {
-			$this->mailer->clearAddresses();
-			$this->mailer->clearAttachments();
-			$this->mailer->clearCCs();
+                if ($attachment) {
+                    if (is_array($attachment)) {
+                        foreach ($attachment as $attach) {
+                            $this->mailer->addAttachment($attach);
+                        }
+                    } else {
+                        $this->mailer->addAttachment($attachment);
+                    }
+                }
 
-			if (is_array($to)) {
-				foreach ($to as $recipient) {
-					$this->mailer->addAddress($recipient);
-				}
-			} else {
-				$this->mailer->addAddress($to);
-			}
+                $this->mailer->Subject = $subject;
+                $this->mailer->Body = $message;
 
-			if ($cc) {
-				if (is_array($cc)) {
-					foreach ($cc as $c) {
-						$this->mailer->addCC($c);
-					}
-				} else {
-					$this->mailer->addCC($cc);
-				}
-			}
-			if ($attachment) {
-				if (is_array($attachment)) {
-					foreach ($attachment as $attach) {
-						$this->mailer->addAttachment($attach);
-					}
-				} else {
-					$this->mailer->addAttachment($attachment);
-				}
-			}
-			$this->mailer->setFrom($template . '@' . get_setting('email_domain'), get_setting('email_domain_name'));
-			$this->mailer->Subject = $subject;
-			$this->mailer->Body = $content;
-			$this->mailer->send();
-			return true;
-		} catch (Exception $e) {
-			// dddump($this->mailer->ErrorInfo);
-			$message = $this->mailer->ErrorInfo ?? 'Message could not be sent.';
-			log_message('error', "Edutech::Mailer:Error:" . $message);
-			log_message('error', "SMTP Debug Output: " . $this->mailer->Debugoutput);
-			return false;
-		}
+                if ($this->mailer->send()) {
+                    return true;
+                } else {
+                    log_message('error', 'Edutech::Mailer:Error: ' . $this->mailer->ErrorInfo);
+                    return false;
+                }
+            }
+        } catch (Exception $e) {
+            log_message('error', 'Edutech::Mailer:Error: ' . $e->getMessage());
+            return false;
+        }
 
-	}
+        return false;
+    }
 
+    /**
+     * Sends an email with direct content (no template from the database).
+     *
+     * @param string $template The template slug (used for the "From" address).
+     * @param mixed $to Recipient(s).
+     * @param string $subject The email subject.
+     * @param string $content The email content.
+     * @param array $cc CC recipients.
+     * @param mixed $attachment Attachment file(s).
+     * @return bool
+     */
+    public function sendMail(string $template, $to, string $subject, string $content, array $cc = [], $attachment = false): bool
+    {
+        try {
+            $this->mailer->clearAddresses();
+            $this->mailer->clearAttachments();
+            $this->mailer->clearCCs();
+
+            if (is_array($to)) {
+                foreach ($to as $recipient) {
+                    $this->mailer->addAddress($recipient);
+                }
+            } else {
+                $this->mailer->addAddress($to);
+            }
+
+            if ($cc) {
+                if (is_array($cc)) {
+                    foreach ($cc as $c) {
+                        $this->mailer->addCC($c);
+                    }
+                } else {
+                    $this->mailer->addCC($cc);
+                }
+            }
+
+            if ($attachment) {
+                if (is_array($attachment)) {
+                    foreach ($attachment as $attach) {
+                        $this->mailer->addAttachment($attach);
+                    }
+                } else {
+                    $this->mailer->addAttachment($attachment);
+                }
+            }
+
+            $this->mailer->setFrom($template . '@' . get_setting('email_domain'), get_setting('email_domain_name'));
+            $this->mailer->Subject = $subject;
+            $this->mailer->Body = $content;
+
+            if ($this->mailer->send()) {
+                return true;
+            } else {
+                log_message('error', 'Edutech::Mailer:Error: ' . $this->mailer->ErrorInfo);
+                return false;
+            }
+        } catch (Exception $e) {
+            log_message('error', 'Edutech::Mailer:Error: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

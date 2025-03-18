@@ -2,6 +2,46 @@
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use App\Libraries\ApiResponse;
+use App\Models\WebSessionManager;
+
+if(!function_exists('permissionAccess')){
+    function permissionAccess(string $permission, ?string $message = null)
+    {
+        $currentUser = WebSessionManager::currentAPIUser() ?? 0;
+        if (!checkPermission($permission, $currentUser->id)) {
+            if ($message == 'create') {
+                $message = "It looks like you do not have access to create item on the page.";
+            } else if ($message == 'view') {
+                $message = "It looks like you do not have access to view this page.";
+            } else if ($message == 'edit') {
+                $message = "It looks like you do not have access to edit item on the page.";
+            } else if ($message == 'delete') {
+                $message = "It looks like you do not have access to delete item on the page";
+            } else {
+                $message = "It looks like you do not have access to perform the action.";
+            }
+            return ApiResponse::error($message, null, 403);
+        }
+    }
+}
+
+if(!function_exists('checkPermission')){
+    function checkPermission($permission, $userID): bool
+    {
+        $db = db_connect();
+        $query = $db->table('roles_permission')->getWhere(array('permission' => $permission));
+        if ($query->getNumRows() > 0) {
+            $role = $query->getRow();
+            $user_role = get_user_role_id($userID);
+            $roles_array = json_decode($role->role_id, true);
+            if (in_array($user_role, $roles_array)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
 
 if(!function_exists('isTimeExpired')){
     function isTimeExpired($expirationTime, $leeWay = 60): bool{

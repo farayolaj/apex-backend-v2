@@ -1,0 +1,394 @@
+<html>
+<head>
+	<title></title>
+	<style>
+		.barcode {
+			padding: 1.5mm;
+			margin: 0;
+			vertical-align: top;
+			color: #000000;
+		}
+		.barcodecell {
+			text-align: center;
+			vertical-align: middle;
+		}
+	</style>
+</head>
+
+<body
+	style="
+      font-size: 10.5pt;
+      font-family: Lato, sans-serif;
+      color: #000000;
+      background-color: transparent;
+      font-weight: 700;
+      font-style: normal;
+      font-variant: normal;
+      text-decoration: none;
+      vertical-align: baseline;
+    "
+>
+<table width="650" border="0" align="" style="font-size: 11px">
+	<tbody>
+	<tr>
+		<td width="272">&nbsp;</td>
+		<td width="104" align="center">
+			<a
+				href="#"
+				style="
+                line-height: inherit;
+                font-size: 16px;
+                color: #9fa8ae;
+                font-weight: 400;
+                font-weight: 350;
+                color: #fff;
+                font-family: Lato, sans-serif !important;
+              "
+			>
+              <span
+				  class="template-body theme-2"
+				  style="background-color: #eceff1"
+			  >
+                <img
+					src="{institution_logo}"
+					style="width: 100px; height: auto"
+				/>
+              </span>
+			</a>
+		</td>
+		<td width="256">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="3" align="center" style="font-size: 14px">
+			<strong
+			>UNIVERSITY OF IBADAN, DISTANCE LEARNING CENTRE, NIGERIA</strong
+			>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3" align="center" style="font-size: 12px">
+			Morohundiya Complex, Idi-ose Moniya, Ibadan
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3" align="center" style="font-size: 14px">&nbsp;</td>
+	</tr>
+	<tr>
+		<td height="30" colspan="3" align="center" style="font-size: 14px">
+			<strong> PAYMENT NOTIFICATION</strong>
+		</td>
+	</tr>
+	<tr>
+		<td
+			colspan="3"
+			style="
+              padding: 6px 8px;
+              font-size: 14px;
+              letter-spacing: 2px;
+              font-weight: bold;
+            "
+		>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td
+			colspan="3"
+			style="
+              padding: 6px 8px;
+              font-size: 14px;
+              letter-spacing: 2px;
+              font-weight: bold;
+            "
+		>
+			CONTACT DETAILS
+			<hr />
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3">
+			<table width="646" border="0">
+				<tbody>
+				<tr>
+					<td width="501">
+						<table width="494" border="0">
+							<tbody>
+							<tr>
+								<td width="9">&nbsp;</td>
+								<td width="130" height="20">
+									<strong>Payer:</strong>
+								</td>
+								<td width="10">&nbsp;</td>
+								<td width="327" height="30">{fullname}</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td height="30"><strong>Phone number:</strong></td>
+								<td>&nbsp;</td>
+								<td>{phone}</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td height="30"><strong>Email:</strong></td>
+								<td>&nbsp;</td>
+								<td>{email}</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td height="30"><strong>Address:</strong></td>
+								<td>&nbsp;</td>
+								<td>{address}</td>
+							</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr>
+		<td
+			colspan="3"
+			style="
+              padding: 6px;
+              font-size: 14px;
+              letter-spacing: 2px;
+              font-weight: bold;
+            "
+		>
+			PAYMENT DETAILS
+			<hr />
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3">
+			<table width="650" border="0">
+				<tbody>
+				<tr>
+					<td>
+						<table width="625" cellpadding="0" cellspacing="0">
+							<thead>
+							<tr>
+								<td width="11">&nbsp;</td>
+								<td width="238" height="35">
+									<strong>Description:</strong>
+								</td>
+								<td width="360">
+									&nbsp;&nbsp;&nbsp;{description}&nbsp;&nbsp;&nbsp;
+								</td>
+							</tr>
+							</thead>
+							<tbody>
+							<tr>
+								<td>&nbsp;</td>
+								<td height="35"><strong>Amount:</strong></td>
+								<td>&nbsp;&nbsp;&nbsp;{amount}NGN</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td height="35">
+									<strong>Remita Retrival Reference:</strong>
+								</td>
+								<td>&nbsp;&nbsp;&nbsp;{rrr_code}</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td height="35"><strong>Date Initiated:</strong></td>
+								<td>
+									&nbsp;&nbsp;&nbsp;{date_performed}&nbsp;&nbsp;&nbsp;
+								</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td height="35"><strong>Date Completed:</strong></td>
+								<td>
+									&nbsp;&nbsp;&nbsp;{date_completed}&nbsp;&nbsp;&nbsp;
+								</td>
+							</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="3">
+			<table width="650" border="0">
+				<tbody>
+				<tr>
+					<td>
+						<table width="645" height="112" border="0">
+							<tbody>
+							<tr>
+								<td
+									width="600"
+									height="25"
+									align="center"
+									style="font-size: 18px"
+								>
+									<strong>Amount in words</strong>
+								</td>
+							</tr>
+							<tr>
+								<td
+									height="35"
+									align="center"
+									style="font-size: 20px"
+								>
+									{amount_in_words} Naira Only
+								</td>
+							</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="3" align="center">
+			<div class="barcodecell">
+				<barcode code="{barcodevalue}" type="C128A" class="barcode" />
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="3">
+			<table width="720" border="0" style="margin-left: 0px">
+				<tbody>
+				<tr>
+					<td>
+						<p
+							style="
+                        line-height: 1.295;
+                        margin-top: 0pt;
+                        margin-bottom: 2pt;
+                      "
+						>
+                      <span
+						  style="
+                          font-size: 10.5px;
+                          font-family: Lato, sans-serif;
+                          color: #000000;
+                          background-color: transparent;
+                          font-weight: 700;
+                          font-style: normal;
+                          font-variant: normal;
+                          text-decoration: none;
+                          vertical-align: baseline;2024
+                        "
+					  >Confirmation & Receipt:</span
+					  >
+							<span
+								style="
+                          font-size: 10.5px;
+                          font-family: Lato, sans-serif;
+                          color: #000000;
+                          background-color: transparent;
+                          font-weight: 400;
+                          font-style: normal;
+                          font-variant: normal;
+                          text-decoration: none;
+                          vertical-align: baseline;
+                        "
+							>This document is not valid except verified by the UIDLC
+                        Finance Office. Request stamped receipt from the office.
+                      </span>
+						</p>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr></tr>
+	<tr>
+		<td colspan="3">
+			<table>
+				<tbody>
+				<tr>
+					<td colspan="3">&nbsp;</td>
+					<td colspan="3">&nbsp;</td>
+					<td colspan="3">&nbsp;</td>
+					<td colspan="3">&nbsp;</td>
+					<td colspan="3">&nbsp;</td>
+					<td colspan="3">&nbsp;</td>
+					<td colspan="3">&nbsp;</td>
+					<td colspan="3">&nbsp;</td>
+					<td>
+						<div
+							style="
+                        margin-top: 0pt;
+                        margin-left: 35.55pt;
+                        margin-bottom: 0pt;
+                        text-align: justify;
+                        line-height: 12.15pt;
+                      "
+						>
+                      <span
+						  style="
+                          height: 0pt;
+                          margin-top: -40pt;
+                          text-align: left;
+                          display: block;
+                        "
+					  >
+                        <img
+							alt=""
+							width="646"
+							height="6"
+							style="
+                            margin-top: -4pt;
+                            margin-left: -42.6pt;
+                            position: absolute;
+                          "
+							src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlcAAAAGCAYAAADudrv/AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBD6fLggAAAeNJREFUaIHt2TFu1EAUxvHvmxk7eJOsyDoFkVhRIRBUSEi0IFHAAbgCx6CEkhPQ0dFzhVQIioAQEhJURIsSQrKs1/bMexQgRJotNkheo/c7wV8eazzPAxhjjDHGmH+GAHD/+a3hVlPfETDrOsisFgdtATdPSu26pc9GEdndI7k6BDcA4FItn8tGpqnrMLO0TF0rlDqC0nXLKmmk8Hu8Mp6kcgcAJjo6eZOuT/ZjOe+6zSxHyaRkTU2x65ZVJpTj+nv9YffZvcMAAGWddsS5x+73xm/MH6oKUjy7Duk38cpx4rnxXD0AZEANevFdh5mlCaCkk2BjxynB17iBd2uRIQOA1+laep8ut6SzJ9VXhFKhtoaLkX5vsJk/AbAbAKCOuh+CPlIidNxmVgyBTCG5ox2vzkKo7kumm60iA4AL0U2GMVaO9kewr0gGQnNH57puWSVJHacyGEx1UABAI2HmVI6UaLpuM8uhwosyB2Dz4CIiBwH4BODXYerFw1fHD55efDlfF/uAmlPOF9sUV/jmR7R34wwI4u2a5oOsdQBws25nRXVit4I95qbbzDZmnpXtm38jtnDgRuHjrAwAcBhDzNTXR/GbXZ/2VFnlrLJ1V4TKBokFYghp9PV21XWHMcYYY8x/5yfps7Janjl9KgAAAABJRU5ErkJggg=="
+						/>
+                      </span>
+						</div>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+	<tr width="650">
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td
+			style="
+              font-size: 8.5pt;
+              color: #7f7f7f;
+              font-style: italic;
+              text-align: right;
+            "
+		>
+			Synergy that works
+		</td>
+	</tr>
+	</tbody>
+</table>
+</body>
+</html>

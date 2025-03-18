@@ -1,14 +1,17 @@
 <?php
 
-require_once APPPATH . 'constants/PaymentPercentage.php';
-require_once APPPATH . 'constants/PaymentFeeDescription.php';
-require_once APPPATH . 'constants/RemitaResponse.php';
-require_once APPPATH . 'traits/CommonTrait.php';
+namespace App\Models;
+
+use App\Libraries\PaymentPercentage;
+use App\Libraries\RemitaResponse;
+use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
+use App\Traits\CommonTrait;
+use CodeIgniter\Model;
 
 /**
  *
  */
-class Remita extends CI_Model
+class Remita extends Model
 {
 
 	public function remitaTransactionDetails($url, $header)

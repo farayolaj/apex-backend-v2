@@ -466,6 +466,17 @@ class EntityCreator {
 		}
 	}
 
+    public function updateAction(string $model, $id, $param)
+    {
+        $this->modelCheck($model, 'u');
+        $newModel = loadClass($model);
+        $newModel->setArray($param);
+        if (!$newModel->update($id, $this->db)) {
+            return sendApiResponse(false, "An error occured, cannot update item");
+        }
+        return sendApiResponse(true, "You've successfully updated the item");
+    }
+
 	// implement deleter where function here.
 	public function delete(string $model, $id = '') {
 		if (isset($_POST['ID'])) {

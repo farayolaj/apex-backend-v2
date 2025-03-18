@@ -1,0 +1,150 @@
+<table width="750px" style="width:100%; background-color: #fff; font-family:Verdana, Arial, Helvetica, sansserif;font-size:12px;">
+    <tr>
+        <td style="background-color: #38a169;text-align: center; color:#fff;" align='center'>
+            <img src="{instituttion_image}" alt="" width="120" height="120" style="float: left;">
+            <h1>{institution_name} </h1>
+            <address> {institution_address} </address>
+            <h1>{semester} SEMESTER</h1>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <h1>{session} COURSE REGISTRATION</h1>
+        </td>
+    </tr>
+    <tr>
+      <td height="10" colspan="2" align="center">&nbsp;</td>
+    </tr>
+    <tr>
+        <td><strong>Printed on {print_date} </strong></td>
+    </tr>
+</table>
+<table width="750" border="0" style="border: 2px solid #38a169;border-bottom:0 solid #38a169; width:100%; background-color: #fff; font-family:Verdana, Arial, Helvetica, sansserif;font-size:12px;" cellpadding="4px">
+    <tr bgcolor="#77f4ab">
+        <td colspan="4" style="color: #FFFFFF; font-weight: bold; font-size:12px; background-color: #38a169;">Student Details</td>
+    </tr>
+    <tr>
+        <td width="212" style="border-bottom:1px dotted green;font-size:14px; padding-bottom: 0;"><strong>{lastname}</strong></td>
+        <td widht="196" style="border-bottom:1px dotted green;font-size:14px; padding-bottom: 0;"><strong>{firstname}</strong></td>
+        <td widht="224" style="border-bottom:1px dotted green;font-size:14px; padding-bottom: 0;"><strong>{othernames}</strong></td>
+    </tr> 
+    <tr>
+        <td width="212" style="font-size:9px; padding: 0 0 5px 5px;">Surname</td>
+        <td width="196" style="font-size:9px; padding: 0 0 5px 5px;">Firstname</td>
+        <td width="224" style="font-size:9px; padding: 0 0 5px 5px;">Othernames</td>
+    </tr>
+</table>
+
+<table width="750" border="0" cellpadding="6" cellspacing="0" style="border: 2px solid #38a169;width:100%; background-color: #fff; font-family:Verdana, Arial, Helvetica, sansserif;font-size:12px;">
+    <tr>
+        <td style="padding-top: 12px;" width="120"><strong>Matric. Number:</strong></td>
+        <td style="border-bottom:1px dotted #77f4ab; padding-bottom: 0; padding: 12px 0 0 0;" width="450">{matric_number}</td>
+        <td rowspan="17" align="center" valign="middle" style="border-left:2px solid #38a169;border-top: 1px solid #ffffff;">
+            <img src="{passport}" alt="" width="150" height="120">
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-top: 12px;"><strong>Entry year:</strong></td>
+        <td style="border-bottom:1px dotted #77f4ab; padding-bottom: 0; padding: 12px 0 0 0;">{entry_year}</td>
+    </tr>
+    <tr>
+        <td style="padding-top: 12px;"><strong>Mode of entry:</strong></td>
+        <td style="border-bottom:1px dotted #77f4ab; padding-bottom: 0; padding: 12px 0 0 0;">{entry_mode}</td>
+    </tr>
+    <tr>
+        <td style="padding-top: 12px;"><strong>Level:</strong></td>
+        <td style="border-bottom:1px dotted #77f4ab; padding-bottom: 0; padding: 12px 0 0 0;">{level}</td>
+    </tr>
+    <tr>
+        <td style="padding-top: 12px;"><strong>Department</strong></td>
+        <td style="border-bottom:1px dotted #77f4ab; padding-bottom: 0; padding: 12px 0 0 0;">{department}</td>
+    </tr>
+</table>
+
+<table width="750" border="0"  cellpadding="4" style="border:2px solid #38a169;text-align:left; padding: 0 5px; width:100%; background-color: #fff; font-family:Verdana, Arial, Helvetica, sansserif;font-size:12px;">
+    <thead>
+        <tr bgcolor="#38a169">
+            <td colspan="9" style="color: #FFFFFF; font-weight: bold; font-size:12px; background-color: #38a169;">Registered Courses</td>
+        </tr>
+        <tr>
+            <td width="20" height="20" align="center" style="border: 1px solid #000000; line-height: 20px"><strong>#</strong></td>
+            <td width="50" height="20"  align="center"style="border: 1px solid #000000; line-height: 20px"><strong>CODE</strong></td>
+            <td width="300" height="20" style="border: 1px solid #000000; line-height: 20px"><strong>&nbsp;&nbsp;&nbsp;COURSE TITLE</strong></td>
+            <td width="50" height="20" style="border: 1px solid #000000; line-height: 20px"><strong>&nbsp;&nbsp;&nbsp;UNIT</strong></td>
+            <td width="60" height="20" style="border: 1px solid #000000; line-height: 20px"><strong>&nbsp;&nbsp;&nbsp;STATUS</strong></td>
+            <td width="50" height="20" style="border: 1px solid #000000; line-height: 20px"><strong>&nbsp;&nbsp;&nbsp;SCORE</strong></td>
+            <td width="30" height="20" style="border: 1px solid #000000; line-height: 20px"><strong>&nbsp;&nbsp;&nbsp;GD</strong></td>
+            <td width="30" height="20" style="border: 1px solid #000000; line-height: 20px"><strong>&nbsp;&nbsp;&nbsp;GP</strong></td>
+            <td width="50" height="20" style="border: 1px solid #000000; line-height: 20px"><strong>&nbsp;&nbsp;&nbsp;WGP</strong></td>
+        </tr>
+    </thead>
+    <tbody>
+        {courses}
+            <tr>
+            <td width="20" height="20" align="center" style="border: 1px solid #000000; line-height: 20px">{count}</td>
+            <td width="50" height="20" align="center" style="border: 1px solid #000000; line-height: 20px">{course_code}</td>
+            <td width="300" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{course_title}</td>
+            <td width="50" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{course_unit}</td>
+            <td width="60" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{course_status}</td>
+            <td width="50" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{total_score}</td>
+            <td width="30" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{grade}</td>
+            <td width="30" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{grade_point}</td>
+            <td width="50" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{weighted_gp}</td>
+            </tr>
+        {/courses}
+        <tr><td colspan="3">&nbsp;</td></tr>
+        <tr><td colspan="3">&nbsp;</td></tr>
+    </tbody>
+</table>
+
+<table width="750" border="0"  cellpadding="4" style="border:2px solid #38a169;text-align:left; padding: 0 5px;width:100%; background-color: #fff; font-family:Verdana, Arial, Helvetica, sansserif;font-size:12px;">
+    <tbody>
+      <tr>
+        <td>
+          <table width="450">
+            <tbody>
+              <tr>
+                <td width="120" height="20" align="right" style="border: 1px solid #000000; line-height: 20px"><strong>Total Units Registered:&nbsp;&nbsp;</strong></td>
+                <td width="230" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{total_unit}</td>
+              </tr>
+              <tr>
+                <td width="120" height="20" align="right" style="border: 1px solid #000000; line-height: 20px"><strong>GPA:&nbsp;&nbsp;</strong></td>
+                <td width="230" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{gpa}</td>
+              </tr>
+              <tr>
+                <td width="120" height="20" align="right" style="border: 1px solid #000000; line-height: 20px"><strong>Carry Over Course:&nbsp;&nbsp;</strong></td>
+                <td width="230" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;
+                <table width="">
+                  <tbody>
+                      <tr>
+                      <td>{carry_over_courses}</td>
+                      </tr>
+                  </tbody>
+                </table>
+                </td>
+              </tr>
+              <tr>
+              <td width="120" height="20" align="right" style="border: 1px solid #000000; line-height: 20px"><strong>Outstanding Course:&nbsp;&nbsp;</strong></td>
+              <td width="230" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;</td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+        <td width="130">&nbsp;</td>
+        <td>
+            <table width="350">
+                <tbody>
+                    <tr>
+                    <td width="200" height="20" align="right" style="border: 1px solid #000000; line-height: 20px"><strong>Total Units Earned:&nbsp;&nbsp;</strong></td>
+                    <td width="60" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{total_units_earned}</td>
+                    </tr>
+                    <tr>
+                    <td width="120" height="20" align="right" style="border: 1px solid #000000; line-height: 20px"><strong>Total Credit Point:&nbsp;&nbsp;</strong></td>
+                    <td width="60" height="20" style="border: 1px solid #000000; line-height: 20px">&nbsp;&nbsp;&nbsp;{total_credit_point}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+      </tr>
+    </tbody>
+</table>

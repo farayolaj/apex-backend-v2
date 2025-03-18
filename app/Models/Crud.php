@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Traits\CrudInfo;
+use App\Traits\CrudTrait;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\BaseResult;
 use CodeIgniter\Database\Query;
 use Exception;
 
 class Crud {
-	use CrudInfo;
+	use CrudTrait;
 
     /**
      * @var mixed|null

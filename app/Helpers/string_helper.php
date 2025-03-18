@@ -1,5 +1,29 @@
 <?php
 
+if(!function_exists('get_user_role_id')){
+    function get_user_role_id($userID)
+    {
+        $db = db_connect();
+        $query = $db->table('roles_user')->getWhere(array('user_id' => $userID));
+        if ($query->getNumRows() > 0) {
+            return $query->getRow()->role_id;
+        } else {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('stripQueryString')) {
+    function stripQueryString($url)
+    {
+        $position = strpos($url, '?');
+        if ($position === false) {
+            return $url;
+        }
+        return substr($url, 0, $position);
+    }
+}
+
 if (!function_exists('userImagePath')) {
     function userImagePath(string $passport, string $path = null): string
     {
@@ -254,7 +278,7 @@ if (!function_exists('dddump')) {
 if (!function_exists('ddump')) {
     function ddump($data): void
     {
-        echo $data;
+         print_r($data);
     }
 }
 

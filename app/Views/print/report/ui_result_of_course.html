@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		#pageNumber:after {
+			content: "Page " counter(page);
+			counter-increment: page;
+		}
+
+		@media screen {
+			.page-header,
+			.page-header-space,
+			.page-footer,
+			.page-footer-space {
+				display: none;
+			}
+		}
+
+		@media all {
+			.page-break {
+				display: none;
+			}
+		}
+
+		@media print {
+			table {
+				page-break-after: auto;
+			}
+
+			tr {
+				page-break-inside: avoid;
+				page-break-after: auto;
+			}
+
+			td {
+				page-break-inside: avoid;
+				page-break-after: auto;
+			}
+		}
+
+		.page-header,
+		.page-header-space {
+			height: 178px;
+			background: #fff;
+		}
+
+		.page-footer,
+		.page-footer-space {
+			height: 198px;
+			background: #fff;
+		}
+
+		.page-footer {
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+		}
+
+		.page-header {
+			position: fixed;
+			top: 0mm;
+			width: 100%;
+		}
+
+		@page {
+			margin: 5mm;
+		}
+
+		@media print {
+			thead {
+				display: table-header-group;
+			}
+
+			tfoot {
+				display: table-footer-group;
+			}
+
+			button {
+				display: none;
+			}
+
+			body {
+				margin: 0;
+			}
+		}
+	</style>
+</head>
+<body>
+<button
+	onClick="history.back()"
+	style="
+        width: 250px;
+        padding: 10px;
+        height: 45px;
+        font-size: 22px;
+        background: #000000;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+      "
+>
+	GO BACK
+</button>
+<button
+	onClick="window.print()"
+	style="
+        width: 250px;
+        padding: 10px;
+        height: 45px;
+        font-size: 22px;
+        background: blue;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+      "
+>
+	PRINT
+</button>
+
+<div class="page-header">
+	<table width="1200" cellpadding="0" cellspacing="0">
+		<tbody>
+		<tr>
+			<td>
+				<table width="700">
+					<tbody>
+					<tr>
+						<td width="110">
+							<img
+								src="{institution_logo}"
+								alt="ui-logo-min"
+								height="100"
+							/>
+						</td>
+						<td width="594">
+							<table width="583">
+								<tbody>
+								<tr>
+									<td width="579" style="font-size: 14px">
+										<strong>UNIVERSITY OF IBADAN</strong>
+									</td>
+								</tr>
+								<tr>
+									<td style="font-size: 14px">
+										<strong>Distance Learning Centre</strong>
+									</td>
+								</tr>
+								<tr>
+									<td style="font-size: 14px">
+										<strong>DEPARTMENT OF {department}</strong>
+									</td>
+								</tr>
+								<tr>
+									<td style="font-size: 14px">
+										<strong>{header_text}</strong>
+									</td>
+								</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><span id="pageNumber"></span></td>
+		</tr>
+		</tbody>
+	</table>
+	<table
+		width="1200"
+		border="0"
+		cellspacing="6"
+		cellpadding="2"
+		style="font-size: 14px"
+	>
+		<tbody>
+		<tr>
+			<td align="left">
+				<strong>{programme}</strong>
+			</td>
+			<td align="right">
+				<strong>{date_time}</strong>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+	<table>
+		<tbody>
+		<tr>
+			<td>
+				<table
+					width="1200"
+					style="font-size: 12px; border: none"
+					cellpadding="0"
+					cellspacing="0"
+				>
+					<tbody>
+					<tr>
+						<td
+							width="40"
+							height="20"
+							align="center"
+							style="border: 1px solid #000000"
+						>
+							<strong>S/N</strong>
+						</td>
+						<td width="65" align="center" style="border: 1px solid #000000">
+							<strong>Matric. Number</strong>
+						</td>
+						<td width="40" align="center" style="border: 1px solid #000000">
+							<strong>CA</strong>
+						</td>
+						<td
+							width="40"
+							align="center"
+							style="border: 1px solid #000000"
+						>
+							<strong>Exam</strong>
+						</td>
+						<td
+							width="40"
+							align="center"
+							style="border: 1px solid #000000"
+						>
+							<strong>Course Score</strong>
+						</td>
+						<td
+							width="40"
+							align="center"
+							style="border: 1px solid #000000"
+						>
+							<strong>Grade Point</strong>
+						</td>
+						<td
+							width="40"
+							align="center"
+							style="border: 1px solid #000000"
+						>
+							<strong>Score Status</strong>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<div class="page-footer">
+	<table
+		width="940"
+		border="0"
+		cellspacing="2"
+		cellpadding="0"
+		align="center"
+	>
+		<tbody>
+		<tr>
+			<td colspan="7">
+				<table width="940" border="0" cellspacing="0" cellpadding="0">
+					<tbody>
+					<tr>
+						<td>&nbsp;</td>
+						<td>&nbsp;</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td align="center">
+							_________________________________<br/>
+							<br/><strong style="text-align: center"
+						>Exam. Officer</strong
+						>
+						</td>
+						<td align="center">
+							_________________________________<br/>
+							<br/><strong style="text-align: center">H.O.D</strong>
+						</td>
+						<td align="center">
+							_________________________________<br/>
+							<br/><strong style="text-align: center">Director</strong>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<table>
+	<thead>
+	<tr>
+		<td>
+			<!--place holder for the fixed-position header-->
+			<div class="page-header-space"></div>
+		</td>
+	</tr>
+	</thead>
+
+	<tbody>
+	<tr>
+		<td>
+			<!--*** CONTENT GOES HERE ***-->
+			<table
+				width="1200"
+				style="font-size: 12px; border: none"
+				cellpadding="0"
+				cellspacing="0"
+			>
+				<tbody>
+				{items}
+				<tr>
+					<td
+						width="40"
+						height="20"
+						align="center"
+						style="border: 1px solid #000000"
+					>
+						{count}
+					</td>
+					<td width="65" align="center" style="border: 1px solid #000000">
+						{matric_number}
+					</td>
+					<td width="40" align="center" style="border: 1px solid #000000">
+						{ca}
+					</td>
+					<td
+						width="40"
+						align="center"
+						style="border: 1px solid #000000"
+					>
+						{exam}
+					</td>
+					<td
+						width="40"
+						align="center"
+						style="border: 1px solid #000000"
+					>
+						{total}
+					</td>
+					<td
+						width="40"
+						align="center"
+						style="border: 1px solid #000000"
+					>
+						{grade_point}
+					</td>
+					<td
+						width="40"
+						align="center"
+						style="border: 1px solid #000000"
+					>
+						{scored}
+					</td>
+				</tr>
+				{/items}
+				</tbody>
+			</table>
+		</td>
+	</tr>
+	</tbody>
+
+	<tfoot>
+	<tr>
+		<td>
+			<!--place holder for the fixed-position footer-->
+			<div class="page-footer-space"></div>
+		</td>
+	</tr>
+	</tfoot>
+</table>
+</body>
+</html>

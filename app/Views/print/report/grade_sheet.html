@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		#pageNumber:before {
+			content: "Page " counter(page);
+			counter-increment: page;
+		}
+
+		@media screen {
+			.page-header, .page-header-space, .page-footer, .page-footer-space {
+				display: none;
+			}
+		}
+
+		@media all {
+			.page-break {
+				display: none;
+			}
+		}
+
+		@media print {
+			table {
+				page-break-after: auto
+			}
+
+			tr {
+				page-break-inside: avoid;
+				page-break-after: auto
+			}
+
+			td {
+				page-break-inside: avoid;
+				page-break-after: auto
+			}
+		}
+
+		.page-header, .page-header-space {
+			height: 179px;
+			background: #fff;
+		}
+
+		.page-footer, .page-footer-space {
+			height: 120px;
+			background: #fff;
+
+		}
+
+		.page-footer {
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+		}
+
+		.page-header {
+			position: fixed;
+			top: 0mm;
+			width: 100%;
+		}
+
+		@page {
+			margin: 5mm;
+		}
+
+		@media print {
+			thead {
+				display: table-header-group;
+			}
+
+			tfoot {
+				display: table-footer-group;
+			}
+
+			button {
+				display: none;
+			}
+
+			body {
+				margin: 0;
+			}
+		}
+	</style>
+</head>
+<body>
+
+<button onClick="history.back()"
+		style="width: 250px; padding: 10px; height: 45px; font-size: 22px; background: #000000; color: #FFFFFF; border: none; cursor: pointer">
+	GO BACK
+</button>
+<button onClick="window.print()"
+		style="width: 250px; padding: 10px; height: 45px; font-size: 22px; background: blue; color: #FFFFFF; border: none; cursor: pointer">
+	PRINT
+</button>
+
+<div class="page-header">
+	<table width="1200" cellpadding="0" cellspacing="0">
+		<tbody>
+		<tr>
+			<td>
+				<table width="700">
+					<tbody>
+					<tr>
+						<td width="110"><img src="{institution_logo}" alt="ui-logo-min" height="100"></td>
+						<td width="594">
+							<table width="583">
+								<tbody>
+								<tr>
+									<td width="579" style="font-size:14px;"><strong>UNIVERSITY OF IBADAN</strong></td>
+								</tr>
+								<tr>
+									<td style="font-size:14px;"><strong>Distance Learning Centre</strong></td>
+								</tr>
+								<tr>
+									<td style="font-size:14px;"><strong>DEPARTMENT OF {department}</strong></td>
+								</tr>
+								<tr>
+									<td style="font-size:14px;"><strong>{level} {session} ACADEMIC SESSION</strong></td>
+								</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><span id="pageNumber"></span></td>
+		</tr>
+		</tbody>
+	</table>
+	<table>
+		<thead>
+		<tr>
+			<td>
+				<table width="1500" style="font-size: 9px;" cellpadding="0" cellspacing="0">
+					<tbody>
+					<tr>
+						<td width="685" colspan="11" align="left" style="border: none;font-size: 14px;"><strong>&nbsp;{programme}</strong>
+						</td>
+						<td width="815" colspan="22" align="right" style="border: none;font-size: 14px;"><strong>{date_time}</strong>
+						</td>
+					</tr>
+					<tr>
+						<td width="40" height="auto" align="center"><strong>&nbsp;</strong></td>
+						<td width="70" style="border: none">&nbsp;&nbsp;&nbsp;<strong>REG.NO</strong></td>
+						<td width="175" style="border: none">&nbsp;&nbsp;&nbsp;<strong>NAME</strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_1}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_2}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_3}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_4}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_5}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_6}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_7}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_8}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_9}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_10}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_11}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_12}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_13}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_14}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_15}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_16}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_17}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_18}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_19}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_20}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_21}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_22}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_23}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_24}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_25}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_26}</span></strong></td>
+						<td width="45" align="center"><strong><span
+							style="float: left; white-space: nowrap; width: 45px;">{course_27}</span></strong></td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		</thead>
+	</table>
+</div>
+
+<div class="page-footer">
+	<table width="940" border="0" cellspacing="2" cellpadding="0" align="center">
+		<tbody>
+		<tr>
+			<td colspan="7">
+				<table width="940" border="0" cellspacing="0" cellpadding="0">
+					<tbody>
+					<tr>
+						<td align="center">&nbsp;</td>
+						<td align="center">&nbsp;</td>
+						<td align="center">&nbsp;</td>
+					</tr>
+					<tr>
+						<td align="center">_________________________________<br> <br><strong style="text-align: center">Exam.
+							Officer</strong></td>
+						<td align="center">_________________________________<br> <br><strong style="text-align: center">H.O.D</strong>
+						</td>
+						<td align="center">_________________________________<br> <br><strong style="text-align: center">Director</strong>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<table>
+
+	<thead>
+	<tr>
+		<td>
+			<!--place holder for the fixed-position header-->
+			<div class="page-header-space"></div>
+		</td>
+	</tr>
+	</thead>
+
+	<tbody>
+	<tr>
+		<td>
+			<!--*** CONTENT GOES HERE ***-->
+			<table width="1500" style="font-size: 12px; border:none" cellpadding="0" cellspacing="0">
+				<tbody>
+				{grade_sheet}
+				<tr>
+					<td width="40" style="border: 1px solid #000000" align="center">{count}</td>
+					<td width="70" style="border: 1px solid #000000">&nbsp;&nbsp;{matric_number}</td>
+					<td width="175" style="border: 1px solid #000000">
+						<table width="175" cellspacing="4">
+							<tbody>
+							<tr>
+								<td style="border: none; font-size: 12px">{fullname}</td>
+							</tr>
+							</tbody>
+						</table>
+					</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_1}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_2}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_3}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_4}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_5}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_6}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_7}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_8}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_9}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_10}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_11}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_12}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_13}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_14}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_15}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_16}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_17}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_18}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_19}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_20}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_21}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_22}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_23}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_24}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_25}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_26}</td>
+					<td width="45" style="border: 1px solid #000000" align="center">{score_27}</td>
+					{/grade_sheet}
+				</tr>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+	</tbody>
+
+	<tfoot>
+	<tr>
+		<td>
+			<!--place holder for the fixed-position footer-->
+			<div class="page-footer-space"></div>
+		</td>
+	</tr>
+	</tfoot>
+
+</table>
+
+</body>
+</html>

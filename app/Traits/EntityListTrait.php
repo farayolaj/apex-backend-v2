@@ -14,7 +14,7 @@ trait EntityListTrait
     public function list(string $entity, array $extraFilter = []): array
     {
         $totalLength = 0;
-        $orderBy = 'ID asc';
+        $orderBy = 'ID desc';
         $param = request()->getGet(null);
 
         // get the parameter for paging
@@ -64,12 +64,12 @@ trait EntityListTrait
         $toReturn = array();
         if (empty($data)) {
             return [
-                'length' => 0,
+                'paging' => 0,
                 'table_data' => null,
             ];
         }
         $paging = ($data[1] && is_array($data[1])) ? $data[1][0]['totalCount'] : $data[1];
-        $toReturn['length'] = (int)$paging;
+        $toReturn['paging'] = (int)$paging;
         $toReturn['table_data'] = $data[0];
 
         return $toReturn;

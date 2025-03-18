@@ -34,7 +34,7 @@ class Api extends BaseController {
 			return $webApiModel->$method($args);
 		} else {
 			return $this->response->setStatusCode(405)
-				->setJSON(['status' => false, 'message' => 'Operation denied']);
+				->setJSON(['status' => false, 'message' => 'denied']);
 		}
 	}
 

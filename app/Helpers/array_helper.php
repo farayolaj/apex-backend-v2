@@ -457,18 +457,15 @@ function listAPIEntities($db): array
 
 function listEntities($db): array
 {
-	if (!$dbResult = cache('nairaboom_tables')) {
-		$query = 'show tables';
-		$dbResult = $db->query($query);
-		$dbResult = $dbResult->getResultArray();
-
+	if (!$dbResult = cache('entity_api_tables')) {
+        $dbResult = $db->listTables();
 		// save into cache
-		cache()->save('nairaboom_tables', $dbResult, 900); // save for 15min
+		cache()->save('entity_api_tables', $dbResult, 3600); // save for 1hr
 	}
 
 	$result = [];
 	foreach ($dbResult as $res) {
-		$result[] = reset($res);
+		$result[] = $res;
 	}
 	return $result;
 }
@@ -484,14 +481,29 @@ function getAPIEntityTranslation(): array
 function getEntityTranslation(): array
 {
 	// this gets the web translation from the database
-	return array(
-		'forget_password' => 'requestForgetPassword',
-		'change_password' => 'changePassword',
-		'signup' => 'register',
-		'auth' => 'login',
-        'offices' => 'offices_post',
-        'candidates' => 'offices_candidate',
-	);
+	return [
+        'create_users' => 'users_custom',
+        'transaction_invoice' => 'transaction_custom',
+        'payment_description' => 'fee_description',
+        'audit_logs' => 'users_log',
+        'finance_transaction' => 'transaction',
+        'finance_archive_transaction' => 'transaction_archive',
+        'admission_payment' => 'applicant_payment',
+        'admission_create' => 'admission',
+        'banks' => 'bank_lists',
+        'bank_to_user' => 'user_banks',
+        'outflow_transaction' => 'transaction_outflow',
+        'app_setting' => 'settings',
+        'sundry_defer_finance' => 'sundry_finance_transaction',
+        'finance_projects' => 'projects',
+        'finance_project_task' => 'project_tasks',
+        'invoice_requests' => 'user_requests',
+        'staff_requests' => 'user_requests',
+        'create_new_users' => 'staffs',
+        'all_roles' => 'roles',
+        'app_role' => 'roles',
+        'app_role_permission' => 'roles_permission',
+	];
 }
 
 if (!function_exists('useGenerators')) {
