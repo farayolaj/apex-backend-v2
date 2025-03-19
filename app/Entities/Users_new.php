@@ -253,4 +253,23 @@ class Users_new extends Crud
         return $result;
     }
 
+    public function getUserDetails(object $user)
+    {
+        $content = [
+            'staff' => 'staffs',
+            'contractor' => 'contractors',
+        ];
+        $entity = $user->user_type ?? 'staff';
+        $entity = strtolower($entity);
+        $entityModel = $content[$entity] ?? null;
+        if ($entityModel) {
+            $entityModel = loadClass($entityModel);
+            $entityModel = $entityModel->getWhere(['id' => $user->user_table_id], $c, 0, null, false);
+            if ($entityModel) {
+                $entityModel = $entityModel[0];
+            }
+        }
+        return $entityModel;
+    }
+
 }

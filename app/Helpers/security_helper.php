@@ -5,6 +5,35 @@ use Firebase\JWT\Key;
 use App\Libraries\ApiResponse;
 use App\Models\WebSessionManager;
 
+if (!function_exists("encryptData")) {
+    function encryptData($data): string
+    {
+        $key = getenv('customEncrytKey');
+        $method = 'aes-256-cbc';
+        $ivSize = openssl_cipher_iv_length($method);
+        $iv = openssl_random_pseudo_bytes($ivSize);
+        $encrypted = openssl_encrypt($data, $method, $key, 0, $iv);
+        return base64_encode($iv . $encrypted);
+    }
+}
+
+if (!function_exists('decryptData')) {
+    function decryptData($data)
+    {
+        $key = getenv('customEncrytKey');;
+        if (strlen((string) $data) < 20) {
+            return $data;
+        }
+        $method = 'aes-256-cbc';
+        $ivSize = openssl_cipher_iv_length($method);
+        $data = base64_decode($data);
+
+        $iv = substr($data, 0, $ivSize);
+        $encrypted = substr($data, $ivSize);
+        return openssl_decrypt($encrypted, $method, $key, 0, $iv);
+    }
+}
+
 if(!function_exists('permissionAccess')){
     function permissionAccess(string $permission, ?string $message = null)
     {

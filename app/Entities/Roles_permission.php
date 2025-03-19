@@ -180,10 +180,11 @@ class Roles_permission extends Crud
 	public function loadExtras(array $item, bool $ignoreRole = true): array
 	{
 		if ($item['role_id']) {
+            $rolesModel = loadClass('roles');
 			$roles = json_decode($item['role_id'], true);
 			$rolesArr = [];
 			foreach ($roles as $role) {
-				$temp = $this->roles->getWhere(['id' => $role], $count, 0, null, false);
+				$temp = $rolesModel->getWhere(['id' => $role], $count, 0, null, false);
 				if ($temp) {
 					$temp = $temp[0];
 					$rolesArr[] = $temp->name;

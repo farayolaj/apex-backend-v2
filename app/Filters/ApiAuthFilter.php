@@ -121,25 +121,57 @@ class ApiAuthFilter implements FilterInterface
             $token = getBearerToken();
             $token = decodeJwtToken($token);
             $token_array = (array) $token;
-            $user_id = isset($token_array['data']) ? $token_array['data']->id : $token_array['sub'];
-            $user_type = isset($token_array['data']) ? $token_array['data']->type : ($token_array['acc_type'] ?? null);
 
+            $user_id = null;
+            $user_type = null;
+
+            if (isset($token_array['data'])) {
+                $user_id = $token_array['data']->id;
+                $user_type = $token_array['data']->type;
+            } else if (isset($token_array['sub'])) {
+                $sub = explode('-', $token_array['sub']); // Todo: change - to ::
+                $user_type = $sub[0];
+                $user_id = $sub[1];
+            } else {
+                $message = 'Invalid token';
+                return false;
+            }
+
+            $departmentModel = loadClass('department');
+            $excludeUsers = [AuthEnum::STUDENT->value, AuthEnum::APPLICANT->value];
             // coming from the auth server
-            if(isset($token_array['acc_type'])){
-                $userNew = new Users_new;
-                $userNew->id = $token_array['acc_type'];
-                if(!$userNew->load()){
+            if ($user_id && !in_array($user_type, $excludeUsers)) {
+                $userNew = new Users_new();
+                $userNew->id = $user_id;
+
+                if (!$userNew->load()) {
                     return false;
                 }
-                $token_array['data'] = $userNew->toArray();
+
+                $payload = array_merge($userNew->toArray(), ["type" => $user_type]);
+                $payload['user_department'] = null;
+
+                $userDetails = $userNew->getUserDetails($userNew);
+                if ($userDetails) {
+                    $payload = array_merge($payload, $userDetails->toArray());
+                    $payload['id'] = $user_id;
+                    if ($userDetails->user_department && $userDetails->user_department != 0) {
+                        $department = $departmentModel->getUserDepartment($userDetails->user_department);
+                        if ($department) {
+                            $payload['user_department'] = [
+                                'id' => $department->id,
+                                'name' => $department->name,
+                            ];
+                        }
+                    }
+                }
+                $token_array['data'] = $payload;
             }
 
             $currentUser = false;
             if ($user_type === AuthEnum::STUDENT->value) {
                 $students = new Students;
                 $tempUser = $students->getWhere(['id' => $user_id], $c, 0, null, false);
-                $tempUser[0]->password = null;
-                $tempUser[0]->user_pass = null;
                 $currentUser = $tempUser[0];
             }
 

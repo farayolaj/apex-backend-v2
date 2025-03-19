@@ -5,8 +5,11 @@
 
 namespace App\Models\Api;
 
+use App\Libraries\ApiResponse;
 use App\Models\Api\EntityCreator;
 use App\Traits\EntityListTrait;
+use App\Traits\UploadTrait;
+use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Model;
 use App\Models\Api\EntityDetails;
 use App\Models\FormConfig;
@@ -15,9 +18,9 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class EntityModel
 {
-    use EntityListTrait;
+    use EntityListTrait, UploadTrait;
 
-    protected $db;
+    protected BaseConnection $db;
 
     private string $crudNameSpace = 'App\Models\Crud';
 
@@ -47,7 +50,7 @@ class EntityModel
                         return $entityObject->$entity($args);
                     } else {
                         $result = $this->listEntity($entity);
-                        return sendApiResponse(true, 'Success', $result);
+                        return ApiResponse::success('Success', $result);
                     }
 
                 } elseif ($this->request->getMethod() === 'POST') {
@@ -64,9 +67,9 @@ class EntityModel
                         $id = $args[0];
                         $result = $this->detail($entity, $id, $param);
                         if (!$result) {
-                            return sendApiResponse(false, 'No data available');
+                            return ApiResponse::error('No data available');
                         }
-                        return sendApiResponse(true, 'Success', $result);
+                        return ApiResponse::success('Success', $result);
                     } elseif ($this->request->getMethod() === 'POST') {
                         $values = $this->request->getPost(null);
                         $id = $args[0];
@@ -88,9 +91,9 @@ class EntityModel
                     if (strtolower($args[0]) == 'delete') {
                         $id = $args[1];
                         if ($this->delete($entity, $id)) {
-                            return sendApiResponse(true, 'Success');
+                            return ApiResponse::success('Success');
                         }
-                        return sendApiResponse(false, 'Unable to delete item');
+                        return ApiResponse::error('Unable to delete item');
                     }
 
                     // handle the issue with the status
@@ -103,7 +106,7 @@ class EntityModel
                         } else {
                             $status = $this->enable($entity, $id);
                         }
-                        return sendApiResponse($status, $status ? 'Success' : 'Unable to delete item');
+                        return $status ? ApiResponse::success('Success') : ApiResponse::error('Unable to disable item');
                     }
 
                     if (strtolower($args[0]) == 'toggle_action') {
@@ -114,7 +117,7 @@ class EntityModel
                         if ($operation === 'toggle_action') {
                             $status = $this->updateEntityAction($entity, $id, $values);
                         }
-                        return sendApiResponse($status, $status ? 'Success' : 'Unable to disable item');
+                        return $status ? ApiResponse::success('Success') : ApiResponse::error('Unable to update item');
                     }
 
                 }
@@ -127,9 +130,9 @@ class EntityModel
                         $type = $args[1];
                         $id = $args[2];
                         if ($this->delete($entity, $id, $type)) {
-                            return sendApiResponse(true, 'Success');
+                            return ApiResponse::success('Success');
                         }
-                        return sendApiResponse(false, 'Unable to delete item');
+                        return ApiResponse::error('Unable to delete item');
                     }
 
                     // handle the issue with the status
@@ -142,15 +145,15 @@ class EntityModel
                         } else {
                             $status = $this->enable($entity, $id);
                         }
-                        return sendApiResponse($status, $status ? 'Success' : 'Unable to disable item');
+                        return $status ? ApiResponse::success('Success') : ApiResponse::error('Unable to disable item');
                     }
                 }
                 return null;
             }
 
-            return $this->response->setStatusCode(404)->setJSON(['status' => false, 'message' => 'Resource not found']);
+            return ApiResponse::error('Resource not found', null, 404);
         } catch (\Exception $e) {
-            return sendApiResponse(false, $e->getMessage());
+            return ApiResponse::error($e->getMessage());
         }
 
     }
@@ -165,56 +168,24 @@ class EntityModel
     {
         $entity = loadClass($entity);
         $message = 'success';
-        $content = $this->loadUploadedFileContent($message);
+        $content = $this->getUploadedFileContent($message);
         if (!$content) {
-            displayJson(false, 'not uploaded content found');
-            return false;
+            return ApiResponse::error('Not uploaded content found');
         }
         $content = trim($content);
         $array = stringToCsv($content);
         $header = array_shift($array);
         if (!$this->validateHeader($entity, $header)) {
             $message = 'column does not match, please check the column template and try again';
-            displayJson(false, $message);
-            return false;
+            return ApiResponse::error($message);
         }
         $result = $entity->bulkUpload($header, $array, $message);
-        displayJson($result, $message);
+        return $result ? ApiResponse::success($message) : ApiResponse::error($message);
     }
 
-    private function loadUploadedFileContent(string &$message)
+    private function getUploadedFileContent(string &$message): bool|string
     {
-        $filename = 'upload_form';
-        $status = $this->checkFile($filename, $message);
-        if (!$status) {
-            return false;
-        }
-        if (!endsWith($_FILES[$filename]['name'], '.csv')) {
-            $message = "invalid file format";
-            return false;
-        }
-        $path = $_FILES[$filename]['tmp_name'];
-        $content = file_get_contents($path);
-        return $content;
-    }
-
-    private function checkFile(string $name, string &$message = null)
-    {
-        $error = !$_FILES[$name]['name'] || $_FILES[$name]['error'];
-        if ($error) {
-            if ((int)$error === 2) {
-                $message = 'file larger than expected';
-                return false;
-            }
-            return false;
-        }
-
-        if (!is_uploaded_file($_FILES[$name]['tmp_name'])) {
-            $this->db->transRollback();
-            $message = 'uploaded file not found';
-            return false;
-        }
-        return true;
+        return self::loadUploadedFileContent('upload_form', false, $message);
     }
 
     private function delete(string $entity, int $id): bool
@@ -292,7 +263,7 @@ class EntityModel
         if (property_exists($entity, 'allowedFields')) {
             $allowParam = $entity::$allowedFields;
             if (!$this->validateAllowedParameter($param, $allowParam)) {
-                return sendApiResponse(false, 'allowed parameters for update are:', ['parameters' => $allowParam]);
+                return ApiResponse::error('Allowed parameters for update are:', ['parameters' => $allowParam]);
             }
         }
         return $entityCreator->update($tempEntity, $id, true, $param);

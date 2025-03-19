@@ -27,21 +27,9 @@ trait AccountTrait
 
             $banks = $userBankModel->getWhereNonObject(['users_id' => $currentUser->id], $c, 0, null, false);
             $permissions = $rolesPermissionModel->permissionQuery($currentUser->id);
-            $userDetails = $this->getUserDetails($currentUser);
-            $payload['user_department'] = null;
 
-            if ($userDetails) {
-                $payload = array_merge($payload, $userDetails->toArray());
-                if ($userDetails->user_department && $userDetails->user_department != 0) {
-                    $department = $this->getUserDepartment($userDetails->user_department);
-                    if ($department) {
-                        $payload['user_department'] = [
-                            'id' => $department->id,
-                            'name' => $department->name,
-                        ];
-                        $loginType = 'department';
-                    }
-                }
+            if (!empty($payload['user_department'])) {
+                $loginType = 'department';
             }
 
             if (!empty($payload['units_id'])) {

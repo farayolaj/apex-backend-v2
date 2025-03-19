@@ -1,5 +1,8 @@
 <?php
-require_once('application/models/Crud.php');
+
+namespace App\Entities;
+
+use App\Models\Crud;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the department table.
@@ -209,6 +212,11 @@ class Department extends Crud
 		$res2 = $res2->result_array();
 		return [$res, $res2];
 	}
+
+    public function getUserDepartment($user_department)
+    {
+        return $this->db->table('department')->getWhere(['id' => $user_department, 'type' => 'academic'])->getRow();
+    }
 
 
 }
