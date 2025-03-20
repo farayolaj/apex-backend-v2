@@ -1,4 +1,7 @@
 <?php
+namespace App\Entities;
+
+use App\Models\Crud;
 
 use App\Entities\Request_charge;
 
@@ -198,9 +201,7 @@ class Request_type_charges extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Request_type.php');
-		$resultObject = new Request_type($result[0]);
-		return $resultObject;
+		return new \App\Entities\Request_type($result[0]);
 	}
 
 	protected function getRequest_charge()
@@ -214,9 +215,7 @@ class Request_type_charges extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Request_charges.php');
-		$resultObject = new Request_charges($result[0]);
-		return $resultObject;
+		return new \App\Entities\Request_charges($result[0]);
 	}
 
 

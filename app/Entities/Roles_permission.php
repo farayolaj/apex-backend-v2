@@ -125,11 +125,11 @@ class Roles_permission extends Crud
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'role_assign_permission_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('role_assign_permission_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'role_assign_permission_deletion', $currentUser->id, $id);
+			logAction($this->db, 'role_assign_permission_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -148,8 +148,8 @@ class Roles_permission extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -160,9 +160,9 @@ class Roles_permission extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 
 		return [$res, $res2];

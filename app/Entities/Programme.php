@@ -1,11 +1,12 @@
 <?php
-require_once('application/models/Crud.php');
+namespace App\Entities;
+
+use App\Models\Crud;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the programme table.
  */
-require_once APPPATH . 'constants/Admission.php';
-
+use App\Enums\AdmissionEnum as Admission;
 class Programme extends Crud
 {
 	protected static $tablename = 'Programme';
@@ -135,49 +136,45 @@ class Programme extends Crud
 	protected function getFaculty()
 	{
 		$query = 'SELECT * FROM faculty WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Faculty.php');
-		$resultObject = new Faculty($result[0]);
-		return $resultObject;
+		return new \App\Entities\Faculty($result[0]);
 	}
 
 	protected function getDepartment()
 	{
 		$query = 'SELECT * FROM department WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Department.php');
-		return new Department($result[0]);
+		return new \App\Entities\Department($result[0]);
 	}
 
 	protected function getAcademic_record()
 	{
 		$query = 'SELECT * FROM academic_record WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Academic_record.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Academic_record($value);
+    		$resultObjects[] = new \App\Entities\Academic_record($value);
 		}
 
 		return $resultObjects;
@@ -186,16 +183,15 @@ class Programme extends Crud
 	protected function getAdmission_programme_requirements()
 	{
 		$query = 'SELECT * FROM admission_programme_requirements WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Admission_programme_requirements.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Admission_programme_requirements($value);
+    		$resultObjects[] = new \App\Entities\Admission_programme_requirements($value);
 		}
 
 		return $resultObjects;
@@ -204,16 +200,15 @@ class Programme extends Crud
 	protected function getApplicants()
 	{
 		$query = 'SELECT * FROM applicants WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Applicants.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Applicants($value);
+    		$resultObjects[] = new \App\Entities\Applicants($value);
 		}
 
 		return $resultObjects;
@@ -222,16 +217,15 @@ class Programme extends Crud
 	protected function getCourse_configuration()
 	{
 		$query = 'SELECT * FROM course_configuration WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Course_configuration.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Course_configuration($value);
+    		$resultObjects[] = new \App\Entities\Course_configuration($value);
 		}
 
 		return $resultObjects;
@@ -240,16 +234,15 @@ class Programme extends Crud
 	protected function getCourse_mapping()
 	{
 		$query = 'SELECT * FROM course_mapping WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Course_mapping.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Course_mapping($value);
+    		$resultObjects[] = new \App\Entities\Course_mapping($value);
 		}
 
 		return $resultObjects;
@@ -258,16 +251,15 @@ class Programme extends Crud
 	protected function getGrade_sheet_temp_table()
 	{
 		$query = 'SELECT * FROM grade_sheet_temp_table WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Grade_sheet_temp_table.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Grade_sheet_temp_table($value);
+    		$resultObjects[] = new \App\Entities\Grade_sheet_temp_table($value);
 		}
 
 		return $resultObjects;
@@ -276,16 +268,15 @@ class Programme extends Crud
 	protected function getMatric_number_generated()
 	{
 		$query = 'SELECT * FROM matric_number_generated WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Matric_number_generated.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Matric_number_generated($value);
+    		$resultObjects[] = new \App\Entities\Matric_number_generated($value);
 		}
 
 		return $resultObjects;
@@ -294,16 +285,15 @@ class Programme extends Crud
 	protected function getTransaction()
 	{
 		$query = 'SELECT * FROM transaction WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Transaction.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Transaction($value);
+    		$resultObjects[] = new \App\Entities\Transaction($value);
 		}
 
 		return $resultObjects;
@@ -312,16 +302,15 @@ class Programme extends Crud
 	protected function getTransaction1()
 	{
 		$query = 'SELECT * FROM transaction1 WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Transaction1.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Transaction1($value);
+    		$resultObjects[] = new \App\Entities\Transaction1($value);
 		}
 
 		return $resultObjects;
@@ -330,16 +319,15 @@ class Programme extends Crud
 	protected function getTransaction2()
 	{
 		$query = 'SELECT * FROM transaction2 WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Transaction2.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Transaction2($value);
+    		$resultObjects[] = new \App\Entities\Transaction2($value);
 		}
 
 		return $resultObjects;
@@ -348,16 +336,15 @@ class Programme extends Crud
 	protected function getTransaction_archive()
 	{
 		$query = 'SELECT * FROM transaction_archive WHERE programme_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Transaction_archive.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Transaction_archive($value);
+    		$resultObjects[] = new \App\Entities\Transaction_archive($value);
 		}
 
 		return $resultObjects;
@@ -365,11 +352,11 @@ class Programme extends Crud
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'faculty_programme_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('faculty_programme_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'programme_deletion', $currentUser->id, $id);
+			logAction($this->db, 'programme_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -390,8 +377,8 @@ class Programme extends Crud
 		}
 
 		if ($len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -402,18 +389,20 @@ class Programme extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 
 	public function getProgrammeById($id, $getCode = false)
 	{
-		$query = $this->db->get_where('programme', array('id' => $id, 'active' => 1));
+		$query = $this->db->table('programme')
+                  ->where('id', $id)->where('active', 1)
+                  ->get();
 
-		if ($query->num_rows() > 0) {
-			$row = $query->row();
+		if ($query->getNumRows() > 0) {
+			$row = $query->getRow();
 			return ($getCode == true) ? $row->code : $row->name;
 		} else {
 			return null;
@@ -423,10 +412,12 @@ class Programme extends Crud
 	public function getProgrammeIdByName($name)
 	{
 		$name = strtolower($name);
-		$query = $this->db->get_where('programme', array('name' => $name));
+		$query = $this->db->table('programme')
+                  ->where('name', $name)
+                  ->get();
 
-		if ($query->num_rows() > 0) {
-			$row = $query->row();
+		if ($query->getNumRows() > 0) {
+			$row = $query->getRow();
 			return $row->id;
 		} else {
 			return '';
@@ -451,10 +442,12 @@ class Programme extends Crud
 
 	public function getFacultyByProgramme($id)
 	{
-		$query = $this->db->get_where('programme', array('id' => $id, 'active' => 1));
+		$query = $this->db->table('programme')
+                  ->where('id', $id)->where('active', 1)
+                  ->get();
 
-		if ($query->num_rows() > 0) {
-			return $query->row();
+		if ($query->getNumRows() > 0) {
+			return $query->getRow();
 		} else {
 			return null;
 		}
@@ -462,7 +455,7 @@ class Programme extends Crud
 
 	public function applicantProgramme(){
 		$admissionSession = get_setting('admission_session_update');
-		$admission = Admission::CHANGE_MODE_OF_STUDY;
+		$admission = Admission::CHANGE_MODE_OF_STUDY->value;
 		$query = "select programme.id,upper(programme.name) as name from programme join department on department.id=programme.department_id join faculty on faculty.id=programme.faculty_id join admission_programme_requirements on programme.id=admission_programme_requirements.programme_id and admission_programme_requirements.active=1 and admission_programme_requirements.session=? and admission_id=? where programme.active=1";
 		return $this->query($query, [$admissionSession, $admission]);
 	}

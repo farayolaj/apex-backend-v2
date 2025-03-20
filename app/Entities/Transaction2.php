@@ -1,6 +1,9 @@
 <?php
-		require_once('application/models/Crud.php');
-		/**
+namespace App\Entities;
+
+use App\Models\Crud;
+
+/**
 		* This class  is automatically generated based on the structure of the table. And it represent the model of the transaction2 table.
 		*/
 		class Transaction2 extends Crud
@@ -270,34 +273,30 @@ function getDate_payment_communicatedFormField($value=''){
 		
 protected function getPayment(){
 	$query ='SELECT * FROM payment WHERE id=?';
-	if (!isset($this->array['ID'])) {
+	if (!isset($this->array['id'])) {
 		return null;
 	}
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Payment.php');
-	$resultObject = new Payment($result[0]);
-	return $resultObject;
+	return new \App\Entities\Payment($result[0]);
 }
 		
 protected function getProgramme(){
 	$query ='SELECT * FROM programme WHERE id=?';
-	if (!isset($this->array['ID'])) {
+	if (!isset($this->array['id'])) {
 		return null;
 	}
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Programme.php');
-	$resultObject = new Programme($result[0]);
-	return $resultObject;
+	return new \App\Entities\Programme($result[0]);
 }
 		}
-		?>
+		

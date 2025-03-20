@@ -1,8 +1,9 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/OutflowStatus.php';
+use App\Models\Crud;
 
+use App\Enums\OutflowStatusEnum as OutflowStatus;
 /**
  * This class is automatically generated based on the structure of the table.
  * And it represent the model of the transaction_request table
@@ -357,16 +358,14 @@ class Transaction_request extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Request_type.php');
-		$resultObject = new Request_type($result[0]);
-		return $resultObject;
+		return new \App\Entities\Request_type($result[0]);
 	}
 
 	public function getPendingFundTransaction()
 	{
 		$query = "SELECT batch_ref from transaction_request where payment_status = ? and payment_status_description <> ? 
         and (rrr_code is not null or rrr_code != '') group by batch_ref";
-		return $this->query($query, ['00', OutflowStatus::SUCCESSFUL]);
+		return $this->query($query, ['00', OutflowStatus::SUCCESSFUL->value]);
 	}
 
 	public function getUserRequestByTransaction(string $batchRef)
@@ -404,12 +403,12 @@ class Transaction_request extends Crud
 			and a.payment_status_description = ?
 			GROUP BY months.month ORDER BY months.month ASC
 		";
-		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT]);
+		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT->value]);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 	public function getLast7DaysTransaction()
@@ -427,12 +426,12 @@ class Transaction_request extends Crud
 			and a.payment_status_description = ?
 			GROUP BY days.day ORDER BY days.day ASC
 		";
-		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT]);
+		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT->value]);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 

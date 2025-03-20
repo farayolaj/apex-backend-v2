@@ -1,4 +1,7 @@
 <?php
+namespace App\Entities;
+
+use App\Models\Crud;
 
 use App\Entities\New_request;
 use App\Entities\Project_task;
@@ -370,10 +373,10 @@ class User_requests_archive extends Crud
 	protected function getUser()
 	{
 		$query = 'SELECT * FROM user WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->query($query, [$id]);
 		if (!$result) {
 			return false;
@@ -393,18 +396,16 @@ class User_requests_archive extends Crud
 		if (!$result) {
 			return null;
 		}
-		include_once('Request_type.php');
-		$resultObject = new Request_type($result[0]);
-		return $resultObject;
+		return new \App\Entities\Request_type($result[0]);
 	}
 
 	protected function getProject_task()
 	{
 		$query = 'SELECT * FROM project_task WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->query($query, [$id]);
 		if (!$result) {
 			return false;
@@ -416,10 +417,10 @@ class User_requests_archive extends Crud
 	protected function getNew_request()
 	{
 		$query = 'SELECT * FROM new_request WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->query($query, [$id]);
 		if (!$result) {
 			return false;

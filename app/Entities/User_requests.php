@@ -1,8 +1,9 @@
 <?php
+namespace App\Entities;
 
-require_once('application/models/Crud.php');
-require_once APPPATH . "constants/OutflowStatus.php";
+use App\Models\Crud;
 
+use App\Enums\OutflowStatusEnum as OutflowStatus;
 /**
  * This class is automatically generated based on the structure of the table.
  * And it represent the model of the user_requests table
@@ -332,8 +333,7 @@ class User_requests extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Users_new.php');
-		return new Users_new($result[0]);
+		return new \App\Entities\Users_new($result[0]);
 	}
 
 	protected function getRequest_type()
@@ -347,8 +347,7 @@ class User_requests extends Crud
 		if (!$result) {
 			return null;
 		}
-		include_once('Request_type.php');
-		return new Request_type($result[0]);
+		return new \App\Entities\Request_type($result[0]);
 	}
 
 	protected function getProject_task()
@@ -362,8 +361,7 @@ class User_requests extends Crud
 		if (!$result) {
 			return null;
 		}
-		include_once('Project_tasks.php');
-		return new Project_tasks($result[0]);
+		return new \App\Entities\Project_tasks($result[0]);
 	}
 
 	public function APIList($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy): array
@@ -379,8 +377,8 @@ class User_requests extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -415,8 +413,8 @@ class User_requests extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -461,8 +459,8 @@ class User_requests extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -490,8 +488,8 @@ class User_requests extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -526,8 +524,8 @@ class User_requests extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -550,8 +548,8 @@ class User_requests extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -583,9 +581,9 @@ class User_requests extends Crud
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 
 		return [$res, $res2];
@@ -928,24 +926,24 @@ class User_requests extends Crud
 		";
 		$query = $this->db->query($query);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 	public function getAmountSpentInLast6Month()
 	{
-		$pendingCredit = OutflowStatus::PENDING_CREDIT;
+		$pendingCredit = OutflowStatus::PENDING_CREDIT->value;
 		$query = "SELECT ANY_VALUE(date_format(a.created_at, '%M')) as label, ANY_VALUE(UNIX_TIMESTAMP(a.created_at)) as ord,
 		sum(a.total_amount) as total from transaction_request a where a.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH) 
 		and payment_status_description = ? group by year(a.created_at), month(a.created_at), label order by ord asc";
 		$query = $this->db->query($query, [$pendingCredit]);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 	public function getDirectorAverageProcessingTime()
@@ -961,10 +959,10 @@ class User_requests extends Crud
     	) as a where date_performed is not null and created_at <= date_performed";
 		$query = $this->db->query($query);
 		$result = 0;
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array()[0]['avg_time'];
+		return $query->getResultArray()[0]['avg_time'];
 	}
 
 	public function getDBAverageProcessingTime()
@@ -980,10 +978,10 @@ class User_requests extends Crud
     	) as a where updated_at is not null and date_performed <= updated_at";
 		$query = $this->db->query($query);
 		$result = 0;
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array()[0]['avg_time'];
+		return $query->getResultArray()[0]['avg_time'];
 	}
 
 	public function getLast6MonthDirectives($stage)
@@ -999,24 +997,24 @@ class User_requests extends Crud
 		month(a.created_at), label order by ord asc";
 		$query = $this->db->query($query);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 	public function getLast6MonthProcessAmount()
 	{
-		$pendingCredit = OutflowStatus::PENDING_CREDIT;
+		$pendingCredit = OutflowStatus::PENDING_CREDIT->value;
 		$query = "SELECT ANY_VALUE(date_format(a.created_at, '%M')) as label, ANY_VALUE(UNIX_TIMESTAMP(a.created_at)) as ord,
 		sum(a.total_amount) as total from transaction_request a where a.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH) 
 		and payment_status_description = '$pendingCredit' group by year(a.created_at), month(a.created_at), label order by ord asc";
 		$query = $this->db->query($query);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 

@@ -304,18 +304,16 @@ class Academic_record extends Crud
     protected function getProgramme()
     {
         $query = 'SELECT * FROM programme WHERE id=?';
-        if (!isset($this->array['ID'])) {
+        if (!isset($this->array['id'])) {
             return null;
         }
-        $id = $this->array['ID'];
+        $id = $this->array['id'];
         $result = $this->db->query($query, array($id));
-        $result = $result->result_array();
+        $result = $result->getResultArray();
         if (empty($result)) {
             return false;
         }
-        include_once('Programme.php');
-        $resultObject = new Programme($result[0]);
-        return $resultObject;
+        return new \App\Entities\Programme($result[0]);
     }
 
     /**
@@ -416,4 +414,3 @@ class Academic_record extends Crud
 }
 
 
-?>

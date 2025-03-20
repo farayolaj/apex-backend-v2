@@ -1,8 +1,9 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'traits/ResultManagerTrait.php';
+use App\Models\Crud;
 
+use App\Traits\ResultManagerTrait;
 /**
  * This class is automatically generated based on the structure of the table.
  * And it represent the model of the course_request_claims table
@@ -294,10 +295,10 @@ class Course_request_claims extends Crud
 	protected function getCourse()
 	{
 		$query = 'SELECT * FROM course WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->query($query, [$id]);
 		if (!$result) {
 			return false;
@@ -309,10 +310,10 @@ class Course_request_claims extends Crud
 	protected function getSession()
 	{
 		$query = 'SELECT * FROM session WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->query($query, [$id]);
 		if (!$result) {
 			return false;
@@ -324,10 +325,10 @@ class Course_request_claims extends Crud
 	protected function getCourse_manager()
 	{
 		$query = 'SELECT * FROM course_manager WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->query($query, [$id]);
 		if (!$result) {
 			return false;
@@ -339,10 +340,10 @@ class Course_request_claims extends Crud
 	protected function getUser_request()
 	{
 		$query = 'SELECT * FROM user_request WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->query($query, [$id]);
 		if (!$result) {
 			return false;
@@ -408,7 +409,7 @@ class Course_request_claims extends Crud
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		$currentUser = WebSessionManager::currentAPIUser();
 
 		$filterQuery .= ($filterQuery ? " and " : " where ") . " a.user_id = '{$currentUser->id}' and exists(
 			SELECT * from course_request_claims b where a.id = b.user_request_id
@@ -421,8 +422,8 @@ class Course_request_claims extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -433,9 +434,9 @@ class Course_request_claims extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 		return [$res, $res2];
 	}

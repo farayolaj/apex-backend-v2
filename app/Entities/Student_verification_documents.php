@@ -1,6 +1,7 @@
-<?php 
+<?php
+namespace App\Entities;
 
-require_once('application/models/Crud.php');
+use App\Models\Crud;
 
 /** 
 * This class is automatically generated based on the structure of the table.
@@ -222,4 +223,3 @@ protected function getVerification_documents_requirement(){
  
 }
 
-?>

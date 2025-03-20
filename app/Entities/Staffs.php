@@ -301,8 +301,7 @@ class Staffs extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Staff_department.php');
-		return new Staff_department($result[0]);
+		return new \App\Entities\Staff_department($result[0]);
 	}
 
 	public function getFullname()
@@ -319,13 +318,13 @@ class Staffs extends Crud
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'user_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('user_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
 			$query = "DELETE from users_new where user_table_id=? and user_type='staff'";
 			if ($this->query($query, array($id))) {
-				logAction($this, 'user_deletion', $currentUser->id, $id);
+				logAction($this->db, 'user_deletion', $currentUser->id, $id);
 				return true;
 			}
 		}
@@ -347,8 +346,8 @@ class Staffs extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 
@@ -360,9 +359,9 @@ class Staffs extends Crud
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 		return [$res, $res2];
 	}

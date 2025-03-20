@@ -1,6 +1,7 @@
 <?php
+namespace App\Entities;
 
-require_once('application/models/Crud.php');
+use App\Models\Crud;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -384,9 +385,7 @@ class Transaction_archive extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Transaction.php');
-		$resultObject = new Transaction($result[0]);
-		return $resultObject;
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function APIList($filterList, $queryString, $start, $len, $orderBy)
@@ -496,8 +495,8 @@ class Transaction_archive extends Crud
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$query = $this->db->query($query);
 		$query2 = $this->db->query($query2);
-		$result = $query->result_array();
-		$res2 = $query2->result_array();
+		$result = $query->getResultArray();
+		$res2 = $query2->getResultArray();
 		return [$result, $res2];
 	}
 

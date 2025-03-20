@@ -1,6 +1,9 @@
 <?php
-		require_once('application/models/Crud.php');
-		/**
+namespace App\Entities;
+
+use App\Models\Crud;
+
+/**
 		* This class  is automatically generated based on the structure of the table. And it represent the model of the course table.
 		*/
 		class Course extends Crud
@@ -136,138 +139,130 @@ function getDate_createdFormField($value=''){
 		
 protected function getApproved_courses(){
 	$query ='SELECT * FROM approved_courses WHERE course_id=?';
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Approved_courses.php');
-	$resultobjects = array();
-	foreach ($result as  $value) {
-		$resultObjects[] = new Approved_courses($value);
-	}
+	$resultObjects = [];
+		foreach ($result as $value) {
+    		$resultObjects[] = new \App\Entities\Approved_courses($value);
+		}
 
 	return $resultObjects;
 }
 		
 protected function getCourse_enrollment(){
 	$query ='SELECT * FROM course_enrollment WHERE course_id=?';
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Course_enrollment.php');
-	$resultobjects = array();
-	foreach ($result as  $value) {
-		$resultObjects[] = new Course_enrollment($value);
-	}
+	$resultObjects = [];
+		foreach ($result as $value) {
+    		$resultObjects[] = new \App\Entities\Course_enrollment($value);
+		}
 
 	return $resultObjects;
 }
 		
 protected function getCourse_enrollment1(){
 	$query ='SELECT * FROM course_enrollment1 WHERE course_id=?';
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Course_enrollment1.php');
-	$resultobjects = array();
-	foreach ($result as  $value) {
-		$resultObjects[] = new Course_enrollment1($value);
-	}
+	$resultObjects = [];
+		foreach ($result as $value) {
+    		$resultObjects[] = new \App\Entities\Course_enrollment1($value);
+		}
 
 	return $resultObjects;
 }
 		
 protected function getCourse_enrollment2(){
 	$query ='SELECT * FROM course_enrollment2 WHERE course_id=?';
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Course_enrollment2.php');
-	$resultobjects = array();
-	foreach ($result as  $value) {
-		$resultObjects[] = new Course_enrollment2($value);
-	}
+	$resultObjects = [];
+		foreach ($result as $value) {
+    		$resultObjects[] = new \App\Entities\Course_enrollment2($value);
+		}
 
 	return $resultObjects;
 }
 		
 protected function getCourse_enrollment_archive(){
 	$query ='SELECT * FROM course_enrollment_archive WHERE course_id=?';
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Course_enrollment_archive.php');
-	$resultobjects = array();
-	foreach ($result as  $value) {
-		$resultObjects[] = new Course_enrollment_archive($value);
-	}
+	$resultObjects = [];
+		foreach ($result as $value) {
+    		$resultObjects[] = new \App\Entities\Course_enrollment_archive($value);
+		}
 
 	return $resultObjects;
 }
 		
 protected function getCourse_manager(){
 	$query ='SELECT * FROM course_manager WHERE course_id=?';
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Course_manager.php');
-	$resultobjects = array();
-	foreach ($result as  $value) {
-		$resultObjects[] = new Course_manager($value);
-	}
+	$resultObjects = [];
+		foreach ($result as $value) {
+    		$resultObjects[] = new \App\Entities\Course_manager($value);
+		}
 
 	return $resultObjects;
 }
 		
 protected function getCourse_mapping(){
 	$query ='SELECT * FROM course_mapping WHERE course_id=?';
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Course_mapping.php');
-	$resultobjects = array();
-	foreach ($result as  $value) {
-		$resultObjects[] = new Course_mapping($value);
-	}
+	$resultObjects = [];
+		foreach ($result as $value) {
+    		$resultObjects[] = new \App\Entities\Course_mapping($value);
+		}
 
 	return $resultObjects;
 }
 		
 protected function getCourse_registration_log(){
 	$query ='SELECT * FROM course_registration_log WHERE course_id=?';
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Course_registration_log.php');
-	$resultobjects = array();
-	foreach ($result as  $value) {
-		$resultObjects[] = new Course_registration_log($value);
-	}
+	$resultObjects = [];
+		foreach ($result as $value) {
+    		$resultObjects[] = new \App\Entities\Course_registration_log($value);
+		}
 
 	return $resultObjects;
 }
 		}
-		?>
+		

@@ -107,33 +107,30 @@ class Department extends Crud
 	protected function getFaculty()
 	{
 		$query = 'SELECT * FROM faculty WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Faculty.php');
-		$resultObject = new Faculty($result[0]);
-		return $resultObject;
+		return new \App\Entities\Faculty($result[0]);
 	}
 
 	protected function getMatric_number_generated()
 	{
 		$query = 'SELECT * FROM matric_number_generated WHERE department_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Matric_number_generated.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Matric_number_generated($value);
+    		$resultObjects[] = new \App\Entities\Matric_number_generated($value);
 		}
 
 		return $resultObjects;
@@ -142,16 +139,15 @@ class Department extends Crud
 	protected function getProgramme()
 	{
 		$query = 'SELECT * FROM programme WHERE department_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Programme.php');
-		$resultObjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Programme($value);
+    		$resultObjects[] = new \App\Entities\Programme($value);
 		}
 
 		return $resultObjects;
@@ -159,10 +155,12 @@ class Department extends Crud
 
 	public function getFacultyByDepartment($id)
 	{
-		$query = $this->db->get_where('department', array('id' => $id, 'active' => 1));
+		$query = $this->db->table('department')
+                  ->where('id', $id)->where('active', 1)
+                  ->get();
 
-		if ($query->num_rows() > 0) {
-			return $query->row();
+		if ($query->getNumRows() > 0) {
+			return $query->getRow();
 		} else {
 			return null;
 		}
@@ -170,11 +168,11 @@ class Department extends Crud
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'faculty_department_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('faculty_department_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'department_deletion', $currentUser->id, $id);
+			logAction($this->db, 'department_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -195,8 +193,8 @@ class Department extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -207,9 +205,9 @@ class Department extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 

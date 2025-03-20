@@ -1,8 +1,10 @@
 <?php
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'traits/ResultManagerTrait.php';
-require_once APPPATH . 'constants/ClaimType.php';
+namespace App\Entities;
 
+use App\Models\Crud;
+
+use App\Traits\ResultManagerTrait;
+use App\Enums\ClaimEnum as ClaimType;
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the courses table.
  */
@@ -265,7 +267,7 @@ class Courses extends Crud {
 		foreach ($result as $res) {
 			$course = $this->getDistinctCourseScore($res['course_id'], $session, $semester);
 			if ($course) {
-				$isPaper = strtolower($res['course_type']) === ClaimType::EXAM_PAPER;
+				$isPaper = strtolower($res['course_type']) === ClaimType::EXAM_PAPER->value;
 				$inferEstimate = ResultManagerTrait::calcTutorAmount($res['total'], $isPaper);
 				$inferActual = ResultManagerTrait::calcTutorAmount($course['total'], $isPaper);
 

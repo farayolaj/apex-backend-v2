@@ -1,5 +1,7 @@
 <?php
-require_once 'application/models/Crud.php';
+namespace App\Entities;
+
+use App\Models\Crud;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the document_templates table.
@@ -194,4 +196,3 @@ class Document_templates extends Crud
 
 }
 
-?>

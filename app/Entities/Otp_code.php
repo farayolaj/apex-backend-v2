@@ -1,6 +1,9 @@
 <?php
-		require_once('application/models/Crud.php');
-		/**
+namespace App\Entities;
+
+use App\Models\Crud;
+
+/**
 		* This class  is automatically generated based on the structure of the table. And it represent the model of the otp_code table.
 		*/
 		class Otp_code extends Crud
@@ -91,7 +94,7 @@ public function validateToken($username,$token)
 
 private function updateTokenValidation($token,$username,$status)
 {
-    $this->db->conn_id->escape_string($status);
+    $this->db->escape($status);
     $query ="update otp_code set time_verified=current_timestamp,status=$status where code=? and username=?";
     return $this->db->query($query,array($tokien,$username));
 }

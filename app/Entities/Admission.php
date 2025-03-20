@@ -1,7 +1,7 @@
-<?php 
+<?php
+namespace App\Entities;
 
-require_once('application/models/Crud.php');
-
+use App\Models\Crud;
 
 /** 
 * This class is automatically generated based on the structure of the table.
@@ -192,34 +192,30 @@ public function getCodeFormField($value = ''){
 
 protected function getSession(){
 	$query = 'SELECT * FROM session WHERE id=?';
-	if (!isset($this->array['ID'])) {
+	if (!isset($this->array['id'])) {
 		return null;
 	}
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,[$id]);
-	$result = $result->result_array();
+	$result = $result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Session.php');
-	$resultObject = new Session($result[0]);
-	return $resultObject;
+	return new \App\Entities\Session($result[0]);
 }
 
 protected function getApplicant_payment(){
 	$query = 'SELECT * FROM applicant_payment WHERE id=?';
-	if (!isset($this->array['ID'])) {
+	if (!isset($this->array['id'])) {
 		return null;
 	}
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,[$id]);
-	$result = $result->result_array();
+	$result = $result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Applicant_payment.php');
-	$resultObject = new Applicant_payment($result[0]);
-	return $resultObject;
+	return new \App\Entities\Applicant_payment($result[0]);
 }
 
 
@@ -239,8 +235,8 @@ public function APIList($filterList, $queryString,$start,$len,$orderBy)
 	}
 
 	if ($len && isset($_GET['start'])) {
-		$start = $this->db->conn_id->escape_string($start);
-		$len = $this->db->conn_id->escape_string($len);
+		$start = $this->db->escape($start);
+		$len = $this->db->escape($len);
 		$filterQuery.=" limit $start, $len";
 	}
 
@@ -251,9 +247,9 @@ public function APIList($filterList, $queryString,$start,$len,$orderBy)
 	$query = "SELECT SQL_CALC_FOUND_ROWS admission.*,applicant_payment.description as payment_desc from admission left join applicant_payment on applicant_payment.id = admission.applicant_payment_id $filterQuery";
 	$query2 = "SELECT FOUND_ROWS() as totalCount";
 	$res = $this->db->query($query,$filterValues);
-	$res = $res->result_array();
+	$res = $res->getResultArray();
 	$res2  = $this->db->query($query2);
-	$res2 = $res2->result_array();
+	$res2 = $res2->getResultArray();
 	$res = $this->processList($res);
 
 	return [$res,$res2];

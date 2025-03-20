@@ -1,9 +1,10 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/RemitaResponse.php';
-require_once APPPATH . 'traits/CommonTrait.php';
+use App\Models\Crud;
 
+use App\Libraries\RemitaResponse;
+use App\Traits\CommonTrait;
 /**
  * This class is automatically generated based on the structure of the table.
  * And it represent the model of the transaction_custom table
@@ -406,8 +407,8 @@ class Transaction_custom extends Crud {
 		}
 
 		if ($len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -421,9 +422,9 @@ class Transaction_custom extends Crud {
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 
 		return [$res, $res2];
@@ -440,7 +441,7 @@ class Transaction_custom extends Crud {
 
 	public function loadExtras($item) {
 		if (isset($item['phone_number'])) {
-			$item['phone_number'] = decryptData($this, $item['phone_number']);
+			$item['phone_number'] = decryptData($item['phone_number']);
 		}
 
 		return $item;

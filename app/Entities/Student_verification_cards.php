@@ -1,6 +1,7 @@
-<?php 
+<?php
+namespace App\Entities;
 
-require_once('application/models/Crud.php');
+use App\Models\Crud;
 
 /** 
 * This class is automatically generated based on the structure of the table.
@@ -164,9 +165,7 @@ protected function getStudent(){
 	if (!$result) {
 		return false;
 	}
-	include_once('Students.php');
-	$resultObject = new Students($result[0]);
-	return $resultObject;
+	return new \App\Entities\Students($result[0]);
 }
 
 protected function getVerification_cards(){
@@ -175,9 +174,7 @@ protected function getVerification_cards(){
 	if (!$result) {
 		return false;
 	}
-	include_once('Verification_cards.php');
-	$resultObject = new Verification_cards($result[0]);
-	return $resultObject;
+	return new \App\Entities\Verification_cards($result[0]);
 }
 
 public function APIList($filterList, $queryString,$start,$len, $orderBy)
@@ -193,8 +190,8 @@ public function APIList($filterList, $queryString,$start,$len, $orderBy)
 	}
 
 	if ($len) {
-		$start = $this->db->conn_id->escape_string($start);
-		$len = $this->db->conn_id->escape_string($len);
+		$start = $this->db->escape($start);
+		$len = $this->db->escape($len);
 		$filterQuery.=" limit $start, $len";
 	}
 	if (!$filterValues) {
@@ -211,4 +208,3 @@ public function APIList($filterList, $queryString,$start,$len, $orderBy)
  
 }
 
-?>

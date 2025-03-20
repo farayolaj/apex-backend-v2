@@ -1,5 +1,7 @@
 <?php
-require_once('application/models/Crud.php');
+namespace App\Entities;
+
+use App\Models\Crud;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the course_manager table.
@@ -142,35 +144,31 @@ class Course_manager extends Crud
 	protected function getCourse()
 	{
 		$query = 'SELECT * FROM course WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Course.php');
-		$resultObject = new Course($result[0]);
-		return $resultObject;
+		return new \App\Entities\Course($result[0]);
 	}
 
 	protected function getCourse_manager()
 	{
 		$query = 'SELECT * FROM course_manager WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Course_manager.php');
-		$resultObject = new Course_manager($result[0]);
-		return $resultObject;
+		return new \App\Entities\Course_manager($result[0]);
 	}
 
 	public function APIList($filterList, $queryString, $start, $len, $orderBy): array
@@ -188,8 +186,8 @@ class Course_manager extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -203,9 +201,9 @@ class Course_manager extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 		return [$res, $res2];
 	}

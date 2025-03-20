@@ -1,5 +1,7 @@
 <?php
-require_once 'application/models/Crud.php';
+namespace App\Entities;
+
+use App\Models\Crud;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the applicants table.
@@ -591,13 +593,11 @@ class Applicant_post_utme extends Crud
 		}
 		$id = $this->array['programme_id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return null;
 		}
-		include_once 'Programme.php';
-		$resultObject = new Programme($result[0]);
-		return $resultObject;
+		return new \App\Entities\Programme($result[0]);
 	}
 
 	/**
@@ -690,8 +690,8 @@ class Applicant_post_utme extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 
@@ -705,9 +705,9 @@ class Applicant_post_utme extends Crud
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 		return [$res, $res2];
 	}
@@ -725,11 +725,11 @@ class Applicant_post_utme extends Crud
 	public function loadExtras($item)
 	{
 		if (isset($item['phone'])) {
-			$item['phone'] = decryptData($this, $item['phone']);
+			$item['phone'] = decryptData($item['phone']);
 		}
 
 		if (isset($item['phone2'])) {
-			$item['phone2'] = decryptData($this, $item['phone2']);
+			$item['phone2'] = decryptData($item['phone2']);
 		}
 
 		return $item;

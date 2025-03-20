@@ -1,11 +1,12 @@
 <?php
-require_once 'application/models/Crud.php';
+namespace App\Entities;
 
-require_once APPPATH . 'constants/CommonSlug.php';
-require_once APPPATH . 'constants/PaymentFeeDescription.php';
-require_once APPPATH . 'constants/RemitaResponse.php';
-require_once APPPATH . 'traits/CommonTrait.php';
+use App\Models\Crud;
 
+use App\Enums\CommonEnum as CommonSlug;
+use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
+use App\Libraries\RemitaResponse;
+use App\Traits\CommonTrait;
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the transaction table.
  */
@@ -494,18 +495,16 @@ class Transaction extends Crud
 	protected function getPayment()
 	{
 		$query = 'SELECT * FROM payment WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Payment.php';
-		$resultObject = new Payment($result[0]);
-		return $resultObject;
+		return new \App\Entities\Payment($result[0]);
 	}
 
 	/**
@@ -514,18 +513,16 @@ class Transaction extends Crud
 	protected function getProgramme()
 	{
 		$query = 'SELECT * FROM programme WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Programme.php';
-		$resultObject = new Programme($result[0]);
-		return $resultObject;
+		return new \App\Entities\Programme($result[0]);
 	}
 
 	/**
@@ -534,9 +531,9 @@ class Transaction extends Crud
 	protected function getTransaction_archive()
 	{
 		$query = 'SELECT * FROM transaction_archive WHERE transaction_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
@@ -574,7 +571,7 @@ class Transaction extends Crud
 				return sendAPiResponse(false, "An error occured, Transaction cannot be deleted at the moment");
 			}
 
-			logAction($this, 'delete_transaction', $currentUser->user_login);
+			logAction($this->db, 'delete_transaction', $currentUser->user_login);
 			$this->db->trans_commit();
 			return sendAPiResponse(true, "Transaction deleted successfully");
 
@@ -603,7 +600,7 @@ class Transaction extends Crud
 				return sendAPiResponse(false, "An error occured, applicant transaction cannot be deleted at the moment");
 			}
 
-			logAction($this, 'delete_applicant_transaction', $currentUser->user_login);
+			logAction($this->db, 'delete_applicant_transaction', $currentUser->user_login);
 			$this->db->trans_commit();
 			return sendAPiResponse(true, "Applicant transaction deleted successfully");
 		}
@@ -631,7 +628,7 @@ class Transaction extends Crud
 				return sendAPiResponse(false, "An error occured, non-student transaction cannot be deleted at the moment");
 			}
 
-			logAction($this, 'delete_transaction_custom', $currentUser->user_login);
+			logAction($this->db, 'delete_transaction_custom', $currentUser->user_login);
 			$this->db->trans_commit();
 			return sendAPiResponse(true, "Non-student transaction deleted successfully");
 		}
@@ -1159,8 +1156,8 @@ class Transaction extends Crud
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$query = $this->db->query($query);
 		$query2 = $this->db->query($query2);
-		$result = $query->result_array();
-		$res2 = $query2->result_array();
+		$result = $query->getResultArray();
+		$res2 = $query2->getResultArray();
 		return [$result, $res2];
 	}
 
@@ -1219,11 +1216,11 @@ class Transaction extends Crud
 					$payment_id = $this->payment_id;
 					$studentID = $this->student_id;
 
-					if (($payment_id == PaymentFeeDescription::SCH_FEE_FIRST || $payment_id == PaymentFeeDescription::PART_FIRST_SCH_FEE) && $this->level == '1') {
+					if (($payment_id == PaymentFeeDescription::SCH_FEE_FIRST->value || $payment_id == PaymentFeeDescription::PART_FIRST_SCH_FEE->value) && $this->level == '1') {
 						$this->updatePutmeAcademicRecord($studentID);
 					}
 
-					if($payment_id == PaymentFeeDescription::LAGOS_CENTRE_FIRST_ONLY_SEM){
+					if($payment_id == PaymentFeeDescription::LAGOS_CENTRE_FIRST_ONLY_SEM->value){
 						$this->updatePutmeAcademicRecord($studentID, 'exam_centre');
 					}
 
@@ -1265,9 +1262,9 @@ class Transaction extends Crud
 	public function updatePutmeAcademicRecord($student, $task = null)
 	{
 		$academicRecord = fetchSingle($this, 'academic_record', 'student_id', $student);
-		if ($academicRecord && $academicRecord['entry_mode'] === CommonSlug::O_LEVEL_PUTME) {
+		if ($academicRecord && $academicRecord['entry_mode'] === CommonSlug::O_LEVEL_PUTME->value) {
 			update_record($this, 'academic_record', 'id', $academicRecord['id'],
-				['entry_mode' => CommonSlug::O_LEVEL]
+				['entry_mode' => CommonSlug::O_LEVEL->value]
 			);
 		}
 
@@ -1286,26 +1283,26 @@ class Transaction extends Crud
 	 */
 	public function mapTopupToSchFee($paymentId)
 	{
-		if ($paymentId == PaymentFeeDescription::OUTSTANDING_22) {
-			return PaymentFeeDescription::SCH_FEE_SECOND;
+		if ($paymentId == PaymentFeeDescription::OUTSTANDING_22->value) {
+			return PaymentFeeDescription::SCH_FEE_SECOND->value;
 		}
 
-		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_22) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
+		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_22->value) {
+			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
 		}
 
-		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_21) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
+		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_21->value) {
+			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
 		}
 
 		// this is for first semester part payment
-		if ($paymentId == PaymentFeeDescription::PART_FIRST_SCH_FEE) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
+		if ($paymentId == PaymentFeeDescription::PART_FIRST_SCH_FEE->value) {
+			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
 		}
 
 		// this is for second semester part payment
-		if ($paymentId == PaymentFeeDescription::PART_SECOND_SCH_FEE) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
+		if ($paymentId == PaymentFeeDescription::PART_SECOND_SCH_FEE->value) {
+			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
 		}
 
 		return null;
@@ -1338,7 +1335,7 @@ class Transaction extends Crud
 		$dateTo .= ' 23:59:59.999999';
 
 		$result = $this->db->query($query, [$dateFrom, $dateTo]);
-		if ($result->num_rows() <= 0) {
+		if ($result->getNumRows() <= 0) {
 			return null;
 		}
 
@@ -1399,10 +1396,10 @@ class Transaction extends Crud
         ";
 		$query = $this->db->query($query);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 	public function getLast7DaysTransaction()
@@ -1456,10 +1453,10 @@ class Transaction extends Crud
         ";
 		$query = $this->db->query($query);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 }

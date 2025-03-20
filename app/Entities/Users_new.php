@@ -157,8 +157,8 @@ class Users_new extends Crud
         $filterQuery .= " order by id desc ";
 
         if ($len) {
-            $start = $this->db->conn_id->escape_string($start);
-            $len   = $this->db->conn_id->escape_string($len);
+            $start = $this->db->escape($start);
+            $len   = $this->db->escape($len);
             $filterQuery .= " limit $start, $len";
         }
         if (! $filterValues) {
@@ -168,9 +168,9 @@ class Users_new extends Crud
         $query  = "SELECT SQL_CALC_FOUND_ROWS id,title,lastname,firstname,othernames,dob,gender,marital_status,user_phone ,user_email,user_login ,is_lecturer, address, active from users_new join  $filterQuery";
         $query2 = "SELECT FOUND_ROWS() as totalCount";
         $res    = $this->db->query($query, $filterValues);
-        $res    = $res->result_array();
+        $res    = $res->getResultArray();
         $res2   = $this->db->query($query2);
-        $res2   = $res2->result_array();
+        $res2   = $res2->getResultArray();
         return [$res, $res2];
     }
 

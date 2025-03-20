@@ -1,8 +1,9 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/CommonSlug.php';
+use App\Models\Crud;
 
+use App\Enums\CommonEnum as CommonSlug;
 /**
  * This class queries those who have paid for both RuS and SuS
  */
@@ -30,10 +31,10 @@ class Student_orientation_list extends Crud
 		// $filterQuery .= ($filterQuery ? " and " : " where ") . " orientation_attendance <> '' 
 		// and b.session_of_admission = '$currentAdmissionSession' ";
 
-		$directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY);
-		$olevel = $this->db->escape_str(CommonSlug::O_LEVEL);
-		$olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME);
-		$fastTrack = $this->db->escape_str(CommonSlug::FAST_TRACK);
+		$directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY->value);
+		$olevel = $this->db->escape_str(CommonSlug::O_LEVEL->value);
+		$olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME->value);
+		$fastTrack = $this->db->escape_str(CommonSlug::FAST_TRACK->value);
 
 		$filterQuery .= ($filterQuery ? " and " : " where ") . " orientation_attendance <> '' and (
 			(b.entry_mode = '$directEntry' and b.current_level = '2') ||
@@ -55,8 +56,8 @@ class Student_orientation_list extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -67,9 +68,9 @@ class Student_orientation_list extends Crud
 			from students a join academic_record b on b.student_id = a.id join programme c on c.id = b.programme_id left join faculty d on d.id = c.faculty_id $filterQuery";
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		if ($export) {
 			return [$res, $res2];
 		}

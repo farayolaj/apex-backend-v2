@@ -1,8 +1,9 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/ClaimType.php';
+use App\Models\Crud;
 
+use App\Enums\ClaimEnum as ClaimType;
 /**
  * This class queries those who have paid for both RuS and SuS
  */
@@ -54,8 +55,8 @@ class Examination_courses extends Crud {
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -67,9 +68,9 @@ class Examination_courses extends Crud {
  			courses b on b.id = a.course_id $filterQuery";
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 		return [$res, $res2];
 	}
@@ -77,7 +78,7 @@ class Examination_courses extends Crud {
 	private function processList($items): array {
 		loadClass($this->load, 'users_new');
 		loadClass($this->load, 'sessions');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		$currentUser = WebSessionManager::currentAPIUser();
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i], $currentUser);
 		}
@@ -156,7 +157,7 @@ class Examination_courses extends Crud {
 		$record = get_single_record($this, 'course_request_claims', [
 			'course_id' => $course,
 			'session_id' => $session,
-			'exam_type' => ClaimType::EXAM_PAPER,
+			'exam_type' => ClaimType::EXAM_PAPER->value,
 		]);
 		if (!$record) {
 			return null;

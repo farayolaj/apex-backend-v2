@@ -1,8 +1,9 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/FeeDescriptionCode.php';
+use App\Models\Crud;
 
+use App\Enums\FeeDescriptionCodeEnum as FeeDescriptionCode;
 /**
  * This is a custom entity class different from the generated one that are mapped to the database table
  */
@@ -22,8 +23,8 @@ class Student_verification_fee extends Crud
 
 		$filterQuery .= ($filterQuery ? ' and ' : ' where ') . " ((fee_description.code = ? or fee_description.code = ? ) 
 			and payment_status in ('00', '01')) ";
-		$filterValues[] = [FeeDescriptionCode::VERIFICATION_ONE];
-		$filterValues[] = [FeeDescriptionCode::VERIFICATION_TWO];
+		$filterValues[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
+		$filterValues[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
 
 		if (isset($_GET['sortBy']) && $orderBy) {
 			$filterQuery .= " order by $orderBy ";
@@ -32,8 +33,8 @@ class Student_verification_fee extends Crud
 		}
 
 		if ($len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 
@@ -51,16 +52,16 @@ class Student_verification_fee extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 
 	public function getStudentUploadDocumentComplete(bool $logParam = false, bool $session = false)
 	{
-		$data[] = [FeeDescriptionCode::VERIFICATION_ONE];
-		$data[] = [FeeDescriptionCode::VERIFICATION_TWO];
+		$data[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
+		$data[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
 		$from = $this->input->get('start_date', true) ?? null;
 		$to = $this->input->get('end_date', true) ?? null;
 
@@ -95,14 +96,14 @@ class Student_verification_fee extends Crud
 		}
 
 		if ($logParam) {
-			$currentUser = $this->webSessionManager->currentAPIUser();
+			$currentUser = WebSessionManager::currentAPIUser();
 			$logData = [
 				'start_from' => $from,
 				'end_to' => $to,
 				'print_datetime' => date('Y-m-d H:i:s')
 			];
 			$logData = json_encode($logData);
-			logAction($this, 'bulk_print_student_cover', $currentUser->user_login, null, null, $logData);
+			logAction($this->db, 'bulk_print_student_cover', $currentUser->user_login, null, null, $logData);
 		}
 
 		return $result;
@@ -112,7 +113,7 @@ class Student_verification_fee extends Crud
 	public function hasStudentPaidOlevelVerification($studentID){
 		$query = "SELECT transaction.ID as vid,student_id from transaction join fee_description 
 		on fee_description.id = transaction.payment_id where (fee_description.code = ? or fee_description.code = ? ) and payment_status in ('00', '01') and student_id = ?";
-		$data = [FeeDescriptionCode::VERIFICATION_ONE, FeeDescriptionCode::VERIFICATION_TWO, $studentID];
+		$data = [FeeDescriptionCode::VERIFICATION_ONE->value, FeeDescriptionCode::VERIFICATION_TWO->value, $studentID];
 		$result = $this->query($query, $data);
 		return $result ? true : false;
 	}

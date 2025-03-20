@@ -473,7 +473,6 @@ class FormConfig {
 	private function buildUpdateConfig() {
 		$this->updateConfig = array
         (
-
 			//add new entry to this array
 		);
 	}

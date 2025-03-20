@@ -1,6 +1,9 @@
 <?php
-		require_once('application/models/Crud.php');
-		/**
+namespace App\Entities;
+
+use App\Models\Crud;
+
+/**
 		* This class  is automatically generated based on the structure of the table. And it represent the model of the settings table.
 		*/
 class Settings extends Crud
@@ -78,9 +81,11 @@ public function registerSettings( $settings )
 
 public function getSetting($check_field)
 {
-    $query = $this->db->get_where( 'settings', array('settings_name' => $check_field) );
+    $query = $this->db->table('settings')
+                  ->where('settings_name', $check_field)
+                  ->get();
 
-    foreach ($query->result_array() as $row)
+    foreach ($query->getResultArray() as $row)
     {
        if( $row['settings_name'] == $check_field )
         {
@@ -95,9 +100,11 @@ public function getSetting($check_field)
 
 public function getInstitiutionLogo($logo)
 {
-    $query = $this->db->get_where( 'settings', array('settings_name' => $logo) );
+    $query = $this->db->table('settings')
+                  ->where('settings_name', $logo)
+                  ->get();
 
-    foreach ($query->result_array() as $row)
+    foreach ($query->getResultArray() as $row)
     {
        if( $row['settings_value'] != '' )
         {
@@ -121,8 +128,8 @@ public function APIList($filterList, $queryString,$start,$len){
     $filterQuery.=" order by id desc ";
 
     if ($len && isset($_GET['start'])) {
-        $start = $this->db->conn_id->escape_string($start);
-        $len = $this->db->conn_id->escape_string($len);
+        $start = $this->db->escape($start);
+        $len = $this->db->escape($len);
         $filterQuery.=" limit $start, $len";
     }
 
@@ -134,9 +141,9 @@ public function APIList($filterList, $queryString,$start,$len){
     $query = "SELECT ".buildApiClause(static::$apiSelectClause,$tablename). " from $tablename $filterQuery";
     $query2 = "SELECT FOUND_ROWS() as totalCount";
     $res = $this->db->query($query,$filterValues);
-    $res = $res->result_array();
+    $res = $res->getResultArray();
     $res2  = $this->db->query($query2);
-    $res2 = $res2->result_array();
+    $res2 = $res2->getResultArray();
     $res = $this->processList($res);
 
     return [$res,count($res)];

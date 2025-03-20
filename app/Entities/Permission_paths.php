@@ -1,6 +1,9 @@
 <?php
-		require_once('application/models/Crud.php');
-		/**
+namespace App\Entities;
+
+use App\Models\Crud;
+
+/**
 		* This class  is automatically generated based on the structure of the table. And it represent the model of the permission_paths table.
 		*/
 		class Permission_paths extends Crud
@@ -78,18 +81,16 @@ function getActiveFormField($value=''){
 		
 protected function getRoles_permission(){
 	$query ='SELECT * FROM roles_permission WHERE id=?';
-	if (!isset($this->array['ID'])) {
+	if (!isset($this->array['id'])) {
 		return null;
 	}
-	$id = $this->array['ID'];
+	$id = $this->array['id'];
 	$result = $this->db->query($query,array($id));
-	$result =$result->result_array();
+	$result =$result->getResultArray();
 	if (empty($result)) {
 		return false;
 	}
-	include_once('Roles_permission.php');
-	$resultObject = new Roles_permission($result[0]);
-	return $resultObject;
+	return new \App\Entities\Roles_permission($result[0]);
 }
 		}
-		?>
+		

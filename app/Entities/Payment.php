@@ -1,7 +1,9 @@
 <?php
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'traits/CommonTrait.php';
+namespace App\Entities;
 
+use App\Models\Crud;
+
+use App\Traits\CommonTrait;
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the payment table.
  */
@@ -257,9 +259,9 @@ class Payment extends Crud
 	protected function getAccommodation_transaction()
 	{
 		$query = 'SELECT * FROM accommodation_transaction WHERE payment_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
@@ -275,9 +277,9 @@ class Payment extends Crud
 	protected function getAccommodation_transaction_archive()
 	{
 		$query = 'SELECT * FROM accommodation_transaction_archive WHERE payment_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
@@ -293,9 +295,9 @@ class Payment extends Crud
 	protected function getApplicant_transaction()
 	{
 		$query = 'SELECT * FROM applicant_transaction WHERE payment_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
@@ -311,9 +313,9 @@ class Payment extends Crud
 	protected function getTransaction()
 	{
 		$query = 'SELECT * FROM transaction WHERE payment_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
@@ -329,9 +331,9 @@ class Payment extends Crud
 	protected function getTransaction1()
 	{
 		$query = 'SELECT * FROM transaction1 WHERE payment_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
@@ -347,9 +349,9 @@ class Payment extends Crud
 	protected function getTransaction2()
 	{
 		$query = 'SELECT * FROM transaction2 WHERE payment_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
@@ -365,9 +367,9 @@ class Payment extends Crud
 	protected function getTransaction_archive()
 	{
 		$query = 'SELECT * FROM transaction_archive WHERE payment_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
@@ -401,8 +403,8 @@ class Payment extends Crud
 		}
 
 		if ($len && isset($_GET['start'])) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 
@@ -413,9 +415,9 @@ class Payment extends Crud
 		$query = "SELECT SQL_CALC_FOUND_ROWS payment.* from payment left join fee_description on fee_description.id = payment.description $filterQuery";
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 
 		return [$res, $res2];

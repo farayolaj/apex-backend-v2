@@ -211,9 +211,7 @@ class User_banks extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Users_new.php');
-		$resultObject = new Users_new($result[0]);
-		return $resultObject;
+		return new \App\Entities\Users_new($result[0]);
 	}
 
 	protected function getBank_lists()
@@ -227,9 +225,7 @@ class User_banks extends Crud
 		if (!$result) {
 			return null;
 		}
-		include_once('Bank_lists.php');
-		$resultObject = new Bank_lists($result[0]);
-		return $resultObject;
+		return new \App\Entities\Bank_lists($result[0]);
 	}
 
 	public function getUserBankDetails($user_id)
@@ -271,8 +267,8 @@ class User_banks extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -298,8 +294,8 @@ class User_banks extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -321,9 +317,9 @@ class User_banks extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 

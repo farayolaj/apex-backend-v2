@@ -1,6 +1,7 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
+use App\Models\Crud;
 
 /**
  * This class queries those who have paid for both RuS and SuS
@@ -55,7 +56,7 @@ class Mandate_requests extends Crud
 		$filterValues = $temp[1];
 
 		if($type === 'db-staff'){
-			$currentUser = $this->webSessionManager->currentAPIUser();
+			$currentUser = WebSessionManager::currentAPIUser();
 			$filterQuery .= ($filterQuery ? " and " : " where ") . "b.assign_to = '$currentUser->id' and b.request_type = 'mandate' ";	
 		}
 
@@ -80,16 +81,16 @@ class Mandate_requests extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape($start);
+			$len = $this->db->escape($len);
 			$query .= " limit $start, $len";
 		}
 		
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 
