@@ -376,41 +376,43 @@ class TransformModels extends BaseCommand
     }
 
     protected function transformLoadClass($content) {
-        $content = preg_replace(
-            '/loadClass\(\s*\$this->load\s*,\s*([^)]+)\s*\);/',
-            'EntityLoader::loadClass($this, $1);',
-            $content
-        );
+        $loadClassExists = str_contains($content, 'loadClass(');
+        if($loadClassExists){
+            $content = preg_replace(
+                '/loadClass\(\s*\$this->load\s*,\s*([^)]+)\s*\);/',
+                'EntityLoader::loadClass($this, $1);',
+                $content
+            );
 
-        $useEntityLoader = 'use App\Libraries\EntityLoader;';
-        if (!str_contains($content, $useEntityLoader)) {
-            // Check if use App\Models\Crud; exists
-            $useCrudPos = strpos($content, 'use App\Models\Crud;');
+            $useEntityLoader = 'use App\Libraries\EntityLoader;';
+            if (!str_contains($content, $useEntityLoader)) {
+                // Check if use App\Models\Crud; exists
+                $useCrudPos = strpos($content, 'use App\Models\Crud;');
 
-            if ($useCrudPos !== false) {
-                // Insert after use App\Models\Crud;
-                $insertPos = strpos($content, ';', $useCrudPos) + 1;
-                $content = substr_replace($content, "\n" . $useEntityLoader, $insertPos, 0);
-            } else {
-                // If use App\Models\Crud; doesn't exist, insert after the namespace or opening PHP tag
-                $namespacePos = strpos($content, 'namespace ');
-                $firstUsePos = strpos($content, 'use ');
-
-                if ($namespacePos !== false) {
-                    // Insert after the namespace declaration
-                    $insertPos = strpos($content, ';', $namespacePos) + 1;
-                } elseif ($firstUsePos !== false) {
-                    // Insert before the first use statement
-                    $insertPos = $firstUsePos;
+                if ($useCrudPos !== false) {
+                    // Insert after use App\Models\Crud;
+                    $insertPos = strpos($content, ';', $useCrudPos) + 1;
+                    $content = substr_replace($content, "\n" . $useEntityLoader, $insertPos, 0);
                 } else {
-                    // Insert after the opening PHP tag
-                    $insertPos = strpos($content, '<?php') + 5;
-                }
+                    // If use App\Models\Crud; doesn't exist, insert after the namespace or opening PHP tag
+                    $namespacePos = strpos($content, 'namespace ');
+                    $firstUsePos = strpos($content, 'use ');
 
-                $content = substr_replace($content, "\n" . $useEntityLoader . "\n", $insertPos, 0);
+                    if ($namespacePos !== false) {
+                        // Insert after the namespace declaration
+                        $insertPos = strpos($content, ';', $namespacePos) + 1;
+                    } elseif ($firstUsePos !== false) {
+                        // Insert before the first use statement
+                        $insertPos = $firstUsePos;
+                    } else {
+                        // Insert after the opening PHP tag
+                        $insertPos = strpos($content, '<?php') + 5;
+                    }
+
+                    $content = substr_replace($content, "\n" . $useEntityLoader . "\n", $insertPos, 0);
+                }
             }
         }
-
         return $content;
     }
 
@@ -451,7 +453,7 @@ PHP;
             '/\$this->db->conn_id->escape_string\(([^)]+)\);/',
             function ($matches) {
                 $variable = $matches[1]; // e.g., $start or $len
-                return "\$this->db->escape($variable);";
+                return "\$this->db->escapeString($variable);";
             },
             $content
         );

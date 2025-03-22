@@ -366,7 +366,7 @@ class Transaction_request extends Crud
 	{
 		$query = "SELECT batch_ref from transaction_request where payment_status = ? and payment_status_description <> ? 
         and (rrr_code is not null or rrr_code != '') group by batch_ref";
-		return $this->query($query, ['00', OutflowStatus::SUCCESSFUL->value->value]);
+		return $this->query($query, ['00', OutflowStatus::SUCCESSFUL->value]);
 	}
 
 	public function getUserRequestByTransaction(string $batchRef)
@@ -404,7 +404,7 @@ class Transaction_request extends Crud
 			and a.payment_status_description = ?
 			GROUP BY months.month ORDER BY months.month ASC
 		";
-		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT->value->value]);
+		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT->value]);
 		$result = [];
 		if ($query->getNumRows() <= 0) {
 			return $result;
@@ -427,7 +427,7 @@ class Transaction_request extends Crud
 			and a.payment_status_description = ?
 			GROUP BY days.day ORDER BY days.day ASC
 		";
-		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT->value->value]);
+		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT->value]);
 		$result = [];
 		if ($query->getNumRows() <= 0) {
 			return $result;

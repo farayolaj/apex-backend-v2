@@ -2,8 +2,6 @@
 namespace App\Entities;
 
 use App\Models\Crud;
-use App\Libraries\EntityLoader;
-use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the department table.
@@ -232,6 +230,6 @@ class Department extends Crud
 
 	public function getUserDepartment($user_department)
 	{
-		return $this->db->table('department')->getWhere(['id' => $user_department, 'type' => 'academic'])->getRow();
+		return $this->db->get_where('department', ['id' => $user_department, 'type' => 'academic'])->getRow();
 	}
 }

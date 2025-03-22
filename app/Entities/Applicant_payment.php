@@ -1,8 +1,8 @@
 <?php
 namespace App\Entities;
 
-use App\Libraries\EntityLoader;
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
 		* This class  is automatically generated based on the structure of the table. And it represent the model of the applicant_payment table.
@@ -102,10 +102,11 @@ function getDate_createdFormField($value=''){
 
 public function getFeeDescription($description=null)
 {
-	$feeDescriptionModel = loadClass('fee_description');
-	$description = $description ?: $this->description;
-	$feeDesc = $feeDescriptionModel->getWhere(['id'=>$description],$c,0,null,false);
-    return $feeDesc?$feeDesc[0]->description:null;
+	EntityLoader::loadClass($this, 'fee_description');
+	$description = $description ? $description : $this->description;
+	$feeDesc = $this->fee_description->getWhere(['id'=>$description],$c,0,null,false);
+	$description = $feeDesc?$feeDesc[0]->description:null;
+	return $description;
 }
 
 public function APIList($filterList, $queryString,$start,$len,$orderBy)
@@ -154,8 +155,8 @@ public function APIList($filterList, $queryString,$start,$len,$orderBy)
 
 private function processList($items)
 {
-    EntityLoader::loadClass($this, 'fee_description');
-    EntityLoader::loadClass($this, 'sessions');
+	EntityLoader::loadClass($this, 'fee_description');
+	EntityLoader::loadClass($this, 'sessions');
 	for ($i = 0; $i < count($items); $i++) {
 		$items[$i] = $this->loadExtras($items[$i]);
 	}
@@ -169,8 +170,8 @@ private function loadExtras($item)
 	$item['description_name'] = $description->description;
 
 	if($item['session_id']){
-		$session = $this->sessions->getWhere(['id'=>$item['session_id']]);
-		$item['session_name'] = $session[0]->date;
+		$sesssion = $this->sessions->getWhere(['id'=>$item['session_id']]);
+		$item['session_name'] = $sesssion[0]->date;
 	}
 
 	return $item;

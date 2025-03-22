@@ -4,14 +4,16 @@ namespace App\Entities;
 use App\Models\Crud;
 use App\Libraries\EntityLoader;
 
+use App\Models\WebSessionManager;
 use App\Traits\ResultManagerTrait;
+
 /**
  * This class is automatically generated based on the structure of the table.
  * And it represent the model of the course_request_claims table
  */
 class Course_request_claims extends Crud
 {
-
+    use ResultManagerTrait;
 	/**
 	 * This is the entity name equivalent to the table name
 	 * @var string
@@ -304,8 +306,7 @@ class Course_request_claims extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once 'Courses.php';
-		return new Courses($result[0]);
+		return new \App\Entities\Courses($result[0]);
 	}
 
 	protected function getSession()
@@ -319,8 +320,7 @@ class Course_request_claims extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once 'Sessions.php';
-		return new Sessions($result[0]);
+		return new \App\Entities\Sessions($result[0]);
 	}
 
 	protected function getCourse_manager()
@@ -334,8 +334,7 @@ class Course_request_claims extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once 'Course_manager.php';
-		return new Course_manager($result[0]);
+		return new \App\Entities\Course_manager($result[0]);
 	}
 
 	protected function getUser_request()
@@ -349,8 +348,7 @@ class Course_request_claims extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once 'User_requests.php';
-		return new User_requests($result[0]);
+		return new \App\Entities\User_requests($result[0]);
 	}
 
 	public function getOldestCourseClaims($course, $session)
@@ -423,8 +421,8 @@ class Course_request_claims extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -462,7 +460,7 @@ class Course_request_claims extends Crud
 			$item['course_breakdown'] = $courses ?: [];
 
 			$url = 'web/claims_request_html/' . hashids_encrypt($item['id']) . '/' . hashids_encrypt($item['user_id']);
-			$url = ResultManagerTrait::generateReportLink('claims_request.html', $url);
+			$url = self::generateReportLink('claims_request.html', $url);
 			$item['print_url'] = $url;
 		}
 

@@ -2,7 +2,6 @@
 namespace App\Entities;
 
 use App\Models\Crud;
-use App\Libraries\EntityLoader;
 
 use App\Entities\Request_charge;
 

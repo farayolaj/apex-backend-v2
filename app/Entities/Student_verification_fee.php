@@ -2,7 +2,6 @@
 namespace App\Entities;
 
 use App\Models\Crud;
-use App\Libraries\EntityLoader;
 
 use App\Enums\FeeDescriptionCodeEnum as FeeDescriptionCode;
 /**
@@ -24,8 +23,8 @@ class Student_verification_fee extends Crud
 
 		$filterQuery .= ($filterQuery ? ' and ' : ' where ') . " ((fee_description.code = ? or fee_description.code = ? ) 
 			and payment_status in ('00', '01')) ";
-		$filterValues[] = [FeeDescriptionCode::VERIFICATION_ONE->value->value];
-		$filterValues[] = [FeeDescriptionCode::VERIFICATION_TWO->value->value];
+		$filterValues[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
+		$filterValues[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
 
 		if (isset($_GET['sortBy']) && $orderBy) {
 			$filterQuery .= " order by $orderBy ";
@@ -61,8 +60,8 @@ class Student_verification_fee extends Crud
 
 	public function getStudentUploadDocumentComplete(bool $logParam = false, bool $session = false)
 	{
-		$data[] = [FeeDescriptionCode::VERIFICATION_ONE->value->value];
-		$data[] = [FeeDescriptionCode::VERIFICATION_TWO->value->value];
+		$data[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
+		$data[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
 		$from = $this->input->get('start_date', true) ?? null;
 		$to = $this->input->get('end_date', true) ?? null;
 
@@ -114,7 +113,7 @@ class Student_verification_fee extends Crud
 	public function hasStudentPaidOlevelVerification($studentID){
 		$query = "SELECT transaction.ID as vid,student_id from transaction join fee_description 
 		on fee_description.id = transaction.payment_id where (fee_description.code = ? or fee_description.code = ? ) and payment_status in ('00', '01') and student_id = ?";
-		$data = [FeeDescriptionCode::VERIFICATION_ONE->value->value, FeeDescriptionCode::VERIFICATION_TWO->value->value, $studentID];
+		$data = [FeeDescriptionCode::VERIFICATION_ONE->value, FeeDescriptionCode::VERIFICATION_TWO->value, $studentID];
 		$result = $this->query($query, $data);
 		return $result ? true : false;
 	}

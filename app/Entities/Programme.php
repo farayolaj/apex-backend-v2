@@ -2,7 +2,6 @@
 namespace App\Entities;
 
 use App\Models\Crud;
-use App\Libraries\EntityLoader;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the programme table.
@@ -456,7 +455,7 @@ class Programme extends Crud
 
 	public function applicantProgramme(){
 		$admissionSession = get_setting('admission_session_update');
-		$admission = Admission::CHANGE_MODE_OF_STUDY->value->value;
+		$admission = Admission::CHANGE_MODE_OF_STUDY->value;
 		$query = "select programme.id,upper(programme.name) as name from programme join department on department.id=programme.department_id join faculty on faculty.id=programme.faculty_id join admission_programme_requirements on programme.id=admission_programme_requirements.programme_id and admission_programme_requirements.active=1 and admission_programme_requirements.session=? and admission_id=? where programme.active=1";
 		return $this->query($query, [$admissionSession, $admission]);
 	}

@@ -158,7 +158,7 @@ class Examination_courses extends Crud {
 		$record = get_single_record($this, 'course_request_claims', [
 			'course_id' => $course,
 			'session_id' => $session,
-			'exam_type' => ClaimType::EXAM_PAPER->value->value,
+			'exam_type' => ClaimType::EXAM_PAPER->value,
 		]);
 		if (!$record) {
 			return null;

@@ -19,11 +19,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
@@ -59,15 +59,15 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
-		$successStatus = OutflowStatus::SUCCESSFUL->value->value;
+		$successStatus = OutflowStatus::SUCCESSFUL->value;
 		$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status_description = '$successStatus' ";
 
 		$query = "SELECT user_id, payment_description as descrip,created_at as date_performed,
@@ -81,15 +81,15 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
-		$successStatus = OutflowStatus::SUCCESSFUL->value->value;
+		$successStatus = OutflowStatus::SUCCESSFUL->value;
 		$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status_description = '$successStatus' and a.total_amount > 500000 ";
 
 		$query = "SELECT user_id, payment_description as descrip,created_at as date_performed,
@@ -103,17 +103,17 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
-		$successStatus = OutflowStatus::SUCCESSFUL->value->value;
-		$requestType = RequestTypeSlug::SALARY_ADVANCE->value->value;
-		$requestType2 = RequestTypeSlug::RETIRE_SALARY_ADVANCE->value->value;
+		$successStatus = OutflowStatus::SUCCESSFUL->value;
+		$requestType = RequestTypeSlug::SALARY_ADVANCE->value;
+		$requestType2 = RequestTypeSlug::RETIRE_SALARY_ADVANCE->value;
 
 		if ($type == 'cleared') {
 			$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status_description = '$successStatus' ";
@@ -134,15 +134,15 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
-		$schFee = PaymentFeeDescription::SCH_FEE_FIRST->value->value;
+		$schFee = PaymentFeeDescription::SCH_FEE_FIRST->value;
 		$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status in ('00', '01') and a.payment_id = '$schFee' ";
 
 		return "SELECT a.id, concat(firstname, ' ',lastname) as fullname, matric_number,e.name as department, 
@@ -155,15 +155,15 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
-		$acceptance = PaymentFeeDescription::ACCEPTANCE_FEE->value->value;
+		$acceptance = PaymentFeeDescription::ACCEPTANCE_FEE->value;
 		$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status in ('00', '01') and a.payment_id = '$acceptance' ";
 
 		return "SELECT a.id, concat(firstname, ' ',lastname) as fullname, matric_number,e.name as department, 
@@ -185,48 +185,48 @@ class Audit_report extends Crud
 	public function APIList(?array  $filterList, ?string $queryString, ?string $start, ?string $len,
 							?string $orderBy, string $type, bool $export = false): array
 	{
-		$from = $this->input->get('start_date', true) ?? null;
-		$to = $this->input->get('end_date', true) ?? null;
+		$from = request()->getGet('start_date') ?? null;
+		$to = request()->getGet('end_date') ?? null;
 		$limit = '';
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$limit = " limit $start, $len";
 		}
 
 		$query = null;
 
-		if ($type == ReportSlug::TRANSFER_JOURNAL->value->value) {
+		if ($type == ReportSlug::TRANSFER_JOURNAL->value) {
 			$query = $this->apiTransferJournal($from, $to);
 		}
 
-		if ($type == ReportSlug::ANALYSIS_EXPENDITURES->value->value) {
+		if ($type == ReportSlug::ANALYSIS_EXPENDITURES->value) {
 			$query = $this->apiExpenditures($from, $to);
 		}
 
 
-		if ($type == ReportSlug::CASH_ADVANCE->value->value) {
+		if ($type == ReportSlug::CASH_ADVANCE->value) {
 			$query = $this->apiCashAdvance($from, $to, 'all');
 		}
 
-		if ($type == ReportSlug::CASH_ADVANCE_CLEARED->value->value) {
+		if ($type == ReportSlug::CASH_ADVANCE_CLEARED->value) {
 			$query = $this->apiCashAdvance($from, $to, 'cleared');
 		}
 
-		if ($type == ReportSlug::CASH_ADVANCE_UNCLEARED->value->value) {
+		if ($type == ReportSlug::CASH_ADVANCE_UNCLEARED->value) {
 			$query = $this->apiCashAdvance($from, $to, 'uncleared');
 		}
 
-		if ($type == ReportSlug::EXPENSES_MORE_THAN_500K->value->value) {
+		if ($type == ReportSlug::EXPENSES_MORE_THAN_500K->value) {
 			$query = $this->apiExpendituresMoreThan500K($from, $to);
 		}
 
-		if ($type == ReportSlug::REGISTERED_STUDENT->value->value) {
+		if ($type == ReportSlug::REGISTERED_STUDENT->value) {
 			$query = $this->apiRegisteredStudent($from, $to);
 		}
 
-		if ($type == ReportSlug::ACCEPTANCE_FEE_JOURNAL->value->value) {
+		if ($type == ReportSlug::ACCEPTANCE_FEE_JOURNAL->value) {
 			$query = $this->apiAcceptanceJournal($from, $to);
 		}
 
@@ -243,11 +243,11 @@ class Audit_report extends Crud
 		$res2 = $res2->getResultArray();
 
 		$processList = [
-			ReportSlug::ANALYSIS_EXPENDITURES->value->value,
-			ReportSlug::CASH_ADVANCE->value->value,
-			ReportSlug::CASH_ADVANCE_CLEARED->value->value,
-			ReportSlug::CASH_ADVANCE_UNCLEARED->value->value,
-			ReportSlug::EXPENSES_MORE_THAN_500K->value->value
+			ReportSlug::ANALYSIS_EXPENDITURES->value,
+			ReportSlug::CASH_ADVANCE->value,
+			ReportSlug::CASH_ADVANCE_CLEARED->value,
+			ReportSlug::CASH_ADVANCE_UNCLEARED->value,
+			ReportSlug::EXPENSES_MORE_THAN_500K->value
 		];
 		if (in_array($type, $processList)) {
 			$res = $this->processList($res);
