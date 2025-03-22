@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Traits\ResultManagerTrait;
 /**
@@ -443,7 +444,7 @@ class Course_request_claims extends Crud
 
 	private function processList($items)
 	{
-		loadClass($this->load, 'users_new');
+		EntityLoader::loadClass($this, 'users_new');
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i]);
 		}

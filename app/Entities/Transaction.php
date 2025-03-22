@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Enums\CommonEnum as CommonSlug;
 use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
@@ -1171,7 +1172,7 @@ class Transaction extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'sessions');
+		EntityLoader::loadClass($this, 'sessions');
 		return new Sessions($result[0]);
 	}
 
@@ -1216,11 +1217,11 @@ class Transaction extends Crud
 					$payment_id = $this->payment_id;
 					$studentID = $this->student_id;
 
-					if (($payment_id == PaymentFeeDescription::SCH_FEE_FIRST->value || $payment_id == PaymentFeeDescription::PART_FIRST_SCH_FEE->value) && $this->level == '1') {
+					if (($payment_id == PaymentFeeDescription::SCH_FEE_FIRST->value->value || $payment_id == PaymentFeeDescription::PART_FIRST_SCH_FEE->value->value) && $this->level == '1') {
 						$this->updatePutmeAcademicRecord($studentID);
 					}
 
-					if($payment_id == PaymentFeeDescription::LAGOS_CENTRE_FIRST_ONLY_SEM->value){
+					if($payment_id == PaymentFeeDescription::LAGOS_CENTRE_FIRST_ONLY_SEM->value->value){
 						$this->updatePutmeAcademicRecord($studentID, 'exam_centre');
 					}
 
@@ -1262,9 +1263,9 @@ class Transaction extends Crud
 	public function updatePutmeAcademicRecord($student, $task = null)
 	{
 		$academicRecord = fetchSingle($this, 'academic_record', 'student_id', $student);
-		if ($academicRecord && $academicRecord['entry_mode'] === CommonSlug::O_LEVEL_PUTME->value) {
+		if ($academicRecord && $academicRecord['entry_mode'] === CommonSlug::O_LEVEL_PUTME->value->value) {
 			update_record($this, 'academic_record', 'id', $academicRecord['id'],
-				['entry_mode' => CommonSlug::O_LEVEL->value]
+				['entry_mode' => CommonSlug::O_LEVEL->value->value]
 			);
 		}
 
@@ -1283,26 +1284,26 @@ class Transaction extends Crud
 	 */
 	public function mapTopupToSchFee($paymentId)
 	{
-		if ($paymentId == PaymentFeeDescription::OUTSTANDING_22->value) {
-			return PaymentFeeDescription::SCH_FEE_SECOND->value;
+		if ($paymentId == PaymentFeeDescription::OUTSTANDING_22->value->value) {
+			return PaymentFeeDescription::SCH_FEE_SECOND->value->value;
 		}
 
-		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_22->value) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
+		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_22->value->value) {
+			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value->value : PaymentFeeDescription::SCH_FEE_SECOND->value->value;
 		}
 
-		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_21->value) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
+		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_21->value->value) {
+			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value->value : PaymentFeeDescription::SCH_FEE_SECOND->value->value;
 		}
 
 		// this is for first semester part payment
-		if ($paymentId == PaymentFeeDescription::PART_FIRST_SCH_FEE->value) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
+		if ($paymentId == PaymentFeeDescription::PART_FIRST_SCH_FEE->value->value) {
+			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value->value : PaymentFeeDescription::SCH_FEE_SECOND->value->value;
 		}
 
 		// this is for second semester part payment
-		if ($paymentId == PaymentFeeDescription::PART_SECOND_SCH_FEE->value) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
+		if ($paymentId == PaymentFeeDescription::PART_SECOND_SCH_FEE->value->value) {
+			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST->value->value : PaymentFeeDescription::SCH_FEE_SECOND->value->value;
 		}
 
 		return null;

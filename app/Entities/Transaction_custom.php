@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Libraries\RemitaResponse;
 use App\Traits\CommonTrait;
@@ -312,12 +313,12 @@ class Transaction_custom extends Crud {
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'Users_custom');
+		EntityLoader::loadClass($this, 'Users_custom');
 		return new Users_custom($result[0]);
 	}
 
 	public function delete($id = NULL, &$dbObject = NULL, $type = null) {
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return $this->transaction->delete($id, $dbObject, $type);
 	}
 

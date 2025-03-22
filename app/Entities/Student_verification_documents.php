@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /** 
 * This class is automatically generated based on the structure of the table.
@@ -201,7 +202,7 @@ protected function getStudents(){
 	if (!$result) {
 		return false;
 	}
-	loadClass($this->load,'students');
+	EntityLoader::loadClass($this, 'students');
 	return new Students($result[0]);
 }
 
@@ -215,7 +216,7 @@ protected function getVerification_documents_requirement(){
 	if (!$result) {
 		return false;
 	}
-	loadClass($this->load,'verification_documents_requirement');
+	EntityLoader::loadClass($this, 'verification_documents_requirement');
 	return new Verification_documents_requirement($result[0]);
 }
 

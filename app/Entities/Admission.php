@@ -3,6 +3,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -278,24 +279,24 @@ class Admission extends Crud
 
     private function processList($items)
     {
-        $feeDescriptionModel = loadClass('fee_description');
-        $sessionModel = loadClass('sessions');
+        EntityLoader::loadClass($this, 'fee_description');
+        EntityLoader::loadClass($this, 'sessions');
         for ($i = 0; $i < count($items); $i++) {
-            $items[$i] = $this->loadExtras($feeDescriptionModel, $sessionModel, $items[$i]);
+            $items[$i] = $this->loadExtras($items[$i]);
         }
         return $items;
     }
 
-    private function loadExtras($feeDescriptionModel, $sessionModel ,$item)
+    private function loadExtras($item)
     {
         if ($item['payment_desc']) {
-            $description = $feeDescriptionModel->getWhere(['id' => $item['payment_desc']]);
+            $description = $this->fee_description->getWhere(['id' => $item['payment_desc']]);
             $description = $description[0];
             $item['applicant_payment_name'] = $description->description;
         }
         if ($item['session_id']) {
-            $session = $sessionModel->getWhere(['id' => $item['session_id']]);
-            $item['session_name'] = $session[0]->date;
+            $sesssion = $this->sessions->getWhere(['id' => $item['session_id']]);
+            $item['session_name'] = $sesssion[0]->date;
         }
 
         return $item;

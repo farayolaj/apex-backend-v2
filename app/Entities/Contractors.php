@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -249,7 +250,7 @@ class Contractors extends Crud
 			$id = $this->array["id"];
 		}
 		$db = $this->db;
-		loadClass($this->load, 'users_new');
+		EntityLoader::loadClass($this, 'users_new');
 		if (!($contractor = $this->users_new->getRealUserInfo($id, 'contractors', 'contractor'))) {
 			throw new Exception("Unable to find contractor");
 		}
@@ -266,7 +267,7 @@ class Contractors extends Crud
 			$id = $this->array["id"];
 		}
 		$db = $this->db;
-		loadClass($this->load, 'users_new');
+		EntityLoader::loadClass($this, 'users_new');
 		if (!($contractor = $this->users_new->getRealUserInfo($id, 'contractors', 'contractor'))) {
 			throw new Exception("Unable to find contractor");
 		}

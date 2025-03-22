@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Traits\ResultManagerTrait;
 use App\Enums\ClaimEnum as ClaimType;
@@ -261,13 +262,13 @@ class Courses extends Crud {
 		}
 
 		$contents = [];
-		loadClass($this->load, 'sessions');
+		EntityLoader::loadClass($this, 'sessions');
 		$result = useGenerators($result);
 		$sumEstimate = $sumActual = 0;
 		foreach ($result as $res) {
 			$course = $this->getDistinctCourseScore($res['course_id'], $session, $semester);
 			if ($course) {
-				$isPaper = strtolower($res['course_type']) === ClaimType::EXAM_PAPER->value;
+				$isPaper = strtolower($res['course_type']) === ClaimType::EXAM_PAPER->value->value;
 				$inferEstimate = ResultManagerTrait::calcTutorAmount($res['total'], $isPaper);
 				$inferActual = ResultManagerTrait::calcTutorAmount($course['total'], $isPaper);
 

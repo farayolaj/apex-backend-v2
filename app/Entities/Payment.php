@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Traits\CommonTrait;
 /**
@@ -425,8 +426,8 @@ class Payment extends Crud
 
 	private function processList($items)
 	{
-		loadClass($this->load, 'fee_description');
-		loadClass($this->load, 'programme');
+		EntityLoader::loadClass($this, 'fee_description');
+		EntityLoader::loadClass($this, 'programme');
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i]);
 		}
@@ -499,7 +500,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'sessions');
+		EntityLoader::loadClass($this, 'sessions');
 		return new Sessions($result[0]);
 	}
 
@@ -527,7 +528,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -556,7 +557,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -581,7 +582,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -603,7 +604,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -624,7 +625,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -635,7 +636,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -647,7 +648,7 @@ class Payment extends Crud
 		if (!$result) {
 			return null;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -672,7 +673,7 @@ class Payment extends Crud
 		if (!$result) {
 			return null;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -707,7 +708,7 @@ class Payment extends Crud
 		if (!$result) {
 			return null;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -743,7 +744,7 @@ class Payment extends Crud
 
 	public function getFeeDescription()
 	{
-		loadClass($this->load, 'fee_description');
+		EntityLoader::loadClass($this, 'fee_description');
 
 		$feeDesc = $this->fee_description->getWhere(['id' => $this->description], $c, 0, null, false);
 		$description = $feeDesc ? $feeDesc[0]->description : null;
@@ -757,7 +758,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
@@ -771,13 +772,13 @@ class Payment extends Crud
 		if (!$returnObject) {
 			return $result[0];
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 
 	public function validateVerificationFee($academicRecord, $paymentId)
 	{
-		loadClass($this->load, 'fee_description');
+		EntityLoader::loadClass($this, 'fee_description');
 		$olevel = $academicRecord->olevel_details;
 		if ($olevel) {
 			$olevel = json_decode($olevel, true);
@@ -951,7 +952,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass($this->load, 'transaction');
+		EntityLoader::loadClass($this, 'transaction');
 		return new Transaction($result[0]);
 	}
 

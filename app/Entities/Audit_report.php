@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Enums\ReportEnum as ReportSlug;
 use App\Enums\OutflowStatusEnum as OutflowStatus;
@@ -66,7 +67,7 @@ class Audit_report extends Crud
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
-		$successStatus = OutflowStatus::SUCCESSFUL->value;
+		$successStatus = OutflowStatus::SUCCESSFUL->value->value;
 		$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status_description = '$successStatus' ";
 
 		$query = "SELECT user_id, payment_description as descrip,created_at as date_performed,
@@ -88,7 +89,7 @@ class Audit_report extends Crud
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
-		$successStatus = OutflowStatus::SUCCESSFUL->value;
+		$successStatus = OutflowStatus::SUCCESSFUL->value->value;
 		$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status_description = '$successStatus' and a.total_amount > 500000 ";
 
 		$query = "SELECT user_id, payment_description as descrip,created_at as date_performed,
@@ -110,9 +111,9 @@ class Audit_report extends Crud
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
-		$successStatus = OutflowStatus::SUCCESSFUL->value;
-		$requestType = RequestTypeSlug::SALARY_ADVANCE->value;
-		$requestType2 = RequestTypeSlug::RETIRE_SALARY_ADVANCE->value;
+		$successStatus = OutflowStatus::SUCCESSFUL->value->value;
+		$requestType = RequestTypeSlug::SALARY_ADVANCE->value->value;
+		$requestType2 = RequestTypeSlug::RETIRE_SALARY_ADVANCE->value->value;
 
 		if ($type == 'cleared') {
 			$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status_description = '$successStatus' ";
@@ -141,7 +142,7 @@ class Audit_report extends Crud
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
-		$schFee = PaymentFeeDescription::SCH_FEE_FIRST->value;
+		$schFee = PaymentFeeDescription::SCH_FEE_FIRST->value->value;
 		$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status in ('00', '01') and a.payment_id = '$schFee' ";
 
 		return "SELECT a.id, concat(firstname, ' ',lastname) as fullname, matric_number,e.name as department, 
@@ -162,7 +163,7 @@ class Audit_report extends Crud
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
-		$acceptance = PaymentFeeDescription::ACCEPTANCE_FEE->value;
+		$acceptance = PaymentFeeDescription::ACCEPTANCE_FEE->value->value;
 		$whereString .= ($whereString ? ' and ' : ' where ') . " a.payment_status in ('00', '01') and a.payment_id = '$acceptance' ";
 
 		return "SELECT a.id, concat(firstname, ' ',lastname) as fullname, matric_number,e.name as department, 
@@ -196,36 +197,36 @@ class Audit_report extends Crud
 
 		$query = null;
 
-		if ($type == ReportSlug::TRANSFER_JOURNAL->value) {
+		if ($type == ReportSlug::TRANSFER_JOURNAL->value->value) {
 			$query = $this->apiTransferJournal($from, $to);
 		}
 
-		if ($type == ReportSlug::ANALYSIS_EXPENDITURES->value) {
+		if ($type == ReportSlug::ANALYSIS_EXPENDITURES->value->value) {
 			$query = $this->apiExpenditures($from, $to);
 		}
 
 
-		if ($type == ReportSlug::CASH_ADVANCE->value) {
+		if ($type == ReportSlug::CASH_ADVANCE->value->value) {
 			$query = $this->apiCashAdvance($from, $to, 'all');
 		}
 
-		if ($type == ReportSlug::CASH_ADVANCE_CLEARED->value) {
+		if ($type == ReportSlug::CASH_ADVANCE_CLEARED->value->value) {
 			$query = $this->apiCashAdvance($from, $to, 'cleared');
 		}
 
-		if ($type == ReportSlug::CASH_ADVANCE_UNCLEARED->value) {
+		if ($type == ReportSlug::CASH_ADVANCE_UNCLEARED->value->value) {
 			$query = $this->apiCashAdvance($from, $to, 'uncleared');
 		}
 
-		if ($type == ReportSlug::EXPENSES_MORE_THAN_500K->value) {
+		if ($type == ReportSlug::EXPENSES_MORE_THAN_500K->value->value) {
 			$query = $this->apiExpendituresMoreThan500K($from, $to);
 		}
 
-		if ($type == ReportSlug::REGISTERED_STUDENT->value) {
+		if ($type == ReportSlug::REGISTERED_STUDENT->value->value) {
 			$query = $this->apiRegisteredStudent($from, $to);
 		}
 
-		if ($type == ReportSlug::ACCEPTANCE_FEE_JOURNAL->value) {
+		if ($type == ReportSlug::ACCEPTANCE_FEE_JOURNAL->value->value) {
 			$query = $this->apiAcceptanceJournal($from, $to);
 		}
 
@@ -242,11 +243,11 @@ class Audit_report extends Crud
 		$res2 = $res2->getResultArray();
 
 		$processList = [
-			ReportSlug::ANALYSIS_EXPENDITURES->value,
-			ReportSlug::CASH_ADVANCE->value,
-			ReportSlug::CASH_ADVANCE_CLEARED->value,
-			ReportSlug::CASH_ADVANCE_UNCLEARED->value,
-			ReportSlug::EXPENSES_MORE_THAN_500K->value
+			ReportSlug::ANALYSIS_EXPENDITURES->value->value,
+			ReportSlug::CASH_ADVANCE->value->value,
+			ReportSlug::CASH_ADVANCE_CLEARED->value->value,
+			ReportSlug::CASH_ADVANCE_UNCLEARED->value->value,
+			ReportSlug::EXPENSES_MORE_THAN_500K->value->value
 		];
 		if (in_array($type, $processList)) {
 			$res = $this->processList($res);
@@ -260,7 +261,7 @@ class Audit_report extends Crud
 
 	private function processList($items): array
 	{
-		loadClass($this->load, 'users_new');
+		EntityLoader::loadClass($this, 'users_new');
 
 		$generator = useGenerators($items);
 		$payload = [];

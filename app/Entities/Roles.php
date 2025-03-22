@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Enums\UserOutflowTypeEnum as UserOutflowType;
 /**
@@ -73,7 +74,7 @@ class Roles extends Crud
 	{
 		$query = "SELECT d.title,d.firstname,d.lastname,d.othernames,d.staff_id,a.id as user_id,d.avatar FROM `users_new` a 
 		join staffs d on d.id = a.user_table_id WHERE a.user_type = ? and d.outflow_slug = ? and d.active = ?";
-		$result = $this->query($query, ['staff', UserOutflowType::DB_STAFF->value, '1']);
+		$result = $this->query($query, ['staff', UserOutflowType::DB_STAFF->value->value, '1']);
 		if (!$result) {
 			return [];
 		}

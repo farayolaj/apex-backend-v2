@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class queries those who have paid for both RuS and SuS
@@ -133,7 +134,7 @@ class Examination_approval extends Crud
 
 	private function processList($items): array
 	{
-		loadClass($this->load, 'users_new');
+		EntityLoader::loadClass($this, 'users_new');
 		$currentUser = WebSessionManager::currentAPIUser();
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i], $currentUser);

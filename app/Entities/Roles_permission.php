@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the roles_permission table.
@@ -173,7 +174,7 @@ class Roles_permission extends Crud
 
 	private function processList($items)
 	{
-		loadClass($this->load, 'roles');
+		EntityLoader::loadClass($this, 'roles');
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i]);
 		}

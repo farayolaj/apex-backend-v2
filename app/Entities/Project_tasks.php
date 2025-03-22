@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -349,7 +350,7 @@ class Project_tasks extends Crud
 
 	private function processList($items)
 	{
-		loadClass($this->load, 'contractors');
+		EntityLoader::loadClass($this, 'contractors');
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i]);
 		}

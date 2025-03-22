@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Enums\ClaimEnum as ClaimType;
 /**
@@ -76,8 +77,8 @@ class Examination_courses extends Crud {
 	}
 
 	private function processList($items): array {
-		loadClass($this->load, 'users_new');
-		loadClass($this->load, 'sessions');
+		EntityLoader::loadClass($this, 'users_new');
+		EntityLoader::loadClass($this, 'sessions');
 		$currentUser = WebSessionManager::currentAPIUser();
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i], $currentUser);
@@ -157,7 +158,7 @@ class Examination_courses extends Crud {
 		$record = get_single_record($this, 'course_request_claims', [
 			'course_id' => $course,
 			'session_id' => $session,
-			'exam_type' => ClaimType::EXAM_PAPER->value,
+			'exam_type' => ClaimType::EXAM_PAPER->value->value,
 		]);
 		if (!$record) {
 			return null;

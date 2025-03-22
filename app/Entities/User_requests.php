@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Enums\OutflowStatusEnum as OutflowStatus;
 /**
@@ -591,8 +592,8 @@ class User_requests extends Crud
 
 	private function processList($items)
 	{
-		loadClass($this->load, 'request_type_charges');
-		loadClass($this->load, 'users_new');
+		EntityLoader::loadClass($this, 'request_type_charges');
+		EntityLoader::loadClass($this, 'users_new');
 
 		$generator = useGenerators($items);
 		$payload = [];
@@ -934,7 +935,7 @@ class User_requests extends Crud
 
 	public function getAmountSpentInLast6Month()
 	{
-		$pendingCredit = OutflowStatus::PENDING_CREDIT->value;
+		$pendingCredit = OutflowStatus::PENDING_CREDIT->value->value;
 		$query = "SELECT ANY_VALUE(date_format(a.created_at, '%M')) as label, ANY_VALUE(UNIX_TIMESTAMP(a.created_at)) as ord,
 		sum(a.total_amount) as total from transaction_request a where a.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH) 
 		and payment_status_description = ? group by year(a.created_at), month(a.created_at), label order by ord asc";
@@ -1005,7 +1006,7 @@ class User_requests extends Crud
 
 	public function getLast6MonthProcessAmount()
 	{
-		$pendingCredit = OutflowStatus::PENDING_CREDIT->value;
+		$pendingCredit = OutflowStatus::PENDING_CREDIT->value->value;
 		$query = "SELECT ANY_VALUE(date_format(a.created_at, '%M')) as label, ANY_VALUE(UNIX_TIMESTAMP(a.created_at)) as ord,
 		sum(a.total_amount) as total from transaction_request a where a.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH) 
 		and payment_status_description = '$pendingCredit' group by year(a.created_at), month(a.created_at), label order by ord asc";

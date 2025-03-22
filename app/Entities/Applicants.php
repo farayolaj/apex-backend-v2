@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Enums\CommonEnum as CommonSlug;
 /**
@@ -726,7 +727,7 @@ class Applicants extends Crud
 	{
 		if (isset($item['id'])) {
 			$item['id'] = $item['id'] . '-' . ($item['applicant_type'] === 'applicant_putme' ?
-					CommonSlug::APPLICANT_PUTME->value : CommonSlug::APPLICANT->value);
+					CommonSlug::APPLICANT_PUTME->value->value : CommonSlug::APPLICANT->value->value);
 		}
 
 		if (isset($item['phone'])) {

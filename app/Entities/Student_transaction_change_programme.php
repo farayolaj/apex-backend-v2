@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Enums\CommonEnum as CommonSlug;
 /**
@@ -43,10 +44,10 @@ class Student_transaction_change_programme extends Crud
         if ($type == 'fresher') {
             $currentSession = get_setting('admission_session_update');
             // $filterQuery .= ($filterQuery ? " and " : " where ") . " ((academic_record.session_of_admission = '$currentSession')) ";
-            $directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY->value);
-            $olevel      = $this->db->escape_str(CommonSlug::O_LEVEL->value);
-            $olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME->value);
-            $fastTrack   = $this->db->escape_str(CommonSlug::FAST_TRACK->value);
+            $directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY->value->value);
+            $olevel      = $this->db->escape_str(CommonSlug::O_LEVEL->value->value);
+            $olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME->value->value);
+            $fastTrack   = $this->db->escape_str(CommonSlug::FAST_TRACK->value->value);
 
             $filterQuery .= ($filterQuery ? " and " : " where ") . " (
 				(academic_record.entry_mode = '$directEntry' and academic_record.current_level = '2') ||

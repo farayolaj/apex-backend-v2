@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the users_log table.
@@ -192,7 +193,7 @@ class Users_log extends Crud {
 
 			$userType = isset($data['user_type']) ? $data['user_type'] : 'students';
 			if ($userType === 'students') {
-				loadClass($this->load, 'students');
+				EntityLoader::loadClass($this, 'students');
 				if ($item['student_id']) {
 					$student = $this->students->getWhere(['id' => $item['student_id']], $count, 0, 1, false);
 					if ($student) {
@@ -209,7 +210,7 @@ class Users_log extends Crud {
 			}
 
 			if ($userType === 'non-students') {
-				loadClass($this->load, 'users_custom');
+				EntityLoader::loadClass($this, 'users_custom');
 				if ($item['student_id']) {
 					$users = $this->users_custom->getWhere(['id' => $item['student_id']], $count, 0, 1, false);
 					if ($users) {
@@ -226,7 +227,7 @@ class Users_log extends Crud {
 			}
 
 			if ($userType === 'applicants') {
-				loadClass($this->load, 'applicants');
+				EntityLoader::loadClass($this, 'applicants');
 				if ($item['student_id']) {
 					$applicants = $this->applicants->getWhere(['applicant_id' => $item['student_id']], $count, 0, 1, false);
 					if ($applicants) {

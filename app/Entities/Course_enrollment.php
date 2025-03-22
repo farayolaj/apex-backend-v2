@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the course_enrollment table.
@@ -247,8 +248,8 @@ class Course_enrollment extends Crud
 
 	public function getScoreGrade($student, $course, $session, $level, $semester, $gradeSession)
 	{
-		loadClass($this->load, 'courses');
-		loadClass($this->load, 'grades');
+		EntityLoader::loadClass($this, 'courses');
+		EntityLoader::loadClass($this, 'grades');
 		$course = $this->courses->getCourseIdByCode($course);
 		$query = "SELECT a.total_score from course_enrollment a where a.student_id = ? and a.course_id = ? and a.session_id = ? 
         	and a.student_level = ? and a.semester = ?";

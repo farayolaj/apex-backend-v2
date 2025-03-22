@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 use App\Enums\CommonEnum as CommonSlug;
 /**
@@ -31,10 +32,10 @@ class Student_orientation_list extends Crud
 		// $filterQuery .= ($filterQuery ? " and " : " where ") . " orientation_attendance <> '' 
 		// and b.session_of_admission = '$currentAdmissionSession' ";
 
-		$directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY->value);
-		$olevel = $this->db->escape_str(CommonSlug::O_LEVEL->value);
-		$olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME->value);
-		$fastTrack = $this->db->escape_str(CommonSlug::FAST_TRACK->value);
+		$directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY->value->value);
+		$olevel = $this->db->escape_str(CommonSlug::O_LEVEL->value->value);
+		$olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME->value->value);
+		$fastTrack = $this->db->escape_str(CommonSlug::FAST_TRACK->value->value);
 
 		$filterQuery .= ($filterQuery ? " and " : " where ") . " orientation_attendance <> '' and (
 			(b.entry_mode = '$directEntry' and b.current_level = '2') ||

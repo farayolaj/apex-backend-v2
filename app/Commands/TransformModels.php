@@ -375,6 +375,45 @@ class TransformModels extends BaseCommand
         return $content;
     }
 
+    protected function transformLoadClass($content) {
+        $content = preg_replace(
+            '/loadClass\(\s*\$this->load\s*,\s*([^)]+)\s*\);/',
+            'EntityLoader::loadClass($this, $1);',
+            $content
+        );
+
+        $useEntityLoader = 'use App\Libraries\EntityLoader;';
+        if (!str_contains($content, $useEntityLoader)) {
+            // Check if use App\Models\Crud; exists
+            $useCrudPos = strpos($content, 'use App\Models\Crud;');
+
+            if ($useCrudPos !== false) {
+                // Insert after use App\Models\Crud;
+                $insertPos = strpos($content, ';', $useCrudPos) + 1;
+                $content = substr_replace($content, "\n" . $useEntityLoader, $insertPos, 0);
+            } else {
+                // If use App\Models\Crud; doesn't exist, insert after the namespace or opening PHP tag
+                $namespacePos = strpos($content, 'namespace ');
+                $firstUsePos = strpos($content, 'use ');
+
+                if ($namespacePos !== false) {
+                    // Insert after the namespace declaration
+                    $insertPos = strpos($content, ';', $namespacePos) + 1;
+                } elseif ($firstUsePos !== false) {
+                    // Insert before the first use statement
+                    $insertPos = $firstUsePos;
+                } else {
+                    // Insert after the opening PHP tag
+                    $insertPos = strpos($content, '<?php') + 5;
+                }
+
+                $content = substr_replace($content, "\n" . $useEntityLoader . "\n", $insertPos, 0);
+            }
+        }
+
+        return $content;
+    }
+
     private function transformModelBuilder($content){
         // Transform get_where into CodeIgniter 4's query builder format
         $content = preg_replace_callback(
@@ -441,6 +480,8 @@ PHP;
         $content = $this->transformHelperFunction($content);
 
         $content = $this->transformConstantsToEnumValues($content);
+
+        $content = $this->transformLoadClass($content);
 
         return $content;
     }
