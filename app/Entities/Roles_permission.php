@@ -1,6 +1,6 @@
 <?php
-
 namespace App\Entities;
+
 use App\Models\Crud;
 
 /**
@@ -112,15 +112,18 @@ class Roles_permission extends Crud
 	/**
 	 * Check if users has a role permission assigned to them *
 	 * @param  [type] $userID [description]
+	 * @return false [type]         [description]
 	 */
 	private function getUserRoleId($userID)
 	{
-		$query = $this->db->table('roles_user')->getWhere(array('user_id' => $userID));
+		$query = $this->db->table('roles_user')
+                  ->where('user_id', $userID)
+                  ->get();
 		if ($query->getNumRows() > 0) {
 			$user = $query->getRow();
 			return $user->role_id;
 		}
-		return null;
+		return false;
 	}
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
@@ -180,11 +183,10 @@ class Roles_permission extends Crud
 	public function loadExtras(array $item, bool $ignoreRole = true): array
 	{
 		if ($item['role_id']) {
-            $rolesModel = loadClass('roles');
 			$roles = json_decode($item['role_id'], true);
 			$rolesArr = [];
 			foreach ($roles as $role) {
-				$temp = $rolesModel->getWhere(['id' => $role], $count, 0, null, false);
+				$temp = $this->roles->getWhere(['id' => $role], $count, 0, null, false);
 				if ($temp) {
 					$temp = $temp[0];
 					$rolesArr[] = $temp->name;

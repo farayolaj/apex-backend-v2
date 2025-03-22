@@ -3,8 +3,10 @@
 namespace App\Controllers;
 
 use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
 use App\Models\Mailer;
 use App\Traits\AuthTrait;
+use CodeIgniter\Config\Factories;
 use Config\Services;
 
 class Tester extends BaseController
@@ -71,7 +73,13 @@ class Tester extends BaseController
         return ApiResponse::success("Email sent successfully");
     }
 
+    private function testFactory(){
+//        $remita = Factories::entities('Users_new');
+        EntityLoader::loadClass($this, 'users_new');
+        dddump($this->users_new->getAllUsers());
+    }
+
     public function test(){
-        $this->mailTest();
+        $this->testFactory();
     }
 }

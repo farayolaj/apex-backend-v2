@@ -1,6 +1,7 @@
 <?php
 namespace App\Entities;
 
+use App\Libraries\EntityLoader;
 use App\Models\Crud;
 
 /**
@@ -101,11 +102,10 @@ function getDate_createdFormField($value=''){
 
 public function getFeeDescription($description=null)
 {
-	loadClass($this->load,'fee_description');
-	$description = $description ? $description : $this->description;
-	$feeDesc = $this->fee_description->getWhere(['id'=>$description],$c,0,null,false);
-	$description = $feeDesc?$feeDesc[0]->description:null;
-	return $description;
+	$feeDescriptionModel = loadClass('fee_description');
+	$description = $description ?: $this->description;
+	$feeDesc = $feeDescriptionModel->getWhere(['id'=>$description],$c,0,null,false);
+    return $feeDesc?$feeDesc[0]->description:null;
 }
 
 public function APIList($filterList, $queryString,$start,$len,$orderBy)
@@ -154,8 +154,8 @@ public function APIList($filterList, $queryString,$start,$len,$orderBy)
 
 private function processList($items)
 {
-	loadClass($this->load,'fee_description');
-	loadClass($this->load,'sessions');
+    EntityLoader::loadClass($this, 'fee_description');
+    EntityLoader::loadClass($this, 'sessions');
 	for ($i = 0; $i < count($items); $i++) {
 		$items[$i] = $this->loadExtras($items[$i]);
 	}
@@ -169,8 +169,8 @@ private function loadExtras($item)
 	$item['description_name'] = $description->description;
 
 	if($item['session_id']){
-		$sesssion = $this->sessions->getWhere(['id'=>$item['session_id']]);
-		$item['session_name'] = $sesssion[0]->date;
+		$session = $this->sessions->getWhere(['id'=>$item['session_id']]);
+		$item['session_name'] = $session[0]->date;
 	}
 
 	return $item;

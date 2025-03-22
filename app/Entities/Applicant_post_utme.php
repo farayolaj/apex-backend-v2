@@ -671,6 +671,7 @@ class Applicant_post_utme extends Crud
 	}
 
 	/**
+     * @deprecated - This has been merged into the applicant entity
 	 * @param mixed $filterList
 	 * @param mixed $queryString
 	 * @param mixed $start
@@ -735,10 +736,11 @@ class Applicant_post_utme extends Crud
 		return $item;
 	}
 
-	/**
-	 * @param mixed $applicant_id
-	 * @throws Exception
-	 */
+    /**
+     * @param mixed $applicant_id
+     * @throws Exception
+     * @throws \Exception
+     */
 	public function applicationDocument($applicant_id)
 	{
 		$query = "SELECT a.*, a.session_id as session, d.payment_id, d.payment_description, d.transaction_ref,

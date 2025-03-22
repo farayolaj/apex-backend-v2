@@ -75,6 +75,22 @@ trait EntityListTrait
         return $toReturn;
     }
 
+    public function buildExternalApiListResponse(array $data): array
+    {
+        $toReturn = array();
+        if (empty($data)) {
+            return [
+                'total' => 0,
+                'table_data' => null,
+            ];
+        }
+        $paging = ($data[1] && is_array($data[1])) ? $data[1][0]['totalCount'] : $data[1];
+        $toReturn['total'] = (int)$paging;
+        $toReturn['table_data'] = $data[0];
+
+        return $toReturn;
+    }
+
     /**
      * @return string|<missing>
      */

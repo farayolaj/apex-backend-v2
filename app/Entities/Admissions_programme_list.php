@@ -12,12 +12,10 @@ class Admissions_programme_list extends Crud
 
 	public function APIList($filterList, $queryString,$start,$len,$orderBy)
 	{
-		$verifyStatus = false;
-		$tempPaymentStatus = [];
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		$session = $this->input->get('session', true) ?? null;
+		$session = request()->getGet('session') ?? null;
 
 		if(!$session){
 			return [];
@@ -50,7 +48,8 @@ class Admissions_programme_list extends Crud
 		return [$res,$res2];
 	}
 
-	private function processList($items, $session){
+	private function processList($items, $session): array
+    {
 		$contents = [];
 		for ($i = 0; $i < count($items); $i++) {
 			$contents[] = $this->loadExtras($items[$i],$session);
@@ -58,13 +57,12 @@ class Admissions_programme_list extends Crud
 		return $contents;
 	}
 
-	private function loadExtras($item, $session)
-	{
-		$result = [
-			'check_exist' => $this->checkProgrammeExistence($item['id'], $session),
-			'data' => $item
-		];
-		return $result;
+	private function loadExtras($item, $session): array
+    {
+        return [
+            'check_exist' => $this->checkProgrammeExistence($item['id'], $session),
+            'data' => $item
+        ];
 	}
 
 	private function checkProgrammeExistence($programme, $session){

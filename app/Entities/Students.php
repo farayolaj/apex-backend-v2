@@ -2,18 +2,16 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+
 use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
 use App\Enums\FeeDescriptionCodeEnum as FeeDescriptionCode;
-use App\Enums\CommonEnum as CommonSlug;
 use App\Traits\CommonTrait;
-
+use App\Enums\CommonEnum as CommonSlug;
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the students table.
  */
 class Students extends Crud
 {
-    use CommonTrait;
-
 	protected static $tablename = 'Students';
 	/* this array contains the field that can be null*/
 	static $nullArray = ['referee', 'alternative_email', 'verified_by', 'verify_attempt', 'screened_by', 'screening_attempt', 'date_created'];
@@ -579,10 +577,12 @@ class Students extends Crud
 		return new Students($result[0]);
 	}
 
-	public function updatePassportPath(): string
-    {
+	public function updatePassportPath()
+	{
+
 		$passport = studentImagePath($this->passport, $this);
 		$this->passport = $passport;
+
 		return $this->passport;
 	}
 
@@ -631,11 +631,10 @@ class Students extends Crud
 		return new Medical_record($result[0]);
 	}
 
-    /**
-     * @param mixed $value
-     * @return bool|Academic_record
-     * @throws \Exception
-     */
+	/**
+	 * @param mixed $value
+	 * @return bool|Academic_record
+	 */
 	public function getAcademic_record($value = '')
 	{
 		$query = "SELECT * from academic_record where student_id=? order by id desc limit 1";
@@ -643,7 +642,7 @@ class Students extends Crud
 		if (!$result) {
 			return false;
 		}
-		loadClass('academic_record');
+		loadClass($this->load, 'academic_record');
 		return new Academic_record($result[0]);
 	}
 
@@ -663,7 +662,7 @@ class Students extends Crud
 			if ($item['payment_option']) {
 				$item['is_part_payment'] = $currentSession == $item['session'] && !isPaymentComplete($item['payment_option']) ? true : false;
 				$item['encoded_real_payment_id'] = hashids_encrypt($item['real_payment_id']);
-				$item['is_current_sch_fee'] = $currentSession == $item['session'] && ($item['payment_id'] == PaymentFeeDescription::SCH_FEE_FIRST->value->value || $item['payment_id'] == PaymentFeeDescription::SCH_FEE_SECOND->value->value);
+				$item['is_current_sch_fee'] = $currentSession == $item['session'] && ($item['payment_id'] == PaymentFeeDescription::SCH_FEE_FIRST->value || $item['payment_id'] == PaymentFeeDescription::SCH_FEE_SECOND->value);
 				$content[] = $item;
 			}
 		}
@@ -1530,7 +1529,7 @@ class Students extends Crud
 		$isCompleted = $this->payment->getCompleteTransaction($academic_record->student_id, $paymentDescription, $session);
 		if ($isCompleted) {
 			// means there is a pending transaction
-			if (!self::isPaymentValid($isCompleted['payment_status'])) {
+			if (!CommonTrait::isPaymentValid($isCompleted['payment_status'])) {
 				if ($returnPayment) {
 					$result = $this->payment->getSingleTransactionByRef($isCompleted['transaction_ref'], false);
 					$tempPayment = $this->payment->getPaymentById($result['real_payment_id']);
@@ -1546,7 +1545,7 @@ class Students extends Crud
 			}
 		}
 		// check if there is a part payment and need to pay it equiv balance or the full payment
-		$prevLevel = self::inferPreviousLevel($academic_record->entry_mode, $academic_record->current_level);
+		$prevLevel = CommonTrait::inferPreviousLevel($academic_record->entry_mode, $academic_record->current_level);
 		$param = [
 			$session,
 			$academic_record->programme_id,
@@ -1957,7 +1956,7 @@ class Students extends Crud
 	{
 		$paidTransaction = false;
 		$paymentTypeOption = paymentOptionsType($transaction ? $transaction['payment_option'] : $payment->options, true);
-		if ($transaction && self::isPaymentValid($transaction['payment_status'])) {
+		if ($transaction && CommonTrait::isPaymentValid($transaction['payment_status'])) {
 			$paidTransaction = true;
 		}
 
@@ -2306,7 +2305,7 @@ class Students extends Crud
 			$paymentType = ($payment->fee_category == 1) ? 'Main' : 'Sundry';
 		}
 
-		$transactionStatus = self::isPaymentValid($transaction->payment_status);
+		$transactionStatus = (CommonTrait::isPaymentValid($transaction->payment_status)) ? true : false;
 		$paymentTypeOption = paymentOptionsType($transaction ? $transaction->payment_option : $payment->options, true);
 		$isVisible = $payment ? $payment->is_visible : 1;
 		$isActive = $payment ? $payment->status : 0;
@@ -2661,7 +2660,7 @@ class Students extends Crud
 		$paymentDescription = get_setting('active_semester') == '1' ? PaymentFeeDescription::SCH_FEE_FIRST->value : PaymentFeeDescription::SCH_FEE_SECOND->value;
 		$isCompleted = $this->payment->getPartialTransactionOption($academic_record->student_id, $paymentDescription, $session);
 		if ($isCompleted) {
-			if(!self::isPaymentValid($isCompleted['payment_status'])){
+			if(!CommonTrait::isPaymentValid($isCompleted['payment_status'])){
 				$tempPayment = $this->payment->getPaymentById($isCompleted['real_payment_id']);
 				return $this->convertTransaction($isCompleted, $tempPayment);
 			}	

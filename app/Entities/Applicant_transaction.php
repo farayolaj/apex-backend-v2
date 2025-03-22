@@ -4,6 +4,7 @@ namespace App\Entities;
 use App\Models\Crud;
 
 use App\Libraries\RemitaResponse;
+use App\Libraries\Remita;
 use App\Traits\CommonTrait;
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the applicant_transaction table.
@@ -190,7 +191,7 @@ class Applicant_transaction extends Crud {
 
 	public function verify_transaction($rrrCode, $channel, $applicant = null) {
 		if ($channel == 'remita') {
-			$this->load->model('remita');
+			$remitaModel = new Remita;
 			$transactionRef = $this->transaction_ref ? $this->transaction_ref : null;
 			if (!$transactionRef) {
 				return ['status' => false, 'message' => 'Invalid transaction reference'];

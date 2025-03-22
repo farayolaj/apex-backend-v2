@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Entities;
 
 use App\Models\Crud;

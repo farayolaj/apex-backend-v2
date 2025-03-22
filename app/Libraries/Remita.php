@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Models;
+namespace App\Libraries;
 
 use App\Libraries\PaymentPercentage;
 use App\Libraries\RemitaResponse;
 use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
 use App\Traits\CommonTrait;
-use CodeIgniter\Model;
 
 /**
  *
  */
-class Remita extends Model
+class Remita
 {
 
 	public function remitaTransactionDetails($url, $header)
@@ -214,7 +213,7 @@ class Remita extends Model
 				$matric = removeNonCharacter($student->applicant_id);
 				$description = trim($payment->getFeeDescription($payment->description));
 			}
-			$fullname = removeNonCharacter($student->lastname) . ' ' . removeNonCharacter($student->firstname);
+			$fullname = removeNonCharacter($student->lastname) . ' Remita.php' . removeNonCharacter($student->firstname);
 			$payerEmail = $student->user_login ?? $student->alternative_email;
 			$phone = decryptData($this, removeNonCharacter($student->phone));
 			$data = array(
@@ -768,7 +767,7 @@ class Remita extends Model
 		$subAccount = $payment->subaccount_amount ?? 0;
 		$serviceCharge = $serviceCharge ?: $payment->service_charge;
 		$mainAmount = $data['amount'] - $serviceCharge - $subAccount;
-		$description = ($payment->fee_category == 1 && !isSundryPayment($paymentID)) ? $payment->getFeeDescription() . ' ' . $session_name : $payment->getFeeDescription();
+		$description = ($payment->fee_category == 1 && !isSundryPayment($paymentID)) ? $payment->getFeeDescription() . ' Remita.php' . $session_name : $payment->getFeeDescription();
 		$param = [
 			'payment_id' => $paymentID,
 			'real_payment_id' => $payment->id,
@@ -1129,5 +1128,10 @@ class Remita extends Model
 
 		return ['status' => true, 'message' => $response];
 	}
+
+    public function tester()
+    {
+        print('load this method');
+    }
 
 }

@@ -168,16 +168,22 @@ if (!function_exists('removeNonCharacter')) {
 }
 
 if (!function_exists('buildCustomWhereString')) {
-    function buildCustomWhereString(?string $whereString, string $queryString = null, $orderBy = true): string
+    function buildCustomWhereString(?string $whereString = null, ?string $queryString = null, bool $orderBy = true): string
     {
-        $filterQuery = $whereString ? " where {$whereString} " : "";
-        if ($filterQuery || $queryString) {
-            $queryString = ($filterQuery && $queryString) ? " and ({$queryString})" : "{$queryString}";
-            $filterQuery .= ($filterQuery) ? "{$queryString}" : " where ({$queryString}) ";
+        $filterQuery = '';
+        if ($whereString || $queryString) {
+            $conditions = [];
+            if ($whereString) {
+                $conditions[] = $whereString;
+            }
+            if ($queryString) {
+                $conditions[] = "({$queryString})";
+            }
+            $filterQuery = ' WHERE ' . implode(' AND ', $conditions);
         }
 
         if ($orderBy) {
-            $filterQuery .= " order by id desc ";
+            $filterQuery .= ' ORDER BY id DESC';
         }
         return $filterQuery;
     }

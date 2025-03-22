@@ -1,7 +1,5 @@
 <?php
-
-namespace App\Entities;
-use App\Models\Crud;
+require_once 'application/models/Crud.php';
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the users table.
@@ -253,7 +251,7 @@ class Users_new extends Crud
         return $result;
     }
 
-    public function getUserDetails(object $user)
+    public function getUserDetails(object $object, object $user)
     {
         $content = [
             'staff' => 'staffs',
@@ -263,8 +261,8 @@ class Users_new extends Crud
         $entity = strtolower($entity);
         $entityModel = $content[$entity] ?? null;
         if ($entityModel) {
-            $entityModel = loadClass($entityModel);
-            $entityModel = $entityModel->getWhere(['id' => $user->user_table_id], $c, 0, null, false);
+            loadClass($object, $entityModel);
+            $entityModel = $this->$entityModel->getWhere(['id' => $user->user_table_id], $c, 0, null, false);
             if ($entityModel) {
                 $entityModel = $entityModel[0];
             }

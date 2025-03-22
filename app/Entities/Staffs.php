@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Entities;
 
 use App\Models\Crud;
@@ -388,7 +387,7 @@ class Staffs extends Crud
 
 	public function getStaffDepartment($user_department)
 	{
-		return $this->db->table('department')->getWhere(['id' => $user_department])->getRow();
+		return $this->db->get_where('department', ['id' => $user_department])->getRow();
 	}
 
 

@@ -1,12 +1,12 @@
 <?php
-/**
- * This class  is automatically generated based on the structure of the table. And it represent the model of the academic_record table.
- */
 
 namespace App\Entities;
 
 use App\Models\Crud;
 
+/**
+ * This class  is automatically generated based on the structure of the table. And it represent the model of the academic_record table.
+ */
 class Academic_record extends Crud
 {
     protected static $tablename = 'Academic_record';

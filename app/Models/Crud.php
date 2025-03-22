@@ -23,7 +23,7 @@ class Crud {
 
 	protected BaseConnection $db;
 
-	private string $entitiesNameSpace = '\\App\\Entities\\';
+	private string $entitiesNameSpace = 'App\\Entities\\';
 
 	private bool $modelPaging = false;
 

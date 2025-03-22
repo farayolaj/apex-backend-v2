@@ -1,7 +1,8 @@
 <?php
-
 namespace App\Entities;
+
 use App\Models\Crud;
+
 use App\Enums\CommonEnum as CommonSlug;
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the applicants table.

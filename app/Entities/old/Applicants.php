@@ -1,7 +1,5 @@
 <?php
-
-namespace App\Entities;
-use App\Models\Crud;
+require_once 'application/models/Crud.php';
 require_once APPPATH . 'constants/CommonSlug.php';
 
 /**
