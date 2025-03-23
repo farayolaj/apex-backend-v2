@@ -215,7 +215,7 @@ class AdminModel extends CI_Model
 				$results[$i]['passport'] = '';
 				continue;
 			}
-			$results[$i]['passport'] = studentImagePath($current['passport'], $this);
+			$results[$i]['passport'] = studentImagePath($current['passport']);
 		}
 		return $results;
 	}

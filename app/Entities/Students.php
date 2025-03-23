@@ -581,7 +581,7 @@ class Students extends Crud
 	public function updatePassportPath()
 	{
 
-		$passport = studentImagePath($this->passport, $this);
+		$passport = studentImagePath($this->passport);
 		$this->passport = $passport;
 
 		return $this->passport;

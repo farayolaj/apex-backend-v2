@@ -91,7 +91,7 @@ class Student_orientation_list extends Crud
 	public function loadExtras($item)
 	{
 		if ($item['passport']) {
-			$item['passport'] = studentImagePath($item['passport'], $this);
+			$item['passport'] = studentImagePath($item['passport']);
 		}
 
 		if ($item['level']) {
