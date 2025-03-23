@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Phinx\Migration\AbstractMigration;
 use App\Enums\CommonEnum as CommonSlug;
+use Phinx\Migration\AbstractMigration;
 
 final class UpdateApplicantPutmeOlevel extends AbstractMigration
 {

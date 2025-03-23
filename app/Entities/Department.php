@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the department table.
@@ -136,7 +137,10 @@ class Department extends Crud
 		return new \App\Entities\Faculty($result[0]);
 	}
 
-	protected function getMatric_number_generated()
+    /**
+     * @throws \Exception
+     */
+    protected function getMatric_number_generated()
 	{
 		$query = 'SELECT * FROM matric_number_generated WHERE department_id=?';
 		$id = $this->array['id'];
@@ -209,9 +213,9 @@ class Department extends Crud
 			$filterQuery .= " order by name asc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -230,6 +234,6 @@ class Department extends Crud
 
 	public function getUserDepartment($user_department)
 	{
-		return $this->db->get_where('department', ['id' => $user_department, 'type' => 'academic'])->getRow();
+		return $this->db->table('department')->getWhere(['id' => $user_department, 'type' => 'academic'])->getRow();
 	}
 }

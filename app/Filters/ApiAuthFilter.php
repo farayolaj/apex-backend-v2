@@ -2,16 +2,16 @@
 
 namespace App\Filters;
 
+use App\Entities\Applicants;
+use App\Entities\Students;
+use App\Entities\Users_new;
 use App\Enums\AuthEnum;
+use App\Models\WebSessionManager;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\I18n\Time;
 use Exception;
-use App\Entities\Users_new;
-use App\Entities\Students;
-use App\Entities\Applicants;
-use App\Models\WebSessionManager;
 
 class ApiAuthFilter implements FilterInterface
 {

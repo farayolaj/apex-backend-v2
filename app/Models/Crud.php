@@ -408,7 +408,7 @@ class Crud {
             $filterQuery .= " order by $orderBy ";
         }
 
-        if (isset($_GET['start']) && $len) {
+        if (request()->getGet('start') && $len) {
             $filterQuery .= " limit $start, $len";
         }
         if (!$filterValues) {
@@ -436,7 +436,7 @@ class Crud {
 
 	public function allQuery($query): string
     {
-		$tempQuery = $this->db->escape($query);
+		$tempQuery = $this->db->escapeString($query);
 		$fields = array_keys(static::$labelArray);
 		$isFirst = true;
 		$result = "";
@@ -1212,7 +1212,7 @@ class Crud {
 				exit('error while processing request. please try again');
 			}
 			// $temp = $values[$i];
-			$temp = $this->db->escape($values[$i]);
+			$temp = $this->db->escapeString($values[$i]);
 			$values[$i] = "$temp";
 		}
 		return $values;

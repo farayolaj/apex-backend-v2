@@ -278,7 +278,7 @@ class Courses extends Crud
         $session = $_GET['session'] ?? $this->currentTransactionSession();
         $semester = $_GET['semester'] ?? 1;
         $nth = $_GET['page_size'] ?? null;
-        $download = $this->input->get('download', true) ?? null;
+        $download = request()->getGet('download') ?? null;
         $date = date('Y-m-d H:i:s');
         $result = $this->getDistinctCourseList($session, $semester, $nth);
         if (!$result) {

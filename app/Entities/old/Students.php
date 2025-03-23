@@ -2368,10 +2368,10 @@ class Students extends Crud
 				trim($academic_record->current_session),
 				trim($academic_record->programme_id),
 				trim($academic_record->current_level),
-				$this->db->escape_str(trim($academic_record->entry_mode)),
+				$this->db->escapeString(trim($academic_record->entry_mode)),
 				trim($academic_record->programme_id),
 				trim($academic_record->current_level),
-				$this->db->escape_str(trim($academic_record->entry_mode)),
+				$this->db->escapeString(trim($academic_record->entry_mode)),
 			];
 		}
 		$payments = $this->query($query, $param);
@@ -4132,7 +4132,7 @@ class Students extends Crud
 			$filterQuery .= " order by a.date_created desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";
@@ -4242,8 +4242,8 @@ class Students extends Crud
 	{
 		$orderBy = " svc.id desc";
 		if (isset($_GET['sortBy'])) {
-			$sortBy = $this->input->get('sortBy', true);
-			$sortDirection = $this->input->get('sortDirection', true);
+			$sortBy = request()->getGet('sortBy', true);
+			$sortDirection = request()->getGet('sortDirection', true);
 			$sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
 			$orderBy = " $sortBy $sortDirection ";
 		}

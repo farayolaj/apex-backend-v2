@@ -598,7 +598,7 @@ if (!function_exists('getFilterContent')) {
 if (!function_exists('listAPIEntities')) {
     function listAPIEntities($db): array
     {
-        $dbTablesCacheKey = 'entity_api_tables';
+        $dbTablesCacheKey = 'apex_entity_api_tables';
         $exemptions = ['user'];
 
         if (!$dbResult = cache($dbTablesCacheKey)) {
@@ -637,7 +637,7 @@ if (!function_exists('listWebCustomEntities')) {
 if (!function_exists('listEntities')) {
     function listEntities($db): array
     {
-        $dbTablesCacheKey = 'entity_web_tables';
+        $dbTablesCacheKey = 'apex_entity_web_tables';
         if (!$dbResult = cache($dbTablesCacheKey)) {
             $dbResult = $db->listTables();
             // Save database tables into cache for 1 hour

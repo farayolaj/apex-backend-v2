@@ -3,12 +3,6 @@ namespace App\Entities;
 
 use App\Models\Crud;
 
-use App\Entities\New_request;
-use App\Entities\Project_task;
-use App\Entities\User;
-
-require_once('application/models/Crud.php');
-
 /**
  * This class is automatically generated based on the structure of the table.
  * And it represent the model of the user_requests_archive table
@@ -372,7 +366,7 @@ class User_requests_archive extends Crud
 
 	protected function getUser()
 	{
-		$query = 'SELECT * FROM user WHERE id=?';
+		$query = 'SELECT * FROM users_new WHERE id=?';
 		if (!isset($this->array['id'])) {
 			return null;
 		}
@@ -381,8 +375,7 @@ class User_requests_archive extends Crud
 		if (!$result) {
 			return false;
 		}
-		$resultObject = new User($result[0]);
-		return $resultObject;
+        return new \App\Entities\Users_new($result[0]);
 	}
 
 	protected function getRequest_type()
@@ -401,7 +394,7 @@ class User_requests_archive extends Crud
 
 	protected function getProject_task()
 	{
-		$query = 'SELECT * FROM project_task WHERE id=?';
+		$query = 'SELECT * FROM project_tasks WHERE id=?';
 		if (!isset($this->array['id'])) {
 			return null;
 		}
@@ -410,23 +403,7 @@ class User_requests_archive extends Crud
 		if (!$result) {
 			return false;
 		}
-		$resultObject = new Project_task($result[0]);
-		return $resultObject;
-	}
-
-	protected function getNew_request()
-	{
-		$query = 'SELECT * FROM new_request WHERE id=?';
-		if (!isset($this->array['id'])) {
-			return null;
-		}
-		$id = $this->array['id'];
-		$result = $this->query($query, [$id]);
-		if (!$result) {
-			return false;
-		}
-		$resultObject = new New_request($result[0]);
-		return $resultObject;
+        return new \App\Entities\Project_tasks($result[0]);
 	}
 
 	public function loadExtras($item)

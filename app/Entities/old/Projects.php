@@ -226,7 +226,7 @@ class Projects extends Crud
 			$filterQuery .= " order by created_at desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";
@@ -253,7 +253,7 @@ class Projects extends Crud
 			$filterQuery .= " order by a.created_at asc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";

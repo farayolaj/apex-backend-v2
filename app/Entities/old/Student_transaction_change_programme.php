@@ -22,7 +22,7 @@ class Student_transaction_change_programme extends Crud
      */
     public function APIList($filterList, $queryString, $start, $len, $orderBy)
     {
-        $type              = $this->input->get('type', true);
+        $type              = request()->getGet('type', true);
         $paymentStatus     = false;
         $tempPaymentStatus = [];
         if (isset($filterList['payment_status']) && $filterList['payment_status']) {
@@ -42,10 +42,10 @@ class Student_transaction_change_programme extends Crud
         if ($type == 'fresher') {
             $currentSession = get_setting('admission_session_update');
             // $filterQuery .= ($filterQuery ? " and " : " where ") . " ((academic_record.session_of_admission = '$currentSession')) ";
-            $directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY);
-            $olevel      = $this->db->escape_str(CommonSlug::O_LEVEL);
-            $olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME);
-            $fastTrack   = $this->db->escape_str(CommonSlug::FAST_TRACK);
+            $directEntry = $this->db->escapeString(CommonSlug::DIRECT_ENTRY);
+            $olevel      = $this->db->escapeString(CommonSlug::O_LEVEL);
+            $olevelPutme = $this->db->escapeString(CommonSlug::O_LEVEL_PUTME);
+            $fastTrack   = $this->db->escapeString(CommonSlug::FAST_TRACK);
 
             $filterQuery .= ($filterQuery ? " and " : " where ") . " (
 				(academic_record.entry_mode = '$directEntry' and academic_record.current_level = '2') ||

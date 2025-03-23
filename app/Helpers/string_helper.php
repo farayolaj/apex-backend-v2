@@ -361,11 +361,12 @@ if (!function_exists('is_decimal')) {
 }
 
 if (!function_exists('movePassport')) {
-    function movePassport($object, $studentID, $passport)
+    function movePassport($db, $studentID, $passport)
     {
         $passport = basename($passport);
         $imagePath = returnFormalDirectory('applicants') . $passport;
-        $path = FCPATH . $object->config->item('student_passport_path');
+        $config = config('ImagePath');
+        $path = $config->studentPassportPath;
         if (!is_dir($path)) {
             mkdir($path, 0777, true);
         }
@@ -374,7 +375,7 @@ if (!function_exists('movePassport')) {
         if (file_exists($imagePath)) {
             if (copy($imagePath, $newPath)) {
                 $details = ['passport' => $passport];
-                return update_record($object, 'students', 'id', $studentID, $details); // fail gracefully
+                return update_record($db, 'students', 'id', $studentID, $details); // fail gracefully
             }
         }
         return false;
@@ -1985,10 +1986,22 @@ if (!function_exists('create_record_batch')) {
 if (!function_exists('get_setting')) {
     function get_setting(string $settings_name)
     {
+        $cacheKey = 'apex_setting_' . $settings_name;
+        if ($cachedValue = cache($cacheKey)) {
+            return $cachedValue;
+        }
+
+        // If not cached, query the database
         $db = db_connect();
-        $query = $db->table('settings')->getWhere(array('settings_name' => $settings_name));
+        $query = $db->table('settings')->getWhere(['settings_name' => $settings_name]);
         $query = $query->getRow();
-        return $query->settings_value;
+
+        if ($query) {
+            cache()->save($cacheKey, $query->settings_value, 7200); // 2 hour
+            return $query->settings_value;
+        }
+
+        return null;
     }
 }
 
@@ -2055,45 +2068,5 @@ if (!function_exists('logAction')) {
             'new_data' => $newData,
         );
         return create_record($db, 'users_log', $data);
-    }
-}
-
-if (!function_exists('hashids_createobject')) {
-    function hashids_createobject($salt_ov = NULL, $min_hash_length_ov = NULL, $alphabet_ov = NULL)
-    {
-        $CI = null;
-
-        $salt = (!$salt_ov) ? $CI->config->item('hashids_salt') : $salt_ov;
-        $min_hash_length = (!$min_hash_length_ov) ? $CI->config->item('hashids_min_hash_length') : $min_hash_length_ov;
-        $alphabet = (!$alphabet_ov) ? $CI->config->item('hashids_alphabet') : $alphabet_ov;
-
-        return new Hashids\Hashids($salt, $min_hash_length, $alphabet);
-    }
-}
-
-if (!function_exists('hashids_encrypt')) {
-    function hashids_encrypt($input, $salt = NULL, $min_hash_length = NULL, $alphabet = NULL)
-    {
-        $CI = &get_instance();
-
-        if (!is_array($input)) {
-            $input = array(intval($input));
-        }
-
-        $hashids = hashids_createobject($salt, $min_hash_length, $alphabet);
-        return call_user_func_array(array($hashids, "encrypt"), $input);
-    }
-}
-
-if (!function_exists('hashids_decrypt')) {
-    function hashids_decrypt($hash, $salt = '', $min_hash_length = 0, $alphabet = '')
-    {
-        $hashids = hashids_createobject($salt, $min_hash_length, $alphabet);
-        $output = $hashids->decrypt($hash);
-        if (count($output) < 1) {
-            return NULL;
-        }
-
-        return (count($output) == 1) ? reset($output) : $output;
     }
 }

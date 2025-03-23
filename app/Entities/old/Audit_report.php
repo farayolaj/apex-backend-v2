@@ -17,11 +17,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
@@ -57,11 +57,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -79,11 +79,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -101,11 +101,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -132,11 +132,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
@@ -153,11 +153,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
@@ -183,11 +183,11 @@ class Audit_report extends Crud
 	public function APIList(?array  $filterList, ?string $queryString, ?string $start, ?string $len,
 							?string $orderBy, string $type, bool $export = false): array
 	{
-		$from = $this->input->get('start_date', true) ?? null;
-		$to = $this->input->get('end_date', true) ?? null;
+		$from = request()->getGet('start_date') ?? null;
+		$to = request()->getGet('end_date') ?? null;
 		$limit = '';
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$limit = " limit $start, $len";

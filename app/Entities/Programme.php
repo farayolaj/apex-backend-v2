@@ -2,11 +2,12 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Entities\Enums\AdmissionEnum as Admission;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the programme table.
  */
-use App\Enums\AdmissionEnum as Admission;
 class Programme extends Crud
 {
 	protected static $tablename = 'Programme';
@@ -377,8 +378,8 @@ class Programme extends Crud
 		}
 
 		if ($len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -403,7 +404,7 @@ class Programme extends Crud
 
 		if ($query->getNumRows() > 0) {
 			$row = $query->getRow();
-			return ($getCode == true) ? $row->code : $row->name;
+			return $getCode ? $row->code : $row->name;
 		} else {
 			return null;
 		}

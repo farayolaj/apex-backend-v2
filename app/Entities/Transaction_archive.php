@@ -390,15 +390,15 @@ class Transaction_archive extends Crud
 
 	public function APIList($filterList, $queryString, $start, $len, $orderBy)
 	{
-		$paymentType = $this->input->get('payment_type', true) ?? null;
-		$rrr = $this->input->get('rrr', true) ?? null;
-		$department = $this->input->get('department', true) ?? null;
-		$session = $this->input->get('session', true) ?? null;
-		$transactionType = $this->input->get('transaction_type', true) ?: 'student';
-		$q = $this->input->get('q', true) ?? null;
+		$paymentType = request()->getGet('payment_type') ?? null;
+		$rrr = request()->getGet('rrr') ?? null;
+		$department = request()->getGet('department') ?? null;
+		$session = request()->getGet('session') ?? null;
+		$transactionType = request()->getGet('transaction_type') ?: 'student';
+		$q = request()->getGet('q') ?? null;
 
 		$limit = '';
-		if ($len) {
+		if (request()->getGet('start') && $len) {
 			$limit = " limit $start, $len";
 		}
 
@@ -408,29 +408,29 @@ class Transaction_archive extends Crud
 		$skipCustom = false;
 
 		if ($paymentType) {
-			$paymentType = $this->db->escape_str($paymentType);
+			$paymentType = $this->db->escapeString($paymentType);
 			$where .= ($where ? ' and ' : ' where ') . " a.payment_id='{$paymentType}'";
 		}
 
 		if ($rrr) {
-			$rrr = $this->db->escape_str($rrr);
+			$rrr = $this->db->escapeString($rrr);
 			$where .= ($where ? ' and ' : ' where ') . " a.rrr_code='{$rrr}'";
 		}
 
 		if ($transactionType) {
-			$transactionTypeWhere = $this->db->escape_str($transactionType);
+			$transactionTypeWhere = $this->db->escapeString($transactionType);
 			$transactionTypeWhere = ($transactionTypeWhere == 'student') ? 'transaction' : 'applicant_transaction';
 			$where .= ($where ? ' and ' : ' where ') . " a.source_table='{$transactionTypeWhere}'";
 		}
 
 		if ($department) {
-			$department = $this->db->escape_str($department);
+			$department = $this->db->escapeString($department);
 			$skipCustom = true;
 			$where .= ($where ? ' and ' : ' where ') . " e.department_id='{$department}'";
 		}
 
 		if ($session) {
-			$session = $this->db->escape_str($session);
+			$session = $this->db->escapeString($session);
 			$skipCustom = true;
 			$where .= ($where ? ' and ' : ' where ') . " a.session='{$session}'";
 		}

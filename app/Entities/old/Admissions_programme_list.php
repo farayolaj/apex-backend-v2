@@ -16,7 +16,7 @@ class Admissions_programme_list extends Crud
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		$session = $this->input->get('session', true) ?? null;
+		$session = request()->getGet('session') ?? null;
 
 		if(!$session){
 			return [];

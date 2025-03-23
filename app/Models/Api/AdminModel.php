@@ -71,7 +71,7 @@ class AdminModel extends CI_Model
 	public function getStudentPhotos(): array
 	{
 		$pageSize = (isset($_GET['len']) && $_GET['len'] && $_GET['len'] > 0) ? $_GET['len'] : 50;
-		$page = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 1;
+		$page = (request()->getGet('start') && $_GET['start']) ? $_GET['start'] : 1;
 
 		$session = isset($_GET['session']) ? $_GET['session'] : null;
 		$level = isset($_GET['level']) ? $_GET['level'] : false;
@@ -109,7 +109,7 @@ class AdminModel extends CI_Model
 	private function getFileListByFilter($filters): array
 	{
 		$pageSize = (isset($_GET['len']) && $_GET['len'] && $_GET['len'] > 0) ? $_GET['len'] : null;
-		$page = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 1;
+		$page = (request()->getGet('start') && $_GET['start']) ? $_GET['start'] : 1;
 
 		$session = isset($filters['session']) ? $filters['session'] : null;
 		$level = isset($filters['levels']) ? $filters['levels'] : false;
@@ -1443,7 +1443,7 @@ class AdminModel extends CI_Model
 	public function totalPaymentDistrix($operator = null, $endDate = null): array
 	{
 		$query = null;
-		$date = $this->input->get('filter');
+		$date = request()->getGet('filter');
 		if ($date === 'monthly') {
 			$date = 'yearly';
 		} else if ($date === 'yearly') {
@@ -2357,7 +2357,7 @@ class AdminModel extends CI_Model
 	{
 		$session = $_GET['session'] ?? $this->currentTransactionSession();
 		$semester = $_GET['sem'] ?? 1;
-		$download = $this->input->get('download', true) ?? null;
+		$download = request()->getGet('download', true) ?? null;
 
 		$query = "SELECT count(distinct a.student_id) as total, b.code as course_code from course_enrollment a
     	join courses b on b.id = a.course_id where a.session_id = ? and a.semester = ? group by a.course_id";
@@ -2407,7 +2407,7 @@ class AdminModel extends CI_Model
 	 */
 	private function getTopCourseWithoutResult($session, $semester, $nth = 30)
 	{
-		$download = $this->input->get('download', true) ?? null;
+		$download = request()->getGet('download', true) ?? null;
 		$result = $this->getDistinctCourseCodeWithScore($session, $semester);
 		if (!$result) {
 			return [];
@@ -2598,7 +2598,7 @@ class AdminModel extends CI_Model
 	 */
 	public function getDashboardLatestTransaction($limit = 25): array
 	{
-		$q = $this->input->get('q', true) ?: null;
+		$q = request()->getGet('q', true) ?: null;
 		$where = '';
 		$where1 = '';
 		$where2 = '';
@@ -2720,8 +2720,8 @@ class AdminModel extends CI_Model
 	 */
 	public function getEnrollmentAttrition()
 	{
-		$option = $this->input->get('filter');
-		$session = $this->input->get('session');
+		$option = request()->getGet('filter');
+		$session = request()->getGet('session');
 		$session = isset($_GET['session']) ? $_GET['session'] : $this->currentTransactionSession();
 		$totalDistrix = null;
 
@@ -2931,7 +2931,7 @@ class AdminModel extends CI_Model
 		$query = null;
 		$content = [];
 		$content1 = [];
-		$filterBy = $this->input->get('filterBy') ?: 'tranx_session';
+		$filterBy = request()->getGet('filterBy') ?: 'tranx_session';
 		$sessions = $this->transactionSession();
 		
 		foreach($sessions as $session){
@@ -3105,7 +3105,7 @@ class AdminModel extends CI_Model
 
 	public function getStudentDepartmentLevel()
 	{
-		$session = $this->input->get('session', true) ?: $this->currentSession();
+		$session = request()->getGet('session', true) ?: $this->currentSession();
 		$result = $this->processStudentDepartmentLevel($session);
 		$groupedFaculty = AdminModelTrait::groupRelatedDataToAssoc($result, 'faculty');
 		$departmentData = $this->processByDepartmentInFaculty($groupedFaculty);

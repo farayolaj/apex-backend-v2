@@ -1,9 +1,9 @@
 <?php
 namespace App\Entities;
 
+use App\Enums\CommonEnum as CommonSlug;
 use App\Models\Crud;
 
-use App\Enums\CommonEnum as CommonSlug;
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the applicants table.
  */
@@ -676,7 +676,7 @@ class Applicants extends Crud
 		$filterValues = $temp[1];
 
 		$limit = null;
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->escapeString($start);
 			$len = $this->db->escapeString($len);
 			$limit = " limit $start, $len";

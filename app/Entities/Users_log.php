@@ -102,9 +102,9 @@ class Users_log extends Crud {
 	}
 
 	public function APIList($filterList, $queryString, $start, $len): array {
-		$q = $this->input->get('q', true) ?: false;
-		$action = $this->input->get('action', true);
-		$student = $this->input->get('student_id', true);
+		$q = request()->getGet('q') ?: false;
+		$action = request()->getGet('action');
+		$student = request()->getGet('student_id');
 
 		if ($action === 'remita_error') {
 			if ($q) {
@@ -138,9 +138,9 @@ class Users_log extends Crud {
 		}
 
 		$filterQuery .= " order by id desc";
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -161,9 +161,9 @@ class Users_log extends Crud {
 		}
 
 		$filterQuery .= " order by id desc";
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -187,11 +187,11 @@ class Users_log extends Crud {
 	}
 
 	private function loadExtras($item) {
-		if (isset($item['new_data']) && !empty($item['new_data'])) {
+		if (!empty($item['new_data'])) {
 			$data = json_decode($item['new_data'], true);
 			$rawData = $data['raw_data'];
 
-			$userType = isset($data['user_type']) ? $data['user_type'] : 'students';
+			$userType = $data['user_type'] ?? 'students';
 			if ($userType === 'students') {
 				EntityLoader::loadClass($this, 'students');
 				if ($item['student_id']) {

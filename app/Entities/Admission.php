@@ -236,8 +236,8 @@ public function APIList($filterList, $queryString,$start,$len,$orderBy)
 	}
 
 	if ($len && isset($_GET['start'])) {
-		$start = $this->db->escape($start);
-		$len = $this->db->escape($len);
+		$start = $this->db->escapeString($start);
+		$len = $this->db->escapeString($len);
 		$filterQuery.=" limit $start, $len";
 	}
 

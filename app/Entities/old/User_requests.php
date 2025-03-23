@@ -378,7 +378,7 @@ class User_requests extends Crud
 			$filterQuery .= " order by a.created_at desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";
@@ -392,19 +392,19 @@ class User_requests extends Crud
 
 	public function APIListRequests($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy): array
 	{
-		$from = $this->input->get('start_date', true) ?? null;
-		$to = $this->input->get('end_date', true) ?? null;
+		$from = request()->getGet('start_date', true) ?? null;
+		$to = request()->getGet('end_date', true) ?? null;
 
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
 
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -414,7 +414,7 @@ class User_requests extends Crud
 			$filterQuery .= " order by a.created_at desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";
@@ -427,9 +427,9 @@ class User_requests extends Crud
 
 	public function APIListRequestsAction($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy, ?array $timelineFilter): array
 	{
-		$q = $this->input->get('q', true) ?: false;
-		$from = $this->input->get('start_date', true) ?? null;
-		$to = $this->input->get('end_date', true) ?? null;
+		$q = request()->getGet('q', true) ?: false;
+		$from = request()->getGet('start_date', true) ?? null;
+		$to = request()->getGet('end_date', true) ?? null;
 
 		if ($q) {
 			$searchArr = ['b.task_title', 'a.title', 'a.description', 'c.title'];
@@ -446,11 +446,11 @@ class User_requests extends Crud
 		}
 
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -460,7 +460,7 @@ class User_requests extends Crud
 			$filterQuery .= " order by a.created_at desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";
@@ -474,7 +474,7 @@ class User_requests extends Crud
 
 	public function APIListVoucherRequests($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy, bool $allowCharges = true): array
 	{
-		$q = $this->input->get('q', true) ?: false;
+		$q = request()->getGet('q', true) ?: false;
 		if ($q) {
 			$searchArr = ['b.task_title', 'a.title', 'a.description', 'c.title'];
 			$queryString = buildCustomSearchString($searchArr, $q);
@@ -489,7 +489,7 @@ class User_requests extends Crud
 			$filterQuery .= " order by e.created_at desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";
@@ -503,19 +503,19 @@ class User_requests extends Crud
 
 	public function APIListRequestTitle($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy): array
 	{
-		$from = $this->input->get('start_date', true) ?? null;
-		$to = $this->input->get('end_date', true) ?? null;
+		$from = request()->getGet('start_date', true) ?? null;
+		$to = request()->getGet('end_date', true) ?? null;
 
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
 
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -525,7 +525,7 @@ class User_requests extends Crud
 			$filterQuery .= " order by a.created_at desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";
@@ -549,7 +549,7 @@ class User_requests extends Crud
 			$filterQuery .= " order by a.created_at desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$filterQuery .= " limit $start, $len";

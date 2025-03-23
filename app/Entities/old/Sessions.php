@@ -111,8 +111,8 @@ class Sessions extends Crud
 	public function getTransactionSession(){
 		$orderBy = " value desc";
 		if (isset($_GET['sortBy'])) {
-			$sortBy = $this->input->get('sortBy', true);
-			$sortDirection = $this->input->get('sortDirection', true);
+			$sortBy = request()->getGet('sortBy');
+			$sortDirection = request()->getGet('sortDirection');
 			$sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
 			$orderBy = " $sortBy $sortDirection ";
 		}
@@ -128,8 +128,8 @@ class Sessions extends Crud
 	public function getCompleteTransactionSession(){
 		$orderBy = " value desc";
 		if (isset($_GET['sortBy'])) {
-			$sortBy = $this->input->get('sortBy', true);
-			$sortDirection = $this->input->get('sortDirection', true);
+			$sortBy = request()->getGet('sortBy');
+			$sortDirection = request()->getGet('sortDirection');
 			$sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
 			$orderBy = " $sortBy $sortDirection ";
 		}

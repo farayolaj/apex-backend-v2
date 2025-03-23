@@ -1,7 +1,9 @@
 <?php
-if (!defined('BASEPATH')) exit('No direct script access allowed');
-require 'third_party/google-api-php-client/vendor/autoload.php';
-require 'third_party/google-api-php-client-services/autoload.php';
+
+namespace App\Models;
+use Exception;
+
+require_once ROOTPATH . 'vendor/autoload.php';
 
 class GoogleService
 {
@@ -32,22 +34,19 @@ class GoogleService
 	public function listMessages($subject, $pageToken = null)
 	{
 		$gmail = self::initAuth('read_gmail', $subject);
-		$message = $gmail->users_messages->listUsersMessages('me', array("maxResults" => 15, "pageToken" => $pageToken));
-		return $message;
+        return $gmail->users_messages->listUsersMessages('me', array("maxResults" => 15, "pageToken" => $pageToken));
 	}
 
 	public function getMessage($subject, $messageID)
 	{
 		$gmail = self::initAuth('read_gmail', $subject);
-		$message = $gmail->users_messages->get('me', $messageID);
-		return $message;
+        return $gmail->users_messages->get('me', $messageID);
 	}
 
 	public function getAttachments($subject, $messageID, $attachmentID)
 	{
 		$gmail = self::initAuth('read_gmail', $subject);
-		$attachment = $gmail->users_messages_attachments->get('me', $messageID, $attachmentID);
-		return $attachment;
+        return $gmail->users_messages_attachments->get('me', $messageID, $attachmentID);
 	}
 
 	public static function createInstitutionEmail($lastname, $firstname, $email)

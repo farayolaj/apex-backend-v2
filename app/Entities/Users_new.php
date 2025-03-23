@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Entities;
 
-use App\Models\Crud;
 use App\Libraries\EntityLoader;
+use App\Models\Crud;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the users table.
@@ -142,15 +143,15 @@ class Users_new extends Crud
 
     public function getAbbr()
     {
-        $first  = $this->firstname[0];
+        $first = $this->firstname[0];
         $second = $this->lastname[0];
         return strtoupper($first . $second);
     }
 
     public function APIList($filterList, $queryString, $start, $len)
     {
-        $temp         = getFilterQueryFromDict($filterList);
-        $filterQuery  = $temp[0];
+        $temp = getFilterQueryFromDict($filterList);
+        $filterQuery = $temp[0];
         $filterValues = $temp[1];
         if ($filterQuery || $queryString) {
             $filterQuery .= ($filterQuery ? ' and ' : ' where ') . $queryString;
@@ -158,28 +159,28 @@ class Users_new extends Crud
         $filterQuery .= " order by id desc ";
 
         if ($len) {
-            $start = $this->db->escape($start);
-            $len   = $this->db->escape($len);
+            $start = $this->db->escapeString($start);
+            $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";
         }
-        if (! $filterValues) {
+        if (!$filterValues) {
             $filterValues = [];
         }
 
-        $query  = "SELECT SQL_CALC_FOUND_ROWS id,title,lastname,firstname,othernames,dob,gender,marital_status,user_phone ,user_email,user_login ,is_lecturer, address, active from users_new join  $filterQuery";
+        $query = "SELECT SQL_CALC_FOUND_ROWS id,title,lastname,firstname,othernames,dob,gender,marital_status,user_phone ,user_email,user_login ,is_lecturer, address, active from users_new join  $filterQuery";
         $query2 = "SELECT FOUND_ROWS() as totalCount";
-        $res    = $this->db->query($query, $filterValues);
-        $res    = $res->getResultArray();
-        $res2   = $this->db->query($query2);
-        $res2   = $res2->getResultArray();
+        $res = $this->db->query($query, $filterValues);
+        $res = $res->getResultArray();
+        $res2 = $this->db->query($query2);
+        $res2 = $res2->getResultArray();
         return [$res, $res2];
     }
 
     public function getUserByID($userID, $name = false)
     {
-        $query  = "SELECT * from users_new where id = ?";
+        $query = "SELECT * from users_new where id = ?";
         $result = $this->query($query, [$userID]);
-        if (! $result) {
+        if (!$result) {
             return false;
         }
 
@@ -194,7 +195,7 @@ class Users_new extends Crud
         $query = "SELECT b.*,a.id as user_id,a.user_login as username from users_new a join {$table} b on b.id = a.user_table_id
     	where a.id = ? and a.user_type = ?";
         $result = $this->query($query, [$userID, $userType]);
-        if (! $result) {
+        if (!$result) {
             return false;
         }
         return $result[0];
@@ -205,7 +206,7 @@ class Users_new extends Crud
         $query = "SELECT b.*,a.id as user_id,a.user_login as username from users_new a join {$table} b on b.id = a.user_table_id
         where a.user_table_id = ? and a.user_type = ?";
         $result = $this->query($query, [$userTableID, $userType]);
-        if (! $result) {
+        if (!$result) {
             return false;
         }
         return $result[0];
@@ -213,7 +214,7 @@ class Users_new extends Crud
 
     public function getUserLog(string $username, bool $few = false)
     {
-        if (! $few) {
+        if (!$few) {
             $query = "SELECT * from users_log where username = ? order by date_performed desc limit 20";
         } else {
             $query = "SELECT id,username,action_performed,user_agent,user_ip,date_performed from users_log where username = ? order by date_performed desc limit 10";
@@ -246,9 +247,9 @@ class Users_new extends Crud
 
     public function getAllUsers()
     {
-        $query  = "SELECT b.*,a.id as orig_user_id,a.user_login as username from users_new a join staffs b on b.id = a.user_table_id where a.user_type = 'staff' and a.active = '1'";
+        $query = "SELECT b.*,a.id as orig_user_id,a.user_login as username from users_new a join staffs b on b.id = a.user_table_id where a.user_type = 'staff' and a.active = '1'";
         $result = $this->query($query);
-        if (! $result) {
+        if (!$result) {
             return false;
         }
         return $result;
@@ -264,8 +265,8 @@ class Users_new extends Crud
         $entity = strtolower($entity);
         $entityModel = $content[$entity] ?? null;
         if ($entityModel) {
-            $entityModelObj = loadClass($entityModel);
-            $entityModel = $entityModelObj->getWhere(['id' => $user->user_table_id], $c, 0, null, false);
+            EntityLoader::loadClass($this, $entityModel);
+            $entityModel = $this->$entityModel->getWhere(['id' => $user->user_table_id], $c, 0, null, false);
             if ($entityModel) {
                 $entityModel = $entityModel[0];
             }

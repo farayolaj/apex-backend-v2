@@ -2,10 +2,10 @@
 
 namespace App\Traits;
 
+use App\Enums\AuthEnum as AuthType;
 use App\Libraries\ApiResponse;
 use App\Models\Remita;
 use App\Models\WebSessionManager;
-use App\Enums\AuthEnum as AuthType;
 use Config\Services;
 
 trait AccountTrait

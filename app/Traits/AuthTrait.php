@@ -2,12 +2,11 @@
 
 namespace App\Traits;
 
+use App\Enums\AuthEnum as AuthType;
 use App\Libraries\ApiResponse;
+use App\Libraries\RouteURI;
 use App\Models\WebSessionManager;
 use Config\Services;
-use CodeIgniter\Database\BaseConnection;
-use App\Enums\AuthEnum as AuthType;
-use App\Libraries\RouteURI;
 
 trait AuthTrait
 {

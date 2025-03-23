@@ -45,7 +45,7 @@ class Mandate_requests extends Crud
 	 */
 	public function APIList($filterList, $queryString, $start, $len, $orderBy=null, $type=null): array
 	{
-		$q = $this->input->get('q', true) ?: false;
+		$q = request()->getGet('q') ?: false;
 		if ($q) {
 			$searchArr = ['a.admon_reference', 'a.rrr_code', 'a.destination_account_number', 'a.destination_account_name'];
 			$queryString = buildCustomSearchString($searchArr, $q);
@@ -79,7 +79,7 @@ class Mandate_requests extends Crud
 			$query .= " order by created_at desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$query .= " limit $start, $len";

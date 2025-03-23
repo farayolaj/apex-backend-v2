@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use Config\Services;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the document_templates table.
@@ -154,11 +155,10 @@ class Document_templates extends Crud
 
 	public function getDocumentTemplates($slug, $variables, $yearOfEntry = '', $currentSession = '')
 	{
-		$this->load->library('parser');
+        $parser = Services::parser();
 		$result = $this->getWhere(['slug' => $slug], $count, 0, null, false);
 		if ($result) {
-			$documentContent = '';
-			foreach ($result as $row) {
+            foreach ($result as $row) {
 				if ($row->category == 'general' && $row->printable == 'year_of_entry') {
 					$temp = $this->getWhere(array('slug' => $slug, 'session' => $yearOfEntry), $count, 0, null, false);
 					if (!$temp) {
@@ -179,8 +179,7 @@ class Document_templates extends Crud
 
 				$message = base64_decode($documentContent);
 				$message = str_replace("{current_level}00", "{current_level}", $message);
-				return $this->parser->parse_string($message, $variables, true);
-
+				return $parser->setData($variables)->renderString($message);
 			}
 		}
 	}

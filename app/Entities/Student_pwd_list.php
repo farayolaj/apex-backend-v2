@@ -34,9 +34,9 @@ class Student_pwd_list extends Crud
 			$filterQuery .= " order by entry_year desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {

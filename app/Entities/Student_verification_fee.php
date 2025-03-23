@@ -4,6 +4,8 @@ namespace App\Entities;
 use App\Models\Crud;
 
 use App\Enums\FeeDescriptionCodeEnum as FeeDescriptionCode;
+use App\Models\WebSessionManager;
+
 /**
  * This is a custom entity class different from the generated one that are mapped to the database table
  */
@@ -33,8 +35,8 @@ class Student_verification_fee extends Crud
 		}
 
 		if ($len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 
@@ -62,16 +64,16 @@ class Student_verification_fee extends Crud
 	{
 		$data[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
 		$data[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
-		$from = $this->input->get('start_date', true) ?? null;
-		$to = $this->input->get('end_date', true) ?? null;
+		$from = request()->getGet('start_date') ?? null;
+		$to = request()->getGet('end_date') ?? null;
 
 		$whereFrom = '';
 		if ($from && $to) {
-			$from = $this->db->escape_str($from);
-			$to = $this->db->escape_str($to);
+			$from = $this->db->escapeString($from);
+			$to = $this->db->escapeString($to);
 			$whereFrom = " and student_verification_documents.date_created between '$from' and '$to' ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereFrom = " and student_verification_documents.date_created >= '$from' ";
 		}
 
@@ -110,12 +112,13 @@ class Student_verification_fee extends Crud
 
 	}
 
-	public function hasStudentPaidOlevelVerification($studentID){
+	public function hasStudentPaidOlevelVerification($studentID): bool
+    {
 		$query = "SELECT transaction.ID as vid,student_id from transaction join fee_description 
 		on fee_description.id = transaction.payment_id where (fee_description.code = ? or fee_description.code = ? ) and payment_status in ('00', '01') and student_id = ?";
 		$data = [FeeDescriptionCode::VERIFICATION_ONE->value, FeeDescriptionCode::VERIFICATION_TWO->value, $studentID];
 		$result = $this->query($query, $data);
-		return $result ? true : false;
+		return (bool)$result;
 	}
 
 }

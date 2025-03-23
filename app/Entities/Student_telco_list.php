@@ -3,7 +3,6 @@ namespace App\Entities;
 
 use App\Models\Crud;
 
-use App\Enums\CommonEnum as CommonSlug;
 /**
  * This class queries those who have paid for both RuS and SuS
  */
@@ -39,9 +38,9 @@ class Student_telco_list extends Crud
 			}
 		}
 
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {

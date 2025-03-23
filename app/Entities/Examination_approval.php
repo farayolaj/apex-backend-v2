@@ -2,7 +2,6 @@
 namespace App\Entities;
 
 use App\Models\Crud;
-use App\Libraries\EntityLoader;
 
 /**
  * This class queries those who have paid for both RuS and SuS
@@ -26,9 +25,9 @@ class Examination_approval extends Crud
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		$filter = $this->input->get('category', true);
-		$session = $this->input->get('session', true);
-		$q = $this->input->get('q', true);
+		$filter = request()->getGet('category');
+		$session = request()->getGet('session');
+		$q = request()->getGet('q');
 		if (!$filter) {
 			$filter = 'all';
 		}
@@ -69,9 +68,9 @@ class Examination_approval extends Crud
 			}
 		}
 
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$query .= " limit $start, $len";
 		}
 
@@ -132,14 +131,5 @@ class Examination_approval extends Crud
 		return $query;
 	}
 
-	private function processList($items): array
-	{
-		EntityLoader::loadClass($this, 'users_new');
-		$currentUser = WebSessionManager::currentAPIUser();
-		for ($i = 0; $i < count($items); $i++) {
-			$items[$i] = $this->loadExtras($items[$i], $currentUser);
-		}
-		return $items;
-	}
 
 }

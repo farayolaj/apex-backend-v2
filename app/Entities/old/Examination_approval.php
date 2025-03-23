@@ -24,9 +24,9 @@ class Examination_approval extends Crud
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		$filter = $this->input->get('category', true);
-		$session = $this->input->get('session', true);
-		$q = $this->input->get('q', true);
+		$filter = request()->getGet('category');
+		$session = request()->getGet('session');
+		$q = request()->getGet('q');
 		if (!$filter) {
 			$filter = 'all';
 		}
@@ -67,7 +67,7 @@ class Examination_approval extends Crud
 			}
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$query .= " limit $start, $len";

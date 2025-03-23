@@ -1,15 +1,20 @@
 <?php
 namespace App\Entities;
 
+use App\Entities\Enums\FeeDescriptionCodeEnum as FeeDescriptionCode;
 use App\Models\Crud;
 use App\Libraries\EntityLoader;
 
 use App\Traits\CommonTrait;
+use CodeIgniter\Config\Factories;
+use DateTime;
+
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the payment table.
  */
 class Payment extends Crud
 {
+    use CommonTrait;
 	protected static $tablename = 'Payment';
 	/* this array contains the field that can be null*/
 	static $nullArray = array('fee_category', 'prerequisite_fee', 'preselected_fee');
@@ -266,10 +271,9 @@ class Payment extends Crud
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Accommodation_transaction.php';
-		$resultobjects = array();
+        $resultObjects = array();
 		foreach ($result as $value) {
-			$resultObjects[] = new Accommodation_transaction($value);
+			$resultObjects[] = new \App\Entities\Accommodation_transaction($value);
 		}
 
 		return $resultObjects;
@@ -284,10 +288,9 @@ class Payment extends Crud
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Accommodation_transaction_archive.php';
-		$resultobjects = array();
+        $resultObjects = array();
 		foreach ($result as $value) {
-			$resultObjects[] = new Accommodation_transaction_archive($value);
+			$resultObjects[] = new \App\Entities\Accommodation_transaction_archive($value);
 		}
 
 		return $resultObjects;
@@ -302,10 +305,9 @@ class Payment extends Crud
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Applicant_transaction.php';
-		$resultobjects = array();
+        $resultObjects = array();
 		foreach ($result as $value) {
-			$resultObjects[] = new Applicant_transaction($value);
+			$resultObjects[] = new \App\Entities\Applicant_transaction($value);
 		}
 
 		return $resultObjects;
@@ -320,10 +322,9 @@ class Payment extends Crud
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Transaction.php';
-		$resultobjects = array();
+        $resultObjects = array();
 		foreach ($result as $value) {
-			$resultObjects[] = new Transaction($value);
+			$resultObjects[] = new \App\Entities\Transaction($value);
 		}
 
 		return $resultObjects;
@@ -338,10 +339,9 @@ class Payment extends Crud
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Transaction1.php';
-		$resultobjects = array();
+        $resultObjects = array();
 		foreach ($result as $value) {
-			$resultObjects[] = new Transaction1($value);
+			$resultObjects[] = new \App\Entities\Transaction1($value);
 		}
 
 		return $resultObjects;
@@ -356,10 +356,9 @@ class Payment extends Crud
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Transaction2.php';
-		$resultobjects = array();
+        $resultObjects = array();
 		foreach ($result as $value) {
-			$resultObjects[] = new Transaction2($value);
+			$resultObjects[] = new \App\Entities\Transaction2($value);
 		}
 
 		return $resultObjects;
@@ -374,10 +373,9 @@ class Payment extends Crud
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Transaction_archive.php';
-		$resultobjects = array();
+        $resultObjects = array();
 		foreach ($result as $value) {
-			$resultObjects[] = new Transaction_archive($value);
+			$resultObjects[] = new \App\Entities\Transaction_archive($value);
 		}
 
 		return $resultObjects;
@@ -386,11 +384,8 @@ class Payment extends Crud
 	public function APIList($filterList, $queryString, $start, $len, $orderBy)
 	{
 		$temp = getFilterQueryFromDict($filterList);
-		$filterQuery = $temp[0];
+        $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		if ($filterQuery || $queryString) {
-			$filterQuery .= ($filterQuery ? ' and ' : ' where ') . $queryString;
-		}
 
 		if (isset($_GET['sortBy']) && $orderBy) {
 			$sortDirection = ($_GET['sortDirection'] == 'down') ? 'desc' : 'asc';
@@ -403,9 +398,9 @@ class Payment extends Crud
 			$filterQuery .= " order by id desc ";
 		}
 
-		if ($len && isset($_GET['start'])) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 
@@ -467,7 +462,7 @@ class Payment extends Crud
 		$return = [];
 		if ($value != '') {
 			$value = json_decode($value, true);
-			// a fail safe for values not changed
+			// a failsafe for values not changed
 			if (is_int($value)) {
 				$return = [(string)$value];
 			} else {
@@ -480,7 +475,7 @@ class Payment extends Crud
 	private function processProgramme($items)
 	{
 		$content = [];
-		if ($items && !empty($items)) {
+		if (!empty($items)) {
 			foreach ($items as $item) {
 				$name = $this->programme->getProgrammeById($item);
 				$item = [
@@ -500,8 +495,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'sessions');
-		return new Sessions($result[0]);
+		return new \App\Entities\Sessions($result[0]);
 	}
 
 	public function getSuccessTransaction($student, $session, $transactionRef = null)
@@ -528,8 +522,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getSuccessTransactionByDescription($student, $session = null, $level = null, $transactionRef = null, $useAnySuccessfulPayment = false)
@@ -557,8 +550,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getTransactionByOption($student, $paymentOption, $session = null, $level = null)
@@ -582,8 +574,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getSuccessTransactionByOption($student, $payment_id, $session = null, $level = null)
@@ -604,8 +595,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getPaymentTransaction($payment, $student, $session = null, $level = null, $code = null)
@@ -625,8 +615,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getPendingSundryPaymentTransaction($student)
@@ -636,8 +625,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getPendingTopupTransaction($payment, $student, $session)
@@ -648,8 +636,7 @@ class Payment extends Crud
 		if (!$result) {
 			return null;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getTransactionById($student, $session, $transactionRef = null)
@@ -673,8 +660,7 @@ class Payment extends Crud
 		if (!$result) {
 			return null;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getTransactionByDescription($student, $session = null, $level = null, $transactionRef = null)
@@ -708,8 +694,7 @@ class Payment extends Crud
 		if (!$result) {
 			return null;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getPayment_session()
@@ -747,8 +732,7 @@ class Payment extends Crud
 		EntityLoader::loadClass($this, 'fee_description');
 
 		$feeDesc = $this->fee_description->getWhere(['id' => $this->description], $c, 0, null, false);
-		$description = $feeDesc ? $feeDesc[0]->description : null;
-		return $description;
+        return $feeDesc ? $feeDesc[0]->description : null;
 	}
 
 	public function getSingleTransaction($transaction)
@@ -758,8 +742,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getSingleTransactionByRef($transactionRef, $returnObject = true)
@@ -772,8 +755,7 @@ class Payment extends Crud
 		if (!$returnObject) {
 			return $result[0];
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function validateVerificationFee($academicRecord, $paymentId)
@@ -783,34 +765,32 @@ class Payment extends Crud
 		if ($olevel) {
 			$olevel = json_decode($olevel, true);
 			if (count($olevel) >= 2) {
-				$feeId = $this->fee_description->getPaymentFeeDescriptionByCode('VEF-Two');
+				$feeId = $this->fee_description->getPaymentFeeDescriptionByCode(FeeDescriptionCode::VERIFICATION_TWO->value);
 				if ($feeId['payment_id'] != $paymentId) {
 					return false; // using this to validate that the payment ID is not correct
 				}
-				if ($payment = $this->fee_description->getPaymentFeeDescriptionByCode('VEF-Two', $paymentId)) {
+				if ($payment = $this->fee_description->getPaymentFeeDescriptionByCode(FeeDescriptionCode::VERIFICATION_TWO->value, $paymentId)) {
 					$amount = $payment['amount'];
 					$serviceCharge = $payment['service_charge'] ?? 0;
 					$subAccount = $payment['subaccount_amount'] ?? 0;
 					$subTotal = ($amount + $serviceCharge + $subAccount); // olevel result usually not more than 2
 					$discount = $payment['discount_amount'] ?? 0;
 
-					$totalAmount = ($discount && $discount > 0) ? $subTotal - $discount : $subTotal;
-					return $totalAmount;
+                    return ($discount && $discount > 0) ? $subTotal - $discount : $subTotal;
 				}
 			} else {
-				$feeId = $this->fee_description->getPaymentFeeDescriptionByCode('VEF-One');
+				$feeId = $this->fee_description->getPaymentFeeDescriptionByCode(FeeDescriptionCode::VERIFICATION_ONE->value);
 				if ($feeId['payment_id'] != $paymentId) {
 					return false;
 				}
-				if ($payment = $this->fee_description->getPaymentFeeDescriptionByCode('VEF-One', $paymentId)) {
+				if ($payment = $this->fee_description->getPaymentFeeDescriptionByCode(FeeDescriptionCode::VERIFICATION_ONE->value, $paymentId)) {
 					$amount = $payment['amount'];
 					$serviceCharge = $payment['service_charge'] ?? 0;
 					$subAccount = $payment['subaccount_amount'] ?? 0;
 					$subTotal = ($amount + $serviceCharge + $subAccount); // olevel result usually not more than 2
 					$discount = $payment['discount_amount'] ?? 0;
 
-					$totalAmount = ($discount && $discount > 0) ? $subTotal - $discount : $subTotal;
-					return $totalAmount;
+                    return ($discount && $discount > 0) ? $subTotal - $discount : $subTotal;
 				}
 			}
 		}
@@ -830,45 +810,40 @@ class Payment extends Crud
 	public function initPayment($student, $channel, $payment = null, $transaction = null, $amount = null, $serviceCharge = null, $preselectedPack = null)
 	{
 		if ($channel == 'remita') {
-			$this->load->model('remita');
-			$trans = $this->remita->initPayment($student, $payment, $transaction, $amount, $serviceCharge, $preselectedPack);
-			return $trans;
+            $remita = Factories::libraries('Remita');
+            return $remita->initPayment($student, $payment, $transaction, $amount, $serviceCharge, $preselectedPack);
 		}
 	}
 
 	public function partInitPayment($student, $channel, $payment = null, array $param = [], $transaction = null)
 	{
 		if ($channel == 'remita') {
-			$this->load->model('remita');
-			$trans = $this->remita->partInitPayment($student, $payment, $param, $transaction);
-			return $trans;
+            $remita = Factories::libraries('Remita');
+            return $remita->partInitPayment($student, $payment, $param, $transaction);
 		}
 	}
 
 	public function getPaymentDetails($student, $channel, $payment = null, $transaction = null)
 	{
 		if ($channel == 'remita') {
-			$this->load->model('remita');
-			$trans = $this->remita->getRemitaDetails($student, $payment, $transaction);
-			return $trans;
+            $remita = Factories::libraries('Remita');
+            return $remita->getRemitaDetails($student, $payment, $transaction);
 		}
 	}
 
 	public function getCustomPaymentDetails($users, $channel, $transaction)
 	{
 		if ($channel == 'remita') {
-			$this->load->model('remita');
-			$trans = $this->remita->getcustomRemitaDetails($users, $transaction);
-			return $trans;
+            $remita = Factories::libraries('Remita');
+            return $remita->getcustomRemitaDetails($users, $transaction);
 		}
 	}
 
 	public function customInitPayment(object $users, string $channel, array $param, $transaction = null)
 	{
 		if ($channel == 'remita') {
-			$this->load->model('remita');
-			$trans = $this->remita->customInitPayment($users, $param, $transaction);
-			return $trans;
+            $remita = Factories::libraries('Remita');
+            return $remita->customInitPayment($users, $param, $transaction);
 		}
 	}
 
@@ -952,8 +927,7 @@ class Payment extends Crud
 		if (!$result) {
 			return false;
 		}
-		EntityLoader::loadClass($this, 'transaction');
-		return new Transaction($result[0]);
+		return new \App\Entities\Transaction($result[0]);
 	}
 
 	public function getPartialTransactionOption($student, $payment_id, $session = null)
@@ -976,7 +950,7 @@ class Payment extends Crud
 		}
 		// the idea is to first find successful payment
 		foreach ($result as $item) {
-			if (CommonTrait::isPaymentValid($item['payment_status'])) {
+			if (self::isPaymentValid($item['payment_status'])) {
 				return $item;
 			}
 		}
@@ -1000,7 +974,7 @@ class Payment extends Crud
 
 		// the idea is to first find successful payment
 		foreach ($result as $item) {
-			if (CommonTrait::isPaymentValid($item['payment_status'])) {
+			if (self::isPaymentValid($item['payment_status'])) {
 				return $item;
 			}
 		}

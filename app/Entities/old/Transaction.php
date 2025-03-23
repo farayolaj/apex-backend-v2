@@ -950,14 +950,14 @@ class Transaction extends Crud
 	public function APIList($filterList, $queryString, $start, $len, $orderBy = null)
 	{
 
-		$paymentStatus = $this->input->get('payment_status', true) ?? null;
-		$paymentType = $this->input->get('payment_type', true) ?? null;
-		$department = $this->input->get('department', true) ?? null;
-		$session = $this->input->get('session', true) ?? null;
-		$from = $this->input->get('start_date', true) ?? null;
-		$to = $this->input->get('end_date', true) ?? null;
-		$q = $this->input->get('q', true) ?? null;
-		$export = $this->input->get('export', true) ?? null;
+		$paymentStatus = request()->getGet('payment_status', true) ?? null;
+		$paymentType = request()->getGet('payment_type', true) ?? null;
+		$department = request()->getGet('department', true) ?? null;
+		$session = request()->getGet('session', true) ?? null;
+		$from = request()->getGet('start_date', true) ?? null;
+		$to = request()->getGet('end_date', true) ?? null;
+		$q = request()->getGet('q', true) ?? null;
+		$export = request()->getGet('export', true) ?? null;
 
 		$limit = '';
 		if ($len) {
@@ -970,14 +970,14 @@ class Transaction extends Crud
 		$skipCustom = false;
 
 		if ($paymentType) {
-			$paymentType = $this->db->escape_str($paymentType);
+			$paymentType = $this->db->escapeString($paymentType);
 			$where .= ($where ? ' and ' : ' where ') . " a.payment_id='{$paymentType}'";
 			$where2 .= ($where2 ? ' and ' : ' where ') . " ap.description='{$paymentType}'";
 			$where1 .= ($where1 ? ' and ' : ' where ') . " a.payment_id='{$paymentType}'";
 		}
 
 		if ($department) {
-			$department = $this->db->escape_str($department);
+			$department = $this->db->escapeString($department);
 			$skipCustom = true;
 			$where .= ($where ? ' and ' : ' where ') . " e.department_id='{$department}'";
 			$where2 .= ($where2 ? ' and ' : ' where ') . " e.department_id='{$department}'";
@@ -985,7 +985,7 @@ class Transaction extends Crud
 		}
 
 		if ($session) {
-			$session = $this->db->escape_str($session);
+			$session = $this->db->escapeString($session);
 			$skipCustom = true;
 			$where .= ($where ? ' and ' : ' where ') . " a.session='{$session}'";
 			$where2 .= ($where2 ? ' and ' : ' where ') . " a.session='{$session}'";
@@ -993,13 +993,13 @@ class Transaction extends Crud
 		}
 
 		if ($from && $to) {
-			$from = ($this->db->escape_str($from));
-			$to = ($this->db->escape_str($to));
+			$from = ($this->db->escapeString($from));
+			$to = ($this->db->escapeString($to));
 			$where .= ($where ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 			$where2 .= ($where2 ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 			$where1 .= ($where1 ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$where .= ($where ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 			$where2 .= ($where2 ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 			$where1 .= ($where1 ? " and " : " where ") . " date(a.date_performed) = date('$from') ";

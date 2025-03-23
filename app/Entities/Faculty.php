@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the faculty table.
@@ -81,7 +82,6 @@ class Faculty extends Crud
 		foreach ($result as $value) {
     		$resultObjects[] = new \App\Entities\Department($value);
 		}
-
 		return $resultObjects;
 	}
 
@@ -98,7 +98,6 @@ class Faculty extends Crud
 		foreach ($result as $value) {
     		$resultObjects[] = new \App\Entities\Programme($value);
 		}
-
 		return $resultObjects;
 	}
 
@@ -139,9 +138,9 @@ class Faculty extends Crud
 			$filterQuery .= " order by name asc ";
 		}
 
-		if ($len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {

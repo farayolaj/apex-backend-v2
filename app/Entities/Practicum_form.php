@@ -245,8 +245,8 @@ class Practicum_form extends Crud
 		}
 
 		if ($len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 
@@ -285,7 +285,6 @@ class Practicum_form extends Crud
 		$result = $this->db->query($query, [$code, $code1, $currentSession, $student_id]);
 		return $result->getNumRows() > 0 ? $result->getRow() : false;
 	}
-
 
 }
 

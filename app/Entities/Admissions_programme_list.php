@@ -17,7 +17,7 @@ class Admissions_programme_list extends Crud
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		$session = $this->input->get('session', true) ?? null;
+		$session = request()->getGet('session') ?? null;
 
 		if(!$session){
 			return [];
@@ -30,8 +30,8 @@ class Admissions_programme_list extends Crud
 		}
 
 		if ($len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery.=" limit $start, $len";
 		}
 

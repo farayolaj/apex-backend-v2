@@ -1,9 +1,10 @@
 <?php
 namespace App\Entities;
 
-use App\Models\Crud;
-
 use App\Enums\UserOutflowTypeEnum as UserOutflowType;
+use App\Models\Crud;
+use App\Models\WebSessionManager;
+
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the roles table.
  */
@@ -80,7 +81,8 @@ class Roles extends Crud
 		$payload = [];
 		foreach ($result as $row) {
 			$temp = $row;
-			$temp['avatar'] = $row['avatar'] ? site_url($this->config->item('user_passport_path') . $row['avatar']) : null;
+            $config = config('ImagePath');
+			$temp['avatar'] = $row['avatar'] ? base_url($config->userPassportPath . $row['avatar']) : null;
 			$payload[] = $temp;
 		}
 		return $payload;
@@ -92,7 +94,7 @@ class Roles extends Crud
 		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this->db, 'role_deletion', $currentUser->id, $id);
+			logAction($db, 'role_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;

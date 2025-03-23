@@ -80,23 +80,20 @@ class Users extends Crud
 	public function APIList($filterList, $queryString, $start, $len)
 	{
 		$temp = getFilterQueryFromDict($filterList);
-		$filterQuery = $temp[0];
+        $filterQuery = buildCustomWhereString($temp[0], $queryString);
 		$filterValues = $temp[1];
-		if ($filterQuery || $queryString) {
-			$filterQuery .= ($filterQuery ? ' and ' : ' where ') . $queryString;
-		}
-		$filterQuery .= " order by id desc ";
 
 		if ($len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
 			$filterValues = [];
 		}
 
-		$query = "SELECT SQL_CALC_FOUND_ROWS id,title,lastname,firstname,othernames,dob,gender,marital_status,user_phone ,user_email,user_login ,is_lecturer, address, active from users $filterQuery";
+		$query = "SELECT SQL_CALC_FOUND_ROWS id,title,lastname,firstname,othernames,dob,gender,
+            marital_status,user_phone ,user_email,user_login ,is_lecturer, address, active from users $filterQuery";
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
 		$res = $res->getResultArray();

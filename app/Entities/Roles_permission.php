@@ -3,6 +3,7 @@ namespace App\Entities;
 
 use App\Models\Crud;
 use App\Libraries\EntityLoader;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the roles_permission table.
@@ -133,7 +134,7 @@ class Roles_permission extends Crud
 		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this->db, 'role_assign_permission_deletion', $currentUser->id, $id);
+			logAction($db, 'role_assign_permission_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -151,9 +152,9 @@ class Roles_permission extends Crud
 			$filterQuery .= " order by a.id desc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {

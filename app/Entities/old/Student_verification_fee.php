@@ -61,16 +61,16 @@ class Student_verification_fee extends Crud
 	{
 		$data[] = [FeeDescriptionCode::VERIFICATION_ONE];
 		$data[] = [FeeDescriptionCode::VERIFICATION_TWO];
-		$from = $this->input->get('start_date', true) ?? null;
-		$to = $this->input->get('end_date', true) ?? null;
+		$from = request()->getGet('start_date', true) ?? null;
+		$to = request()->getGet('end_date', true) ?? null;
 
 		$whereFrom = '';
 		if ($from && $to) {
-			$from = $this->db->escape_str($from);
-			$to = $this->db->escape_str($to);
+			$from = $this->db->escapeString($from);
+			$to = $this->db->escapeString($to);
 			$whereFrom = " and student_verification_documents.date_created between '$from' and '$to' ";
 		} else if ($from) {
-			$from = ($this->db->escape_str($from));
+			$from = ($this->db->escapeString($from));
 			$whereFrom = " and student_verification_documents.date_created >= '$from' ";
 		}
 

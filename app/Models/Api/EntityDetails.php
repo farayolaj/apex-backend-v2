@@ -5,6 +5,7 @@
  */
 namespace App\Models\Api;
 
+use App\Libraries\EntityLoader;
 use App\Models\WebSessionManager;
 use App\Traits\CommonTrait;
 
@@ -29,23 +30,23 @@ class EntityDetails
         $extract = self::extractApplicantEntity($uuid);
         $id = $extract[0];
         $entity = $extract[1];
-        $entityModel = loadClass($this->load, $entity);
-        $sessionsModel = loadClass($this->load, 'sessions');
+        EntityLoader::loadClass($this, $entity);
+        EntityLoader::loadClass($this, 'sessions');
 
-        $entityModel->id = $id;
-        if (!$entityModel->load()) {
+        $this->$entity->entityModel->id = $id;
+        if (!$this->$entity->load()) {
             return [];
         }
-        $result = $entityModel->toArray();
+        $result = $this->$entity->toArray();
         $result['phone'] = decryptData($result['phone']);
         $result['phone2'] = decryptData($result['phone2']);
-        $session = $sessionsModel->getSessionById($result['session_id']);
+        $session = $this->sessions->getSessionById($result['session_id']);
         $result['session_id'] = $session[0]['date'];
-        $result['programme_name'] = $entityModel->programme->name ?? null;
+        $result['programme_name'] = $this->$entity->programme->name ?? null;
         $result['olevel_details'] = json_decode($result['olevel_details']);
         $result['programmes'] = $this->loadProgramme();
-        $result['transaction'] = $entityModel->applicantTransaction ?? null;
-        $result['academic_record'] = $result['admission_status'] == 'Admitted' ? $entityModel->academicRecord : null;
+        $result['transaction'] = $this->$entity->applicantTransaction ?? null;
+        $result['academic_record'] = $result['admission_status'] == 'Admitted' ? $this->$entity->academicRecord : null;
         $result['applicant_type'] = $entity;
         $currentUser = WebSessionManager::currentAPIUser();
         logAction($this->db,'view_applicant_detail', $currentUser->user_login);
@@ -54,18 +55,17 @@ class EntityDetails
 
     public function getStaffsDetails($id)
     {
-        $staffsModel = loadClass('staffs');
-        $usersNewModel = loadClass('users_new');
-        $rolesModel = loadClass('roles');
-
-        $staffsModel->id = $id;
-        if (!$staffsModel->load()) {
+        EntityLoader::loadClass($this, 'staffs');
+        EntityLoader::loadClass($this, 'users_new');
+        EntityLoader::loadClass($this, 'roles');
+        $this->staffs->id = $id;
+        if (!$this->staffs->load()) {
             return [];
         }
-        $result = $staffsModel->toArray();
-        $userInfo = $usersNewModel->getUserInfo('staffs', 'staff', $staffsModel->id);
+        $result = $this->staffs->toArray();
+        $userInfo = $this->users_new->getUserInfo('staffs', 'staff', $this->staffs->id);
         $userID = $userInfo['user_id'];
-        $role = $rolesModel->getUserRole($userID);
+        $role = $this->roles->getUserRole($userID);
         $result['username'] = $userInfo['username'];
         $result['orig_user_id'] = $userID;
         if ($result['avatar']) {
@@ -74,9 +74,7 @@ class EntityDetails
         if ($role) {
             $result['role'] = $role['id'];
         }
-
         return $result;
-
     }
 
     /**
@@ -86,29 +84,28 @@ class EntityDetails
      */
     public function getStudentsDetails($id, $returnResult = false): array
     {
-        $studentsModel = loadClass('students');
-        $usersNewModel = loadClass('users_new');
-        $sessionsModel = loadClass('sessions');
-
-        $studentsModel->id = $id;
-        if (!$studentsModel->load()) {
+        EntityLoader::loadClass($this, 'students');
+        EntityLoader::loadClass($this, 'users_new');
+        EntityLoader::loadClass($this, 'sessions');
+        $this->students->id = $id;
+        if (!$this->students->load()) {
             return [];
         }
-        $result = $studentsModel->getStudentViewRecord();
+        $result = $this->students->getStudentViewRecord();
         $result['phone'] = decryptData($result['phone']);
-        $passport = $studentsModel->updatePassportPath();
+        $passport = $this->students->updatePassportPath();
         $currentUser = WebSessionManager::currentAPIUser();
         unset($result['password'], $result['user_pass']);
         if (!$returnResult) {
-            $result['transaction'] = $studentsModel->studentTransaction;
-            $result['transaction_archive'] = $studentsModel->studentTransactionArchive;
+            $result['transaction'] = $this->students->studentTransaction;
+            $result['transaction_archive'] = $this->students->studentTransactionArchive;
             $temp = null;
             if (json_decode($result['verified_by'])) {
                 $verify = json_decode($result['verified_by'], true);
                 $i = 1;
                 $param = [];
                 foreach ($verify as $item) {
-                    $users = $usersNewModel->getRealUserInfo(@$item['user_id'], 'staffs', 'staff') ?? null;
+                    $users = $this->users_new->getRealUserInfo(@$item['user_id'], 'staffs', 'staff') ?? null;
                     $name = ($users) ? $users['title'] . " " . $users['lastname'] . " " . $users['firstname'] : null;
                     $param['user_id'] = $name;
                     $param['attempt'] = $i;
@@ -120,7 +117,7 @@ class EntityDetails
             }
         }
 
-        $entryYear = $sessionsModel->getSessionById($result['year_of_entry']);
+        $entryYear = $this->sessions->getSessionById($result['year_of_entry']);
         $result['entry_year'] = $entryYear ? $entryYear[0]['date'] : null;
         $result['verify_comments'] = json_decode($result['verify_comments']);
         $result['jamb_details'] = json_decode($result['jamb_details']);
@@ -128,7 +125,7 @@ class EntityDetails
         $result['alevel_details'] = json_decode($result['alevel_details']);
         $result['nce_nd_hnd'] = json_decode($result['nce_nd_hnd']);
         $result['institutions_attended'] = json_decode($result['institutions_attended']);
-        $result['verification_documents'] = $studentsModel->getStudentVerificationDocuments();
+        $result['verification_documents'] = $this->students->getStudentVerificationDocuments();
         $result['passport'] = $passport;
         if (!$returnResult) {
             logAction($this->db, 'view_student_detail', $currentUser->user_login, $id);
@@ -161,16 +158,16 @@ class EntityDetails
 
     public function getUser_requestsDetails($id)
     {
-        $userRequestsModel = loadClass('user_requests');
-        $userRequestsModel->id = $id;
-        if (!$userRequestsModel->load()) {
+        EntityLoader::loadClass($this, 'user_requests');
+        $this->user_requests->id = $id;
+        if (!$this->user_requests->load()) {
             return null;
         }
-        $result = $userRequestsModel->toArray();
+        $result = $this->user_requests->toArray();
         $result['initiated_by'] = 'initiated_by';
         $result['prev_request'] = 'prev_request';
-        $result = $userRequestsModel->loadExtras($result);
-        $requestType = $userRequestsModel->request_type->toArray() ?? null;
+        $result = $this->user_requests->loadExtras($result);
+        $requestType = $this->user_requests->request_type->toArray() ?? null;
         $result['request_type'] = $requestType['name'] ?? null;
         $result['transaction'] = [];
 
@@ -179,14 +176,14 @@ class EntityDetails
 
     public function getUser_requests_archiveDetails($id)
     {
-        $userRequestArchiveModel = loadClass('user_requests_archive');
-        $userRequestArchiveModel->id = $id;
-        if (!$userRequestArchiveModel->load()) {
+        EntityLoader::loadClass($this, 'user_requests_archive');
+        $this->user_requests_archive->id = $id;
+        if (!$this->user_requests_archive->load()) {
             return null;
         }
-        $result = $userRequestArchiveModel->toArray();
-        $result = $userRequestArchiveModel->loadExtras($result);
-        $requestType = $userRequestArchiveModel->request_type->toArray() ?? null;
+        $result = $this->user_requests_archive->toArray();
+        $result = $this->user_requests_archive->loadExtras($result);
+        $requestType = $this->user_requests_archive->request_type->toArray() ?? null;
         $result['request_type'] = $requestType['name'] ?? null;
 
         return $result;
@@ -194,80 +191,79 @@ class EntityDetails
 
     public function getStaff_departmentDetails($id)
     {
-        $department = loadClass('department');
-        $department->id = $id;
-        if (!$department->load()) {
+        EntityLoader::loadClass('department');
+        $this->department->id = $id;
+        if (!$this->department->load()) {
             return null;
         }
-        return $department->toArray();
+        return $this->department->toArray();
     }
 
     public function getRolesDetails($id)
     {
-        $roles = loadClass( 'roles');
-        $roles->id = $id;
-        if (!$roles->load()) {
+        EntityLoader::loadClass($this, 'roles');
+        $this->roles->id = $id;
+        if (!$this->roles->load()) {
             return null;
         }
-        return $roles->toArray();
+        return $this->roles->toArray();
     }
 
     public function getRoles_permissionDetails($id)
     {
-        $rolesPermissionModel = loadClass('roles_permission');
-        $rolesPermissionModel->id = $id;
-        if (!$rolesPermissionModel->load()) {
+        EntityLoader::loadClass($this, 'roles_permission');
+        EntityLoader::loadClass($this, 'roles');
+        $this->roles_permission->id = $id;
+        if (!$this->roles_permission->load()) {
             return null;
         }
-        $result = $rolesPermissionModel->toArray();
-        $content = $rolesPermissionModel->loadExtras($result, false);
+        $result = $this->roles_permission->toArray();
+        $content = $this->roles_permission->loadExtras($result, false);
         $content['role_id'] = json_decode($content['role_id'], true);
         return $content;
     }
 
     public function getFacultyDetails($id)
     {
-        $facultyModel = loadClass( 'faculty');
-        $facultyModel->id = $id;
-        if (!$facultyModel->load()) {
+        EntityLoader::loadClass($this, 'faculty');
+        $this->faculty->id = $id;
+        if (!$this->faculty->load()) {
             return null;
         }
-        return $facultyModel->toArray();
+        return $this->faculty->toArray();
     }
 
     public function getCourse_managerDetails($id)
     {
-        $courseManagerModel = loadClass('course_manager');
-        $courseManagerModel->id = $id;
-        if (!$courseManagerModel->load()) {
+        EntityLoader::loadClass($this, 'course_manager');
+        $this->course_manager->id = $id;
+        if (!$this->course_manager->load()) {
             return null;
         }
-        $result = $courseManagerModel->toArray();
-        return $courseManagerModel->loadExtras($result, false);
+        $result = $this->course_manager->toArray();
+        return $this->course_manager->loadExtras($result, false);
     }
 
     public function getGradesDetails($id)
     {
-        $gradesModel = loadClass('grades');
-        $gradesModel->id = $id;
-        if (!$gradesModel->load()) {
+        EntityLoader::loadClass($this, 'grades');
+        $this->grades->id = $id;
+        if (!$this->grades->load()) {
             return null;
         }
-        return $gradesModel->toArray();
+        return $this->grades->toArray();
     }
 
     public function getSessionsDetails($id)
     {
         permissionAccess('session_listing', 'view');
-        $sessionsModel = loadClass('sessions');
-        $sessionsModel->id = $id;
-        if (!$sessionsModel->load()) {
+        EntityLoader::loadClass($this, 'sessions');
+        $this->sessions->id = $id;
+        if (!$this->sessions->load()) {
             return null;
         }
-        return $sessionsModel->toArray();
+        return $this->sessions->toArray();
     }
-
-
 
 
 }

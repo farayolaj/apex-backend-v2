@@ -1,13 +1,13 @@
 <?php
 namespace App\Entities;
 
-use App\Models\Crud;
-use App\Libraries\EntityLoader;
-
-use App\Enums\ReportEnum as ReportSlug;
 use App\Enums\OutflowStatusEnum as OutflowStatus;
-use App\Enums\RequestTypeEnum as RequestTypeSlug;
 use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
+use App\Enums\ReportEnum as ReportSlug;
+use App\Enums\RequestTypeEnum as RequestTypeSlug;
+use App\Libraries\EntityLoader;
+use App\Models\Crud;
+
 /**
  * This class queries those who have paid for both RuS and SuS
  */
@@ -189,7 +189,7 @@ class Audit_report extends Crud
 		$to = request()->getGet('end_date') ?? null;
 		$limit = '';
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->escapeString($start);
 			$len = $this->db->escapeString($len);
 			$limit = " limit $start, $len";

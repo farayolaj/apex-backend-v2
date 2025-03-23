@@ -221,7 +221,7 @@ class Contractors extends Crud
 			$filterQuery .= " order by cac_number asc ";
 		}
 
-		if (isset($_GET['start']) && $len) {
+		if (request()->getGet('start') && $len) {
 			$start = $this->db->escapeString($start);
 			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";

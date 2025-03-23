@@ -8,6 +8,7 @@ use App\Models\Mailer;
 use App\Traits\AuthTrait;
 use CodeIgniter\Config\Factories;
 use Config\Services;
+use Phinx\Migration\Manager\Environment;
 
 class Tester extends BaseController
 {
@@ -74,9 +75,8 @@ class Tester extends BaseController
     }
 
     private function testFactory(){
-//        $remita = Factories::entities('Users_new');
-        EntityLoader::loadClass($this, 'users_new');
-        dddump($this->users_new->getAllUsers());
+        $currentSession = ENVIRONMENT === 'development' ? 'YES' : 'NO';
+        dddump($currentSession);
     }
 
     public function test(){

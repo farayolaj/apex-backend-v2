@@ -187,7 +187,7 @@ class Course_manager extends Crud
             $filterQuery .= " order by a.date_created desc, course_manager asc ";
         }
 
-        if (isset($_GET['start']) && $len) {
+        if (request()->getGet('start') && $len) {
             $start = $this->db->escapeString($start);
             $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";

@@ -2,6 +2,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the sessions table.
@@ -70,7 +71,7 @@ class Sessions extends Crud
 		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this->db, 'session_deletion', $currentUser->id, $id);
+			logAction($db, 'session_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -115,8 +116,8 @@ class Sessions extends Crud
 	public function getTransactionSession(){
 		$orderBy = " value desc";
 		if (isset($_GET['sortBy'])) {
-			$sortBy = $this->input->get('sortBy', true);
-			$sortDirection = $this->input->get('sortDirection', true);
+			$sortBy = request()->getGet('sortBy', true);
+			$sortDirection = request()->getGet('sortDirection', true);
 			$sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
 			$orderBy = " $sortBy $sortDirection ";
 		}
@@ -132,8 +133,8 @@ class Sessions extends Crud
 	public function getCompleteTransactionSession(){
 		$orderBy = " value desc";
 		if (isset($_GET['sortBy'])) {
-			$sortBy = $this->input->get('sortBy', true);
-			$sortDirection = $this->input->get('sortDirection', true);
+			$sortBy = request()->getGet('sortBy', true);
+			$sortDirection = request()->getGet('sortDirection', true);
 			$sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
 			$orderBy = " $sortBy $sortDirection ";
 		}

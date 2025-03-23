@@ -1,9 +1,9 @@
 <?php
 namespace App\Entities;
 
+use App\Enums\CommonEnum as CommonSlug;
 use App\Models\Crud;
 
-use App\Enums\CommonEnum as CommonSlug;
 /**
  * This class queries those who have paid for both RuS and SuS
  */
@@ -26,15 +26,11 @@ class Student_orientation_list extends Crud
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		$currentAdmissionSession = get_setting('admission_session_update');
 
-		// $filterQuery .= ($filterQuery ? " and " : " where ") . " orientation_attendance <> '' 
-		// and b.session_of_admission = '$currentAdmissionSession' ";
-
-		$directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY->value);
-		$olevel = $this->db->escape_str(CommonSlug::O_LEVEL->value);
-		$olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME->value);
-		$fastTrack = $this->db->escape_str(CommonSlug::FAST_TRACK->value);
+		$directEntry = $this->db->escapeString(CommonSlug::DIRECT_ENTRY->value);
+		$olevel = $this->db->escapeString(CommonSlug::O_LEVEL->value);
+		$olevelPutme = $this->db->escapeString(CommonSlug::O_LEVEL_PUTME->value);
+		$fastTrack = $this->db->escapeString(CommonSlug::FAST_TRACK->value);
 
 		$filterQuery .= ($filterQuery ? " and " : " where ") . " orientation_attendance <> '' and (
 			(b.entry_mode = '$directEntry' and b.current_level = '2') ||
@@ -55,9 +51,9 @@ class Student_orientation_list extends Crud
 			}
 		}
 
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escape($start);
-			$len = $this->db->escape($len);
+		if (request()->getGet('start') && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {

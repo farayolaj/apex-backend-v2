@@ -4,14 +4,14 @@ namespace App\Enums;
 
 enum StageIndexEnum: int
 {
-    public const PAYMENT_VOUCHER = 1;
+    case PAYMENT_VOUCHER = 1;
 
-    public const MANDATE = 2;
+    case MANDATE = 2;
 
-    public const PAYMENT = 3;
+    case PAYMENT = 3;
 
-    public const AUDITOR = 4;
+    case AUDITOR = 4;
 
-    public const RETIRE_SALARY_ADVANCE = 5;
+    case RETIRE_SALARY_ADVANCE = 5;
 
 }

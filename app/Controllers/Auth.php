@@ -4,12 +4,10 @@ namespace App\Controllers;
 
 use App\Entities\Staffs;
 use App\Entities\Students;
-use App\Enums\AuthEnum;
+use App\Enums\AuthEnum as AuthType;
 use App\Models\Mailer;
 use App\Models\WebSessionManager;
-use CodeIgniter\HTTP\RedirectResponse;
 use Exception;
-use App\Enums\AuthEnum as AuthType;
 
 /**
  * This is the authentication class handler for the web

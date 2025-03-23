@@ -6,20 +6,18 @@
 
 namespace App\Models\Api;
 
+use App\Enums\CommonEnum as CommonSlug;
+use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
 use App\Models\Mailer;
 use App\Models\WebSessionManager;
 use App\Traits\AccountTrait;
-use App\Traits\AuthTrait;
 use App\Traits\ApiModelTrait;
+use App\Traits\AuthTrait;
 use App\Traits\CommonTrait;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use CodeIgniter\I18n\Time;
 use CodeIgniter\Model;
-use Config\Services;
 use Exception;
-use App\Enums\CommonEnum as CommonSlug;
-use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
 
 
 class WebApiModel extends Model
@@ -431,7 +429,7 @@ class WebApiModel extends Model
     {
         $minDuration = $duration * 12;
         $maxDuration = $duration * 12;
-        $entryMode = $this->db->escape_str($entryMode);
+        $entryMode = $this->db->escapeString($entryMode);
         $query = "INSERT INTO academic_record(
 			student_id,jamb_details,olevel_details,alevel_details,nce_nd_hnd,institutions_attended,programme_id,matric_number,
             has_matric_number,has_institution_email,programme_duration,min_programme_duration,max_programme_duration,
@@ -887,7 +885,7 @@ class WebApiModel extends Model
      */
     public function student_all_verification_documents()
     {
-        $studentID = $this->input->get('student_id', true);
+        $studentID = request()->getGet('student_id', true);
         $data = [
             'student' => $studentID,
         ];
@@ -977,7 +975,7 @@ class WebApiModel extends Model
      */
     public function student_assign_cards()
     {
-        $studentID = $this->input->get('student_id', true);
+        $studentID = request()->getGet('student_id', true);
         $currentUser = $this->webSessionManager->currentAPIUser();
 
         $data = [
@@ -1353,7 +1351,7 @@ class WebApiModel extends Model
      */
     public function verify_transaction_invoice()
     {
-        $rrrCode = $this->input->get('rrr_code', true);
+        $rrrCode = request()->getGet('rrr_code', true);
         if (!$rrrCode) {
             displayJson(false, "Please provide a valid RRR code");
             return;
@@ -1926,8 +1924,8 @@ class WebApiModel extends Model
     public function student_change_programme()
     {
         loadClass($this->load, 'student_change_of_programme');
-        $student = $this->input->get('student', true);
-        $session = $this->input->get('session', true);
+        $student = request()->getGet('student', true);
+        $session = request()->getGet('session', true);
 
         $data = [
             'session' => $session,
@@ -1954,8 +1952,8 @@ class WebApiModel extends Model
      */
     public function verify_transaction()
     {
-        $rrrCode = $this->input->get('rrr_code', true);
-        $type = $this->input->get('requery_type', true) ?: 'student_trans';
+        $rrrCode = request()->getGet('rrr_code', true);
+        $type = request()->getGet('requery_type', true) ?: 'student_trans';
         $data = [
             'rrr_code' => $rrrCode,
             'requery_type' => $type,
@@ -2073,7 +2071,7 @@ class WebApiModel extends Model
      */
     public function student_transactions()
     {
-        $studentID = $this->input->get('student', true);
+        $studentID = request()->getGet('student', true);
         $data = [
             'student' => $studentID,
         ];
@@ -2700,7 +2698,7 @@ class WebApiModel extends Model
     public function student_all_registered_courses()
     {
         permissionAccess($this, 'student_edit');
-        $studentID = $this->input->get('student_id', true);
+        $studentID = request()->getGet('student_id', true);
 
         $data = [
             'student_id' => $studentID,
@@ -2754,7 +2752,7 @@ class WebApiModel extends Model
      */
     public function student_all_paid_session()
     {
-        $studentID = $this->input->get('student_id', true);
+        $studentID = request()->getGet('student_id', true);
         $data = [
             'student_id' => $studentID,
         ];
@@ -2910,9 +2908,9 @@ class WebApiModel extends Model
     {
         permissionAccess($this, 'student_edit');
 
-        $studentID = $this->input->get('student_id', true);
-        $session = $this->input->get('session', true);
-        $semester = $this->input->get('semester', true);
+        $studentID = request()->getGet('student_id', true);
+        $session = request()->getGet('session', true);
+        $semester = request()->getGet('semester', true);
         $data = [
             'student_id' => $studentID,
             'session' => $session,
@@ -3234,7 +3232,7 @@ class WebApiModel extends Model
 
     public function download_template()
     {
-        $model = $this->input->get('entity');
+        $model = request()->getGet('entity');
         if (!$model) {
             displayJson(false, 'Please provide a document name');
             return;
@@ -3608,7 +3606,7 @@ class WebApiModel extends Model
     public function user_activity()
     {
         loadClass($this->load, 'users_new');
-        $user = $this->input->get('orig_user_id', true);
+        $user = request()->getGet('orig_user_id', true);
 
         $this->form_validation->set_data([
             'orig_user_id' => $user,
@@ -3915,7 +3913,7 @@ class WebApiModel extends Model
     {
         permissionAccess($this, 'student_topup');
 
-        $studentID = $this->input->get('student_id', true);
+        $studentID = request()->getGet('student_id', true);
         $this->form_validation->set_data([
             'student_id' => $studentID,
         ]);
@@ -3987,8 +3985,8 @@ class WebApiModel extends Model
         loadClass($this->load, 'students');
         loadClass($this->load, 'sessions');
 
-        $studentID = $this->input->get('student_id', true);
-        $sessionID = $this->input->get('session_id', true);
+        $studentID = request()->getGet('student_id');
+        $sessionID = request()->getGet('session_id');
         $this->form_validation->set_data([
             'student_id' => $studentID,
             'session_id' => $sessionID,
@@ -4211,8 +4209,8 @@ class WebApiModel extends Model
         loadClass($this->load, 'users_custom');
         loadClass($this->load, 'transaction_custom');
 
-        $userID = $this->input->get('user_id');
-        $ref = $this->input->get('transaction_ref');
+        $userID = request()->getGet('user_id');
+        $ref = request()->getGet('transaction_ref');
 
         $users = $this->users_custom->getWhere(['id' => $userID], $c, 0, 1, false);
         if (!$users) {

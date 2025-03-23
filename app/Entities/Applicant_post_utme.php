@@ -690,9 +690,9 @@ class Applicant_post_utme extends Crud
             $filterQuery .= " order by $orderBy ";
         }
 
-        if (isset($_GET['start']) && $len) {
-            $start = $this->db->escape($start);
-            $len = $this->db->escape($len);
+        if (request()->getGet('start') && $len) {
+            $start = $this->db->escapeString($start);
+            $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";
         }
 

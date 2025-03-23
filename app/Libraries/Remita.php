@@ -2,8 +2,6 @@
 
 namespace App\Libraries;
 
-use App\Libraries\PaymentPercentage;
-use App\Libraries\RemitaResponse;
 use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
 use App\Traits\CommonTrait;
 

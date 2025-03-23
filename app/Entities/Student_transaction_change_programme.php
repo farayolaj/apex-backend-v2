@@ -1,9 +1,9 @@
 <?php
 namespace App\Entities;
 
+use App\Enums\CommonEnum as CommonSlug;
 use App\Models\Crud;
 
-use App\Enums\CommonEnum as CommonSlug;
 /**
  * This class queries fresher student and those that paid for programme change
  */
@@ -23,7 +23,7 @@ class Student_transaction_change_programme extends Crud
      */
     public function APIList($filterList, $queryString, $start, $len, $orderBy)
     {
-        $type              = $this->input->get('type', true);
+        $type              = request()->getGet('type');
         $paymentStatus     = false;
         $tempPaymentStatus = [];
         if (isset($filterList['payment_status']) && $filterList['payment_status']) {
@@ -38,15 +38,15 @@ class Student_transaction_change_programme extends Crud
         $temp           = getFilterQueryFromDict($filterList);
         $filterQuery    = buildCustomWhereString($temp[0], $queryString, false);
         $filterValues   = $temp[1];
-        $currentSession = get_setting('active_session_student_portal');
+//        $currentSession = get_setting('active_session_student_portal');
 
         if ($type == 'fresher') {
-            $currentSession = get_setting('admission_session_update');
+//            $currentSession = get_setting('admission_session_update');
             // $filterQuery .= ($filterQuery ? " and " : " where ") . " ((academic_record.session_of_admission = '$currentSession')) ";
-            $directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY->value);
-            $olevel      = $this->db->escape_str(CommonSlug::O_LEVEL->value);
-            $olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME->value);
-            $fastTrack   = $this->db->escape_str(CommonSlug::FAST_TRACK->value);
+            $directEntry = $this->db->escapeString(CommonSlug::DIRECT_ENTRY->value);
+            $olevel      = $this->db->escapeString(CommonSlug::O_LEVEL->value);
+            $olevelPutme = $this->db->escapeString(CommonSlug::O_LEVEL_PUTME->value);
+            $fastTrack   = $this->db->escapeString(CommonSlug::FAST_TRACK->value);
 
             $filterQuery .= ($filterQuery ? " and " : " where ") . " (
 				(academic_record.entry_mode = '$directEntry' and academic_record.current_level = '2') ||
@@ -77,9 +77,9 @@ class Student_transaction_change_programme extends Crud
             $filterQuery .= " order by students.id desc ";
         }
 
-        if ($len) {
-            $start = $this->db->escape($start);
-            $len   = $this->db->escape($len);
+        if (request()->getGet('start') && $len) {
+            $start = $this->db->escapeString($start);
+            $len   = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";
         }
 
