@@ -187,13 +187,13 @@ if (!function_exists('generateNumberWithOdd')) {
 }
 
 if (!function_exists('generateBatchRef')) {
-    function generateBatchRef($lastNumber = null): string
+    function generateBatchRef($lastNumber = null, $prefix = 'DLC'): string
     {
         // If $lastNumber is not provided, generate the current date
         if ($lastNumber === null) {
             $lastNumber = date("Ymd") . "0000";
         }
-        $leadStr = "DLC";
+        $leadStr = $prefix;
         $currentDate = date("Ymd");
         $lastDate = substr($lastNumber, strlen($leadStr), strlen($currentDate));
 
@@ -1868,13 +1868,17 @@ if (!function_exists('fetchSingleField')) {
 }
 
 if (!function_exists('fetchSingle')) {
-    function fetchSingle($db, $table, $column, $value)
+    function fetchSingle($db, $table, $column, $value, $orderBy = null, $all = false)
     {
-        $query = "SELECT * from $table where $column=?";
+        $query = "SELECT * from $table where $column=? {$orderBy}";
         $result = $db->query($query, array($value));
         $result = $result->getResultArray();
         if (!$result) {
             return null;
+        }
+
+        if ($all) {
+            return $result;
         }
         return $result[0];
     }
@@ -2053,7 +2057,7 @@ if (!function_exists('isLive')) {
 }
 
 if (!function_exists('logAction')) {
-    function logAction($db, $action, $user = null, $student = null, $oldData = null, $newData = null)
+    function logAction($db, $action, $user = null, $student = null, $oldData = null, $newData = null, $description = null)
     {
         $data = array(
             'username' => $user ?? null,
@@ -2066,6 +2070,7 @@ if (!function_exists('logAction')) {
             'student_id' => $student,
             'old_data' => $oldData,
             'new_data' => $newData,
+            'description' => $description,
         );
         return create_record($db, 'users_log', $data);
     }

@@ -3,6 +3,7 @@
 namespace Config;
 
 use CodeIgniter\Config\BaseService;
+use Config\Redis as RedisConfig;
 
 /**
  * Services Configuration file.
@@ -19,14 +20,20 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
-    /*
-     * public static function example($getShared = true)
-     * {
-     *     if ($getShared) {
-     *         return static::getSharedInstance('example');
-     *     }
-     *
-     *     return new \CodeIgniter\Example();
-     * }
-     */
+    public static function redis(bool $getShared = true)
+    {
+        if ($getShared) {
+            return static::getSharedInstance('redis');
+        }
+
+        $config = config(RedisConfig::class);
+
+        $config->host     = env('REDIS_HOST')     ?: $config->host;
+        $config->password = env('REDIS_PASSWORD') ?: $config->password;
+        $config->port     = (int) (env('REDIS_PORT')   ?: $config->port);
+        $config->timeout  = (float)(env('REDIS_TIMEOUT')?: $config->timeout);
+        $config->database = (int) (env('REDIS_DB')     ?: $config->database);
+
+        return new \App\Libraries\RealRedis($config);
+    }
 }

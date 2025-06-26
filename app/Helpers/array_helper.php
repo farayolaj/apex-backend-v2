@@ -690,6 +690,7 @@ if (!function_exists('getEntityTranslation')) {
             'all_roles' => 'roles',
             'app_role' => 'roles',
             'app_role_permission' => 'roles_permission',
+            'email_builder' => 'email_logs',
         ];
     }
 }

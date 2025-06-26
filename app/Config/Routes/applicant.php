@@ -14,11 +14,3 @@ $routes->group('api/v1', ['filter' => 'apiValidation:student'], function ($route
     $routes->post('applicant_update_biodata', 'ApplicantMigration::applicantBiodataUpdate');
     $routes->get('applicant_all_programme', 'ApplicantMigration::getAllProgramme');
 });
-
-// this is for apex mobile API
-$routes->post('Apex_mobile/authenticate', 'Auth::apexAuth', ['filter' => 'apiValidation:apex']);
-$routes->group('Apex_mobile', ['filter' => 'apiValidation:apex'], function ($routes) {
-    $routes->add('(:any)', 'Api::apexapi/$1');
-    $routes->add('(:any)/(:any)', 'Api::apexapi/$1/$2');
-    $routes->add('(:any)/(:any)', 'Api::apexapi/$1/$2/$3');
-});
