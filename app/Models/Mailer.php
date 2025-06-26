@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use Config\Services;
 
-class Mailer extends Model
+class Mailer
 {
     private PHPMailer $mailer;
 
@@ -19,7 +18,6 @@ class Mailer extends Model
      */
     public function __construct()
     {
-        parent::__construct();
         $this->mailer = new PHPMailer(true);
         $this->privateMailConfig();
     }
@@ -151,11 +149,11 @@ class Mailer extends Model
      * @param mixed $to Recipient(s).
      * @param string $subject The email subject.
      * @param string $content The email content.
-     * @param array $cc CC recipients.
+     * @param array $bcc
      * @param mixed $attachment Attachment file(s).
      * @return bool
      */
-    public function sendMail(string $template, $to, string $subject, string $content, array $cc = [], $attachment = false): bool
+    public function sendMail(string $template, $to, string $subject, string $content, array $bcc = [], $attachment = false): bool
     {
         try {
             $this->mailer->clearAddresses();
@@ -170,13 +168,13 @@ class Mailer extends Model
                 $this->mailer->addAddress($to);
             }
 
-            if ($cc) {
-                if (is_array($cc)) {
-                    foreach ($cc as $c) {
+            if ($bcc) {
+                if (is_array($bcc)) {
+                    foreach ($bcc as $c) {
                         $this->mailer->addCC($c);
                     }
                 } else {
-                    $this->mailer->addCC($cc);
+                    $this->mailer->addCC($bcc);
                 }
             }
 
