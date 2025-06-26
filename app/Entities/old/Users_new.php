@@ -186,7 +186,7 @@ class Users_new extends Crud
         return $result[0];
     }
 
-    public function getRealUserInfo($userID, string $table, string $userType)
+    public function getRealUserInfo(int $userID, string $table, string $userType)
     {
         $query = "SELECT b.*,a.id as user_id,a.user_login as username from users_new a join {$table} b on b.id = a.user_table_id
     	where a.id = ? and a.user_type = ?";

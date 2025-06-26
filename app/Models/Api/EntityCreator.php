@@ -6,6 +6,7 @@
 namespace App\Models\Api;
 
 use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
 use App\Models\ModelControllerCallback;
 use App\Models\ModelControllerDataValidator;
 use App\Models\UploadDirectoryManager;
@@ -284,8 +285,9 @@ class EntityCreator
     {
         $this->modelCheck($model, 'c');
         $message = '';
-        $data = $this->request->getPost(null);
-        $newModel = loadClass($model);
+        $data = $this->request->getPost();
+        EntityLoader::loadClass($this, $model);
+        $newModel = $this->$model;
         $parameter = $this->extractSubset($data, $newModel);
         $parameter = removeEmptyAssoc($parameter);
 
@@ -424,13 +426,16 @@ class EntityCreator
         $this->application_log->log($model, $description);
     }
 
+    /**
+     * @throws Exception
+     */
     public function update(string $model, $id = '', $filter = false, $param = false)
     {
         if (empty($id) || empty($model)) {
             if (!$this->outputResult) {
                 return false;
             }
-            return ApiResponse::error('An error occured while processing information');
+            return ApiResponse::error('An error occurred while processing information');
         }
         return $this->updateSingle($model, $id, $param);
     }
@@ -441,8 +446,9 @@ class EntityCreator
     private function updateSingle(string $model, int $id, $param = false)
     {
         $this->modelCheck($model, 'u');
-        $newModel = loadClass($model);
-        $data = $param ?: $this->request->getPost(null);
+        EntityLoader::loadClass($this, $model);
+        $newModel = $this->$model;
+        $data = $param ?: $this->request->getPost();
         $parameter = $data;
         if (!empty($_FILES)) {
             $res = $this->processFormUpload($model, $data, $id, $message);
@@ -504,9 +510,9 @@ class EntityCreator
     public function updateAction(string $model, $id, $param)
     {
         $this->modelCheck($model, 'u');
-        $newModel = loadClass($model);
-        $newModel->setArray($param);
-        if (!$newModel->update($id, $this->db)) {
+        EntityLoader::loadClass($this, $model);
+        $this->$model->setArray($param);
+        if (!$this->$model->update($id, $this->db)) {
             return ApiResponse::error("An error occurred, cannot update item");
         }
         return ApiResponse::success("You've successfully updated the item");
@@ -523,8 +529,8 @@ class EntityCreator
         }
 
         $this->modelCheck($model, 'd');
-        $model = loadClass($model);
-        return $model->delete($id);
+        EntityLoader::loadClass($this, $model);
+        return $this->$model->delete($id);
     }
 
     private function modelCheck($model, $method)
@@ -538,7 +544,8 @@ class EntityCreator
     private function isModel(string $model): bool
     {
         $model = loadClass($model);
-        if (!empty($model) && $model instanceof $this->crudNameSpace) {
+        EntityLoader::loadClass($this, $model);
+        if (!empty($this->$model) && $this->$model instanceof $this->crudNameSpace) {
             return true;
         }
         return false;
@@ -573,15 +580,15 @@ class EntityCreator
         if (empty($model)) {
             $this->show_404();
         }
-        $model = loadClass("$model");
-        if (!is_subclass_of($model, $this->crudNameSpace)) {
+        EntityLoader::loadClass($this, $model);
+        if (!is_subclass_of($this->$model, $this->crudNameSpace)) {
             $this->show_404();
         }
         $exception = null;
         if (isset($_GET['exc'])) {
             $exception = explode('-', $_GET['exc']);
         }
-        $model->downloadTemplate($exception);
+        $this->$model->downloadTemplate($exception);
     }
 
     public function export($model)
@@ -597,11 +604,11 @@ class EntityCreator
         if (empty($model)) {
             $this->show_404();
         }
-        $model = loadClass("$model");
-        if (!is_subclass_of($model, $this->crudNameSpace)) {
+        EntityLoader::loadClass($this, $model);
+        if (!is_subclass_of($this->$model, $this->crudNameSpace)) {
             $this->show_404();
         }
-        $model->export($condition);
+        $this->$model->export($condition);
     }
 
 }

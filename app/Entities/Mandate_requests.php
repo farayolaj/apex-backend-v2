@@ -83,7 +83,7 @@ class Mandate_requests extends Crud
             $query .= " order by created_at desc ";
         }
 
-        if (request()->getGet('start') && $len) {
+        if (isset($_GET['start']) && $len) {
             $start = $this->db->escapeString($start);
             $len = $this->db->escapeString($len);
             $query .= " limit $start, $len";

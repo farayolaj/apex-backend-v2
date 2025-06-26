@@ -1,4 +1,8 @@
 <?php
+namespace App\Entities;
+
+use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * The controller that validate forms that should be inserted into a table based on the request url.
@@ -14,7 +18,7 @@ class ModelControllerDataValidator extends CI_Model
         $this->load->helper('hashids');
     }
 
-    public function validateStudent_verification_documentsData(&$data, $type, &$message): bool
+    public function validateStudent_verification_documentsData(&$data, $type, &$db, &$message): bool
     {
 
         if ($type == 'insert') {
@@ -23,8 +27,8 @@ class ModelControllerDataValidator extends CI_Model
                 return false;
             }
 
-            loadClass($this->load, 'student_verification_documents');
-            $student = $this->webSessionManager->currentAPIUser();
+            EntityLoader::loadClass($this, 'student_verification_documents');
+            $student = WebSessionManager::currentAPIUser();
             if (isset($data['verification_documents_requirement_id'])) {
                 $validate = $this->student_verification_documents->getWhere(['students_id' => $student->id, 'verification_documents_requirement_id' => $data['verification_documents_requirement_id']]);
                 if ($validate) {
@@ -50,7 +54,7 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validatePaymentData_old(&$data, $type, &$message): bool
+    public function validatePaymentData_old(&$data, $type, &$db, &$message): bool
     {
         if (!trim(@$data['fee_breakdown'])) {
             $data['fee_breakdown'] = '[]';
@@ -58,7 +62,7 @@ class ModelControllerDataValidator extends CI_Model
         $json = @$data['fee_breakdown'];
         $fee_description = json_decode($json);
         $total = 0;
-        loadClass($this->load, 'fee');
+        EntityLoader::loadClass($this, 'fee');
         for ($i = 0; $i < count($fee_description); $i++) {
             $item = $fee_description[$i];
             $fee = $this->fee->getWhere(['description' => $item]);
@@ -79,12 +83,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validatePaymentData(&$data, $type, &$message): bool
+    public function validatePaymentData(&$data, $type, &$db, &$message): bool
     {
         if ($type == 'insert') {
-            permissionAccess($this, 'payment_create');
+            permissionAccess('payment_create');
         } else if ($type == 'update') {
-            permissionAccess($this, 'payment_edit');
+            permissionAccess('payment_edit');
         }
 
         $fee_category = paymentCategoryType($this->input->post('fee_category'));
@@ -187,9 +191,9 @@ class ModelControllerDataValidator extends CI_Model
     private function generateInitialCode($description, $programme = []): string
     {
         $progName = generateCode(4);
-        loadClass($this->load, 'programme');
-        loadClass($this->load, 'faculty');
-        loadClass($this->load, 'fee_description');
+        EntityLoader::loadClass($this, 'programme');
+        EntityLoader::loadClass($this, 'faculty');
+        EntityLoader::loadClass($this, 'fee_description');
 
         if (!empty($programme)) {
             $programme = json_decode($programme, true);
@@ -253,7 +257,7 @@ class ModelControllerDataValidator extends CI_Model
 
     private function isPaymentCode($code, $id = null): bool
     {
-        loadClass($this->load, 'payment');
+        EntityLoader::loadClass($this, 'payment');
         $payment = $this->payment->getPaymentCode($code, $id);
         if ($payment) {
             return true;
@@ -265,9 +269,9 @@ class ModelControllerDataValidator extends CI_Model
     {
         $paymentCode = '';
         $newSession = null;
-        loadClass($this->load, 'programme');
-        loadClass($this->load, 'faculty');
-        loadClass($this->load, 'sessions');
+        EntityLoader::loadClass($this, 'programme');
+        EntityLoader::loadClass($this, 'faculty');
+        EntityLoader::loadClass($this, 'sessions');
 
         if ($session && $session != 0) {
             $newSession = $this->sessions->getSessionById($session)[0]['date'];
@@ -294,7 +298,7 @@ class ModelControllerDataValidator extends CI_Model
         return $paymentCode;
     }
 
-    public function validateUsers_customData(&$data, $type, &$message): bool
+    public function validateUsers_customData(&$data, $type, &$db, &$message): bool
     {
         if ($type == 'insert') {
             if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
@@ -322,12 +326,12 @@ class ModelControllerDataValidator extends CI_Model
         }
     }
 
-    public function validateFee_descriptionData(&$data, $type, &$message): bool
+    public function validateFee_descriptionData(&$data, $type, &$db, &$message): bool
     {
         if ($type == 'insert') {
-            permissionAccess($this, 'fees_listing', 'create');
+            permissionAccess('fees_listing', 'create');
         } else if ($type == 'update') {
-            permissionAccess($this, 'faculty_department_edit', 'edit');
+            permissionAccess('faculty_department_edit', 'edit');
         }
         $this->form_validation->set_rules('description', 'description', 'trim|required');
         $this->form_validation->set_rules('category', 'category', 'trim|required|in_list[main,others,custom]');
@@ -351,7 +355,7 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateVerification_cardsData(&$data, $type, &$message): bool
+    public function validateVerification_cardsData(&$data, $type, &$db, &$message): bool
     {
         $this->form_validation->set_rules('serial_number', 'serial number', 'trim');
         $this->form_validation->set_rules('card_type', 'card_type', 'trim|required|in_list[Waec,Neco]');
@@ -372,7 +376,7 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateStudent_verification_cardsData(&$data, $type, &$message): bool
+    public function validateStudent_verification_cardsData(&$data, $type, &$db, &$message): bool
     {
         $this->form_validation->set_rules('student_id', 'student', 'trim|required');
         $this->form_validation->set_rules('verification_cards_id', 'verification card', 'trim|required');
@@ -395,12 +399,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateAdmissionData(&$data, $type, &$message): bool
+    public function validateAdmissionData(&$data, $type, &$db, &$message): bool
     {
         if ($type == 'insert') {
-            permissionAccess($this, 'admissions_admission_create', 'create');
+            permissionAccess('admissions_admission_create', 'create');
         } else if ($type == 'update') {
-            permissionAccess($this, 'admissions_admission_edit', 'edit');
+            permissionAccess('admissions_admission_edit', 'edit');
         }
 
         $this->form_validation->set_rules('name', 'name', 'trim|required');
@@ -422,12 +426,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateAdmission_programme_requirementsData(&$data, $type, &$message): bool
+    public function validateAdmission_programme_requirementsData(&$data, $type, &$db, &$message): bool
     {
         if ($type == 'insert') {
-            permissionAccess($this, 'admissions_manager', 'create');
+            permissionAccess('admissions_manager', 'create');
         } else if ($type == 'update') {
-            permissionAccess($this, 'admissions_manager', 'edit');
+            permissionAccess('admissions_manager', 'edit');
         }
         $this->form_validation->set_rules('olevel_requirements', 'O\'Level requirement', 'trim');
         $this->form_validation->set_rules('alevel_requirements', 'A\'Level requirement', 'trim');
@@ -450,12 +454,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateApplicant_paymentData(&$data, $type, &$message): bool
+    public function validateApplicant_paymentData(&$data, $type, &$db, &$message): bool
     {
         if ($type == 'insert') {
-            permissionAccess($this, 'admissions_payment_create', 'create');
+            permissionAccess('admissions_payment_create', 'create');
         } else if ($type == 'update') {
-            permissionAccess($this, 'admissions_payment_edit', 'edit');
+            permissionAccess('admissions_payment_edit', 'edit');
         }
         $this->form_validation->set_rules('amount', 'amount', 'trim|required|numeric|is_natural_no_zero');
         $this->form_validation->set_rules('subaccount_amount', 'subaccount amount', 'trim|required|numeric|is_natural_no_zero');
@@ -479,7 +483,7 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateBank_listsData(&$data, $type, &$message): bool
+    public function validateBank_listsData(&$data, $type, &$db, &$message): bool
     {
         $this->form_validation->set_rules('name', 'bank name', 'trim|required');
         $this->form_validation->set_rules('code', 'bank code', 'trim|required|numeric');
@@ -498,7 +502,7 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateUser_banksData(&$data, $type, &$message): bool
+    public function validateUser_banksData(&$data, $type, &$db, &$message): bool
     {
         $this->form_validation->set_rules('account_name', 'account name', 'trim|required');
         $this->form_validation->set_rules('account_number', 'account number', 'trim|required|numeric');
@@ -515,12 +519,12 @@ class ModelControllerDataValidator extends CI_Model
             $message = "The account number is already in use by another user.";
             return false;
         }
-        $currentUser = $this->webSessionManager->currentAPIUser();
+        $currentUser = WebSessionManager::currentAPIUser();
         $data['users_id'] = $currentUser->id;
         if ($type == 'insert') {
             $data['created_at'] = date('Y-m-d H:i:s');
         }
-        loadClass($this->load, 'bank_lists');
+        EntityLoader::loadClass($this, 'bank_lists');
         $bankCode = $this->bank_lists->getWhere(['id' => $data['bank_lists_id']], $count, 0, 1, false);
         if (!$bankCode) {
             $message = 'Unable to get the bank details, kindly reach out to the administrator';
@@ -542,7 +546,7 @@ class ModelControllerDataValidator extends CI_Model
         //return $this->db->query($query, [$user_id]);
     }
 
-    public function validateProjectsData(&$data, $type, &$message): bool
+    public function validateProjectsData(&$data, $type, &$db, &$message): bool
     {
         $this->form_validation->set_rules('title', 'project title', 'trim|required');
         $this->form_validation->set_rules('description', 'project details', 'trim|required');
@@ -554,7 +558,7 @@ class ModelControllerDataValidator extends CI_Model
                 return false;
             }
         }
-        $currentUser = $this->webSessionManager->currentAPIUser();
+        $currentUser = WebSessionManager::currentAPIUser();
         $data['users_id'] = $currentUser->id;
         if ($type == 'insert') {
             $data['created_at'] = date('Y-m-d H:i:s');
@@ -562,7 +566,7 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateProject_tasksData(&$data, $type, &$message): bool
+    public function validateProject_tasksData(&$data, $type, &$db, &$message): bool
     {
         $this->form_validation->set_rules('project_id', 'project', 'trim|required', [
             'required' => 'Please choose a project'
@@ -588,12 +592,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateStaffsData(&$data, $type, &$message): bool
+    public function validateStaffsData(&$data, $type, &$db, &$message): bool
     {
         if ($type == 'insert') {
-            permissionAccess($this, 'user_new', 'create');
+            permissionAccess('user_new', 'create');
         } else if ($type == 'update') {
-            permissionAccess($this, 'user_edit', 'edit');
+            permissionAccess('user_edit', 'edit');
         }
 
         $staffID = $data['staff_id'];
@@ -669,12 +673,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateRolesData(&$data, $type, &$message): bool
+    public function validateRolesData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'role_create', 'create');
+            permissionAccess('role_create', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'role_edit', 'edit');
+            permissionAccess('role_edit', 'edit');
         }
 
         $this->form_validation->set_rules('name', 'name', 'trim|required');
@@ -691,12 +695,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateStaff_departmentData(&$data, $type, &$message): bool
+    public function validateStaff_departmentData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'faculty_department_edit', 'create');
+            permissionAccess('faculty_department_edit', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'faculty_department_edit', 'edit');
+            permissionAccess('faculty_department_edit', 'edit');
         }
 
         $this->form_validation->set_rules('name', 'name', 'trim|required');
@@ -717,12 +721,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateRoles_permissionData(&$data, $type, &$message): bool
+    public function validateRoles_permissionData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'role_assign_permission_create', 'create');
+            permissionAccess('role_assign_permission_create', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'role_assign_permission_edit', 'edit');
+            permissionAccess('role_assign_permission_edit', 'edit');
         }
 
         $this->form_validation->set_rules('role_id[]', 'role', 'trim|required');
@@ -747,12 +751,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateFacultyData(&$data, $type, &$message): bool
+    public function validateFacultyData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'faculty_listing', 'create');
+            permissionAccess('faculty_listing', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'faculty_edit', 'edit');
+            permissionAccess('faculty_edit', 'edit');
         }
 
         if ($type == 'insert') {
@@ -791,12 +795,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateDepartmentData(&$data, $type, &$message): bool
+    public function validateDepartmentData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'faculty_department_listing', 'create');
+            permissionAccess('faculty_department_listing', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'faculty_department_edit', 'edit');
+            permissionAccess('faculty_department_edit', 'edit');
         }
 
         if ($type == 'insert') {
@@ -838,15 +842,15 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateProgrammeData(&$data, $type, &$message): bool
+    public function validateProgrammeData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'faculty_programme_listing', 'create');
+            permissionAccess('faculty_programme_listing', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'faculty_programme_edit', 'edit');
+            permissionAccess('faculty_programme_edit', 'edit');
         }
 
-        loadClass($this->load, 'department');
+        EntityLoader::loadClass($this, 'department');
         if ($type == 'insert') {
             $this->form_validation->set_rules('name', 'name', array(
                 'required',
@@ -893,12 +897,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateCourse_managerData(&$data, $type, &$message): bool
+    public function validateCourse_managerData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'course_manager', 'create');
+            permissionAccess('course_manager', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'course_manager', 'edit');
+            permissionAccess('course_manager', 'edit');
         }
 
         if ($type == 'insert') {
@@ -938,12 +942,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateGradesData(&$data, $type, &$message): bool
+    public function validateGradesData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'exam_grades', 'create');
+            permissionAccess('exam_grades', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'exam_grade_edit', 'edit');
+            permissionAccess('exam_grade_edit', 'edit');
         }
 
         if ($type == 'insert') {
@@ -991,12 +995,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateClass_of_degreeData(&$data, $type, &$message): bool
+    public function validateClass_of_degreeData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'exam_grades', 'create');
+            permissionAccess('exam_grades', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'exam_grade_edit', 'edit');
+            permissionAccess('exam_grade_edit', 'edit');
         }
 
         $yearOfEntry = $data['year_of_entry'];
@@ -1044,12 +1048,12 @@ class ModelControllerDataValidator extends CI_Model
         return true;
     }
 
-    public function validateSessionsData(&$data, $type, &$message): bool
+    public function validateSessionsData(&$data, $type, &$db, &$message): bool
     {
         if ($type === 'insert') {
-            permissionAccess($this, 'session_listing', 'create');
+            permissionAccess('session_listing', 'create');
         } else if ($type === 'update') {
-            permissionAccess($this, 'session_edit', 'edit');
+            permissionAccess('session_edit', 'edit');
         }
 
         if ($type == 'insert') {
@@ -1088,19 +1092,19 @@ class ModelControllerDataValidator extends CI_Model
     }
 
     // this is to ensure that POST method is blocked off on this endpoint
-    public function validateTransactionData(&$data, $type, &$message): bool
+    public function validateTransactionData(&$data, $type, &$db, &$message): bool
     {
         $message = "You're not allowed to perform the action";
         return false;
     }
 
-    public function validateStudentsData(&$data, $type, &$message): bool
+    public function validateStudentsData(&$data, $type, &$db, &$message): bool
     {
         $message = "You're not allowed to perform the action";
         return false;
     }
 
-    public function validateSettingsData(&$data, $type, &$message): bool
+    public function validateSettingsData(&$data, $type, &$db, &$message): bool
     {
         $message = "You're not allowed to perform the action";
         return false;

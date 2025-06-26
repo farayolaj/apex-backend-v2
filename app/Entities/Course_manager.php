@@ -187,7 +187,7 @@ class Course_manager extends Crud
             $filterQuery .= " order by a.date_created desc, course_manager asc ";
         }
 
-        if (request()->getGet('start') && $len) {
+        if (isset($_GET['start']) && $len) {
             $start = $this->db->escapeString($start);
             $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";
@@ -195,7 +195,6 @@ class Course_manager extends Crud
         if (!$filterValues) {
             $filterValues = [];
         }
-        $tablename = strtolower(self::$tablename);
         $query = "SELECT SQL_CALC_FOUND_ROWS a.id,c.date as session,a.course_lecturer_id,b.code as course_code,b.title as course_title, 
 		concat(e.title,' ',e.lastname,' ',e.firstname) as course_manager,a.course_manager_id from course_manager a join courses b 
 		on b.id = a.course_id join sessions c on c.id = a.session_id join users_new d on d.id = a.course_manager_id join staffs e on 
@@ -219,9 +218,13 @@ class Course_manager extends Crud
         return $items;
     }
 
-    public function loadExtras($item)
+    public function loadExtras(array $item, bool $loadClass = false): array
     {
-        if (isset($item['course_lecturer_id'])) {
+        if($loadClass){
+            EntityLoader::loadClass($this, 'users_new');
+        }
+
+        if (!empty($item['course_lecturer_id'])) {
             $lecturers = json_decode($item['course_lecturer_id'], true);
             $fullname = [];
             if ($lecturers) {
@@ -235,6 +238,10 @@ class Course_manager extends Crud
             $item['course_lecturer'] = $fullname;
         }
 
+        if($item['course_manager_id']){
+            $course_manager = $this->users_new->getRealUserInfo($item['course_manager_id'], 'staffs', 'staff');
+            $item['course_manager'] = $course_manager['title'] . ' ' . $course_manager['lastname'] . ' ' . $course_manager['firstname'];
+        }
         $item['course_lecturer_id'] = ($item['course_lecturer_id'] != '') ? json_decode($item['course_lecturer_id'], true) : [];
 
         return $item;

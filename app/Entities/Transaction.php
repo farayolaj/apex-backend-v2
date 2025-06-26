@@ -947,7 +947,7 @@ class Transaction extends Crud
         $export = request()->getGet('export') ?? null;
 
         $limit = '';
-        if (request()->getGet('start') && $len) {
+        if (isset($_GET['start']) && $len) {
             $limit = " limit $start, $len";
         }
 

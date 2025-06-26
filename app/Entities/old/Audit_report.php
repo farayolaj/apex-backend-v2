@@ -187,7 +187,7 @@ class Audit_report extends Crud
 		$to = request()->getGet('end_date') ?? null;
 		$limit = '';
 
-		if (request()->getGet('start') && $len) {
+		if (isset($_GET['start']) && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$limit = " limit $start, $len";

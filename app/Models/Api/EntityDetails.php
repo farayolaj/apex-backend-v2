@@ -241,7 +241,7 @@ class EntityDetails
             return null;
         }
         $result = $this->course_manager->toArray();
-        return $this->course_manager->loadExtras($result, false);
+        return $this->course_manager->loadExtras($result, true);
     }
 
     public function getGradesDetails($id)

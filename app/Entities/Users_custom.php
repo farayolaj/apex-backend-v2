@@ -174,7 +174,7 @@ class Users_custom extends Crud
             $filterQuery .= " order by date_registered asc ";
         }
 
-        if (request()->getGet('start') && $len) {
+        if (isset($_GET['start']) && $len) {
             $start = $this->db->escapeString($start);
             $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";

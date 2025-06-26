@@ -9,7 +9,7 @@ use Firebase\JWT\Key;
 if (!function_exists("encryptData")) {
     function encryptData($data): string
     {
-        $key = getenv('customEncrytKey');
+        $key = env('customEncrytKey');
         $method = 'aes-256-cbc';
         $ivSize = openssl_cipher_iv_length($method);
         $iv = openssl_random_pseudo_bytes($ivSize);
@@ -21,7 +21,7 @@ if (!function_exists("encryptData")) {
 if (!function_exists('decryptData')) {
     function decryptData($data)
     {
-        $key = getenv('customEncrytKey');;
+        $key = env('customEncrytKey');;
         if (strlen((string)$data) < 20) {
             return $data;
         }
@@ -87,8 +87,8 @@ if (!function_exists('isTimeExpired')) {
 if (!function_exists('generateJwtToken')) {
     function generateJwtToken($payload): string
     {
-        $key = getenv('jwtKey');
-        $expiration = time() + (60 * getenv('tokenExpiration'));
+        $key = env('jwtKey');
+        $expiration = time() + (60 * env('tokenExpiration'));
         // Make an array for the JWT Payload
         $payload = array(
             "iss" => base_url(),
@@ -108,7 +108,7 @@ if (!function_exists('generateJwtToken')) {
 if (!function_exists('decodeJwtToken')) {
     function decodeJwtToken($payload): stdClass
     {
-        $key = getenv('jwtKey');
+        $key = env('jwtKey');
         JWT::$leeway = 60; // $leeway in seconds
         return JWT::decode($payload, new Key($key, 'HS256'));
     }
@@ -162,9 +162,9 @@ if (!function_exists('hashids_createobject')) {
     function hashids_createobject($salt_ov = NULL, $min_hash_length_ov = NULL, $alphabet_ov = NULL)
     {
 
-        $salt = (!$salt_ov) ? getenv('hashidsSalt') : $salt_ov;
-        $min_hash_length = (!$min_hash_length_ov) ? getenv('hashidsMinHashLength') : $min_hash_length_ov;
-        $alphabet = (!$alphabet_ov) ? getenv('hashidsAlphabet') : $alphabet_ov;
+        $salt = (!$salt_ov) ? env('hashidsSalt') : $salt_ov;
+        $min_hash_length = (!$min_hash_length_ov) ? env('hashidsMinHashLength') : $min_hash_length_ov;
+        $alphabet = (!$alphabet_ov) ? env('hashidsAlphabet') : $alphabet_ov;
 
         $hashids = Factories::libraries('Hashids');
         return new $hashids($salt, $min_hash_length, $alphabet);

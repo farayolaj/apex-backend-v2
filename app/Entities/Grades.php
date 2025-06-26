@@ -151,7 +151,7 @@ class Grades extends Crud
             $filterQuery .= " order by a.name asc";
         }
 
-        if (request()->getGet('start') && $len) {
+        if (isset($_GET['start']) && $len) {
             $start = $this->db->escapeString($start);
             $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";

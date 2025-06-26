@@ -398,7 +398,7 @@ class Transaction_archive extends Crud
 		$q = request()->getGet('q') ?? null;
 
 		$limit = '';
-		if (request()->getGet('start') && $len) {
+		if (isset($_GET['start']) && $len) {
 			$limit = " limit $start, $len";
 		}
 

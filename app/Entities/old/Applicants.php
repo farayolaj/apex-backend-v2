@@ -676,7 +676,7 @@ class Applicants extends Crud
 		$filterValues = $temp[1];
 
 		$limit = null;
-		if (request()->getGet('start') && $len) {
+		if (isset($_GET['start']) && $len) {
 			$start = $this->db->conn_id->escape_string($start);
 			$len = $this->db->conn_id->escape_string($len);
 			$limit = " limit $start, $len";

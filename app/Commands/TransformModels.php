@@ -111,8 +111,10 @@ class TransformModels extends BaseCommand
 
     protected function extractClassName(string $content): ?string
     {
-        // Use regex to extract the class name
-        if (preg_match('/class\s+(\w+)\s+extends\s+Crud/', $content, $matches)) {
+        // Regex to match class definition (with or without extends)
+        $pattern = '/class\s+(\w+)(?:\s+extends\s+\w+)?\s*\{/';
+
+        if (preg_match($pattern, $content, $matches)) {
             return $matches[1];
         }
 
@@ -416,6 +418,13 @@ class TransformModels extends BaseCommand
         return $content;
     }
 
+    private function transformValidatorMethod($content): array|string|null
+    {
+        $pattern = '/(public\s+function\s+\w+\(([^,)]+,\s*[^,)]+))(,\s*([^)]*))?\)/';
+        $replacement = '$1, &$db$3)';
+        return preg_replace($pattern, '$1, &$db$3)', $content);
+    }
+
     private function transformModelBuilder($content){
         // Transform get_where into CodeIgniter 4's query builder format
         $content = preg_replace_callback(
@@ -484,6 +493,8 @@ PHP;
         $content = $this->transformConstantsToEnumValues($content);
 
         $content = $this->transformLoadClass($content);
+
+        $content = $this->transformValidatorMethod($content);
 
         return $content;
     }

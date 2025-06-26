@@ -71,7 +71,7 @@ class AdminModel extends CI_Model
 	public function getStudentPhotos(): array
 	{
 		$pageSize = (isset($_GET['len']) && $_GET['len'] && $_GET['len'] > 0) ? $_GET['len'] : 50;
-		$page = (request()->getGet('start') && $_GET['start']) ? $_GET['start'] : 1;
+		$page = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 1;
 
 		$session = isset($_GET['session']) ? $_GET['session'] : null;
 		$level = isset($_GET['level']) ? $_GET['level'] : false;
@@ -109,7 +109,7 @@ class AdminModel extends CI_Model
 	private function getFileListByFilter($filters): array
 	{
 		$pageSize = (isset($_GET['len']) && $_GET['len'] && $_GET['len'] > 0) ? $_GET['len'] : null;
-		$page = (request()->getGet('start') && $_GET['start']) ? $_GET['start'] : 1;
+		$page = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 1;
 
 		$session = isset($filters['session']) ? $filters['session'] : null;
 		$level = isset($filters['levels']) ? $filters['levels'] : false;

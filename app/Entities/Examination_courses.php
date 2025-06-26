@@ -61,7 +61,7 @@ class Examination_courses extends Crud
             $filterQuery .= " order by b.code asc ";
         }
 
-        if (request()->getGet('start') && $len) {
+        if (isset($_GET['start']) && $len) {
             $start = $this->db->escapeString($start);
             $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";

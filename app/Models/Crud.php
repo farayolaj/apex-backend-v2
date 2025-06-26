@@ -174,7 +174,9 @@ class Crud {
 		} else if (method_exists($this, $methodName)) {
 			return $this->$methodName();
 		} else {
-			return self::__get($name);
+            // this would mean that the property does not exist
+            // and this would trigger an error for any GET method call
+			return null;
 		}
 	}
 
@@ -408,7 +410,7 @@ class Crud {
             $filterQuery .= " order by $orderBy ";
         }
 
-        if (request()->getGet('start') && $len) {
+        if (isset($_GET['start']) && $len) {
             $filterQuery .= " limit $start, $len";
         }
         if (!$filterValues) {

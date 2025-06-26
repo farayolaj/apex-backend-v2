@@ -6,6 +6,7 @@
 namespace App\Models\Api;
 
 use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
 use App\Models\Api\EntityCreator;
 use App\Traits\EntityListTrait;
 use App\Traits\UploadTrait;
@@ -63,7 +64,7 @@ class EntityModel
                 // this handles entity detail view and update
                 if (is_numeric($args[0])) {
                     if ($this->request->getMethod() === 'GET') {
-                        $param = $this->request->getGet(null);
+                        $param = $this->request->getGet();
                         $id = $args[0];
                         $result = $this->detail($entity, $id, $param);
                         if (!$result) {
@@ -71,7 +72,7 @@ class EntityModel
                         }
                         return ApiResponse::success('Success', $result);
                     } elseif ($this->request->getMethod() === 'POST') {
-                        $values = $this->request->getPost(null);
+                        $values = $this->request->getPost();
                         $id = $args[0];
                         $this->update($entity, $id, $values);
                     }
@@ -207,42 +208,42 @@ class EntityModel
         if (method_exists($entityDetails, $methodName)) {
             return $entityDetails->$methodName($id);
         }
-        $entity = loadClass($entity);
-        $entity->id = $id;
-        if ($entity->load()) {
-            return $entity->toArray();
+        EntityLoader::loadClass($this, $entity);
+        $this->$entity->id = $id;
+        if ($this->$entity->load()) {
+            return $this->$entity->toArray();
         }
-        return false;
+        return null;
     }
 
     public function disable(string $model, int $id)
     {
         $this->db->transBegin();
-        $model = loadClass($model);
+        EntityLoader::loadClass($this, $model);
         //check that model is actually a subclass
-        if (!(empty($id) === false && is_subclass_of($model, $this->crudNameSpace))) {
-            return false;
+        if (!(empty($id) === false && is_subclass_of($this->$model, $this->crudNameSpace))) {
+            return null;
         }
-        return $model->disable($id, $this->db);
+        return $this->$model->disable($id, $this->db);
     }
 
     public function enable(string $model, int $id)
     {
         $this->db->transBegin();
-        $model = loadClass($model);
+        EntityLoader::loadClass($this, $model);
         //check that model is actually a subclass
-        if (!(empty($id) === false && is_subclass_of($model, $this->crudNameSpace))) {
+        if (!(empty($id) === false && is_subclass_of($this->$model, $this->crudNameSpace))) {
             return false;
         }
-        return $model->enable($id, $this->db);
+        return $this->$model->enable($id, $this->db);
     }
 
     public function updateEntityAction(string $entity, int $id, array $param)
     {
         $entityCreator = new EntityCreator($this->request);
-        $entity = loadClass($entity);
-        if (method_exists($entity, 'transformUpdateData')) {
-            $param = $entity->transformUpdateData($param);
+        EntityLoader::loadClass($this, $entity);
+        if (method_exists($this->$entity, 'transformUpdateData')) {
+            $param = $this->$entity->transformUpdateData($param);
         }
         return $entityCreator->updateAction($entity, $id, $param);
     }
@@ -258,10 +259,10 @@ class EntityModel
     {
         $entityCreator = new EntityCreator($this->request);
         $tempEntity = $entity;
-        $entity = loadClass($entity);
+        EntityLoader::loadClass($this, $entity);
 
-        if (property_exists($entity, 'allowedFields')) {
-            $allowParam = $entity::$allowedFields;
+        if (property_exists($this->$entity, 'allowedFields')) {
+            $allowParam = $this->$entity::$allowedFields;
             if (!$this->validateAllowedParameter($param, $allowParam)) {
                 return ApiResponse::error('Allowed parameters for update are:', ['parameters' => $allowParam]);
             }

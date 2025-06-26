@@ -15,7 +15,7 @@ trait EntityListTrait
     {
         $totalLength = 0;
         $orderBy = 'ID desc';
-        $param = request()->getGet(null);
+        $param = request()->getGet();
 
         // get the parameter for paging
         $start = array_key_exists('start', $_GET) ? $param['start'] : 0;

@@ -64,13 +64,13 @@ class ApiAuthFilter implements FilterInterface
     {
         $apiKey = null;
         if ($type === 'admin') {
-            $apiKey = getenv('xAppAdminKey');
+            $apiKey = env('xAppAdminKey');
         }else if ($type === 'student') {
-            $apiKey = getenv('xAppStudentKey');
+            $apiKey = env('xAppStudentKey');
         }else if ($type === 'web-finance') {
-            $apiKey = getenv('xAppFinanceKey');
+            $apiKey = env('xAppFinanceKey');
         }else if ($type === 'apex') {
-            $apiKey = getenv('xAppApexKey');
+            $apiKey = env('xAppApexKey');
         }
         return (array_key_exists('HTTP_X_APP_KEY', $_SERVER) && $request->getServer('HTTP_X_APP_KEY') == $apiKey ||
             array_key_exists('HTTP_ACESS_TOKEN', $_SERVER) && $request->getServer('HTTP_ACESS_TOKEN') == $apiKey);

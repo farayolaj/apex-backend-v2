@@ -68,7 +68,7 @@ class Examination_approval extends Crud
 			}
 		}
 
-		if (request()->getGet('start') && $len) {
+		if (isset($_GET['start']) && $len) {
 			$start = $this->db->escapeString($start);
 			$len = $this->db->escapeString($len);
 			$query .= " limit $start, $len";

@@ -121,7 +121,7 @@ class Settings extends Crud
         $filterQuery = buildCustomWhereString($temp[0], $queryString);
         $filterValues = $temp[1];
 
-        if (request()->getGet('start') && $len) {
+        if (isset($_GET['start']) && $len) {
             $start = $this->db->escapeString($start);
             $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";
