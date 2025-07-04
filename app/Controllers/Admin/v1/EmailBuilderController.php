@@ -344,6 +344,7 @@ class EmailBuilderController extends BaseController
         return ApiResponse::success('Success', $result);
     }
 
+    //TODO: I want to do this in batch of 100
     public function cleanupStaleEmail()
     {
         $redis = service('redis');

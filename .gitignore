@@ -128,28 +128,34 @@ nb-configuration.xml
 gmail-service-account.json
 
 ## Personal temp files
-uploads/temp/archive/*
-uploads/temp/document_complete/*
-uploads/temp/download_passport/*
-uploads/temp/export/*
-uploads/temp/import/*
-uploads/temp/lmsdb/*
-uploads/temp/logs/*
-uploads/temp/mpdf/*
-uploads/temp/result_csv/*
-uploads/temp/*.csv
+writable/temp/archive/*
+writable/temp/document_complete/*
+writable/temp/download_passport/*
+writable/temp/export/*
+writable/temp/import/*
+writable/temp/lmsdb/*
+writable/temp/logs/*
+writable/temp/mpdf/*
+writable/temp/result_csv/*
+writable/temp/script_logs/*
+writable/temp/*.csv
 
 ## Personal upload files
-uploads/applicants/*
-uploads/contractors_cac/*
-uploads/course_uploads/*
-uploads/payment_voucher/*
-uploads/retire_salary_advance/*
-uploads/student/full_images/*
-uploads/student/passports/*
-uploads/tmp/*
-uploads/users_avatar/*
-uploads/verification_documents/*
+writable/uploads/applicants/*
+writable/uploads/contractors_cac/*
+writable/uploads/course_uploads/*
+writable/uploads/payment_voucher/*
+writable/uploads/retire_salary_advance/*
+writable/uploads/student/full_images/*
+writable/uploads/student/passports/*
+writable/uploads/tmp/*
+writable/uploads/users_avatar/*
+writable/uploads/verification_documents/*
 .phpactor.json
 sample.zip
 /*.zip
+
+writable/temp/*
+
+deploy-production.sh
+env-live

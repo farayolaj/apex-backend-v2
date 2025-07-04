@@ -74,6 +74,7 @@ class EmailWorker extends BaseCommand
     private function processQueue($queueName, $batchSize)
     {
         $redis = service('redis');
+        dddump($redis);
 
         while (true) {
             $processed = 0;
