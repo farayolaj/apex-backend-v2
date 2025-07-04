@@ -74,7 +74,6 @@ class EmailWorker extends BaseCommand
     private function processQueue($queueName, $batchSize)
     {
         $redis = service('redis');
-        dddump($redis);
 
         while (true) {
             $processed = 0;
@@ -84,6 +83,7 @@ class EmailWorker extends BaseCommand
                 log_message('info', '[MAIL_BUILDER_START] Processing email queue...');
 
                 $payload = $redis->lPop($queueName);
+
                 if (!$payload) {
                     sleep(2); // Wait before retrying if queue is empty
                     break;

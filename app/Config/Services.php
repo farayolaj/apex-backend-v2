@@ -3,6 +3,7 @@
 namespace Config;
 
 use CodeIgniter\Config\BaseService;
+use Config\Redis;
 
 /**
  * Services Configuration file.
@@ -29,4 +30,12 @@ class Services extends BaseService
      *     return new \CodeIgniter\Example();
      * }
      */
+
+    public static function redis($getShared = true){
+        if ($getShared) {
+            return static::getSharedInstance('redis');
+        }
+
+        return new \App\Libraries\RealRedis(new Redis());
+    }
 }
