@@ -51,8 +51,13 @@ if $DRY_RUN; then
   echo "[dry-run] Would copy contents of app_new/* into current dir"
   echo "[dry-run] Would copy .env.live to .env"
 else
-  cp -r app_new/* .
-  cp -f env-live .env
+  rsync -a --delete \
+    --exclude="$BACKUP_DIR/" \
+    --exclude=".env" \
+    app_new/ .
+
+  # Then update the .env
+  cp -f .env.live .env
 fi
 
 echo "--Cleaning up temporary files..."
@@ -96,7 +101,7 @@ if [[ "$clear_cache" == "y" || "$clear_cache" == "Y" ]]; then
   if $DRY_RUN; then
     echo "[dry-run] Would run: docker compose exec app php spark config:clear"
   else
-    docker compose exec app php spark config:clear
+    docker compose exec app php spark cache:clear
   fi
 fi
 

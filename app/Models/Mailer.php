@@ -30,8 +30,8 @@ class Mailer
     private function privateMailConfig(): void
     {
         $this->mailer->addCustomHeader('useragent', 'Infosys');
-        $this->mailer->SMTPDebug = SMTP::DEBUG_SERVER | SMTP::DEBUG_CONNECTION; // Debugging enabled
-        // $this->mailer->SMTPDebug = SMTP::DEBUG_OFF;
+        // $this->mailer->SMTPDebug = SMTP::DEBUG_SERVER | SMTP::DEBUG_CONNECTION; // Debugging enabled
+        $this->mailer->SMTPDebug = SMTP::DEBUG_OFF;
         $this->mailer->isSMTP();
         $this->mailer->CharSet = "utf-8";
         $this->mailer->Host = get_setting('email_server_url');
