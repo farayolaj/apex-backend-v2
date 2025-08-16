@@ -1,7 +1,11 @@
 <?php
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/RemitaResponse.php';
-require_once APPPATH . 'traits/CommonTrait.php';
+namespace App\Entities;
+
+use App\Models\Crud;
+
+use App\Libraries\RemitaResponse;
+use App\Traits\CommonTrait;
+use CodeIgniter\Config\Factories;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the applicant_transaction table.
@@ -174,34 +178,32 @@ class Applicant_transaction extends Crud {
 
 	protected function getPayment() {
 		$query = 'SELECT * FROM payment WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once 'Payment.php';
-		$resultObject = new Payment($result[0]);
-		return $resultObject;
+		return new \App\Entities\Payment($result[0]);
 	}
 
 	public function verify_transaction($rrrCode, $channel, $applicant = null) {
 		if ($channel == 'remita') {
-			$this->load->model('remita');
+            $remita = Factories::libraries('Remita');
 			$transactionRef = $this->transaction_ref ? $this->transaction_ref : null;
 			if (!$transactionRef) {
 				return ['status' => false, 'message' => 'Invalid transaction reference'];
 			}
-			$temp = $this->remita->getRemitaData($this->transaction_ref, $applicant, null, $transactionRef);
+			$temp = $remita->getRemitaData($this->transaction_ref, $applicant, null, $transactionRef);
 
 			// when $temp['curlStatus'] is false, the curl method is GET method
 			if (!$temp['curlStatus']) {
 				$extraData = $temp['extraData'];
-				$response = $this->remita->remitaTransactionDetails($extraData['url'], $temp['header']);
-				if (@$response[RemitaResponse::RRR] == $rrrCode && CommonTrait::isPaymentValid($response['status'])) {
+				$response = $remita->remitaTransactionDetails($extraData['url'], $temp['header']);
+				if (@$response[RemitaResponse::RRR] == $rrrCode && self::isPaymentValid($response['status'])) {
 					$date_payment_communicated = date('Y-m-d H:i:s');
 					// update transaction data
 					$record = array(
@@ -224,8 +226,12 @@ class Applicant_transaction extends Crud {
 					}
 					return ['status' => true, 'rrr_code' => $rrrCode];
 				} else {
-					$record = array('payment_status' => (isset($response['status'])) ? $response['status'] : '021', 'payment_status_description' => (isset($response['message'])) ? $response['message'] : 'pending',
-						'amount_paid' => $response['amount'], 'date_completed' => (isset($response['paymentDate'])) ? $response['paymentDate'] : $response['transactiontime']);
+					$record = array(
+                        'payment_status' => $response['status'] ?? '021',
+                        'payment_status_description' => $response['message'] ?? 'pending',
+						'amount_paid' => $response['amount'],
+                        'date_completed' => $response['paymentDate'] ?? $response['transactiontime']
+                    );
 					if (isset($response[RemitaResponse::RRR]) && $response[RemitaResponse::RRR] != '') {
 						$record['rrr_code'] = $response[RemitaResponse::RRR];
 					}
@@ -244,4 +250,3 @@ class Applicant_transaction extends Crud {
 
 }
 
-?>

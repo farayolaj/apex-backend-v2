@@ -12,7 +12,7 @@ $routes->group('', ['filter' => 'cors'], static function (RouteCollection $route
     $routes->options('web/(:any)', static function () {});
 });
 
-$routes->group('web', ['filter' => ['cors', 'apiValidation:admin']], function ($routes) {
+$routes->group('web', ['filter' => ['apiValidation:admin']], function ($routes) {
     $routes->add('(:any)', 'Api::webApi/$1');
     $routes->add('(:any)/(:any)', 'Api::webApi/$1/$2');
     $routes->add('(:any)/(:any)/(:any)', 'Api::webApi/$1/$2/$3');

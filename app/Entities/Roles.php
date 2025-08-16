@@ -1,6 +1,9 @@
 <?php
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/UserOutflowType.php';
+namespace App\Entities;
+
+use App\Enums\UserOutflowTypeEnum as UserOutflowType;
+use App\Models\Crud;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the roles table.
@@ -71,14 +74,15 @@ class Roles extends Crud
 	{
 		$query = "SELECT d.title,d.firstname,d.lastname,d.othernames,d.staff_id,a.id as user_id,d.avatar FROM `users_new` a 
 		join staffs d on d.id = a.user_table_id WHERE a.user_type = ? and d.outflow_slug = ? and d.active = ?";
-		$result = $this->query($query, ['staff', UserOutflowType::DB_STAFF, '1']);
+		$result = $this->query($query, ['staff', UserOutflowType::DB_STAFF->value, '1']);
 		if (!$result) {
 			return [];
 		}
 		$payload = [];
 		foreach ($result as $row) {
 			$temp = $row;
-			$temp['avatar'] = $row['avatar'] ? site_url($this->config->item('user_passport_path') . $row['avatar']) : null;
+            $config = config('ImagePath');
+			$temp['avatar'] = $row['avatar'] ? base_url($config->userPassportPath . $row['avatar']) : null;
 			$payload[] = $temp;
 		}
 		return $payload;
@@ -86,11 +90,11 @@ class Roles extends Crud
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'role_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('role_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'role_deletion', $currentUser->id, $id);
+			logAction($db, 'role_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -98,7 +102,7 @@ class Roles extends Crud
 
 	public function APIList($filterList, $queryString, $start, $len): array
 	{
-		permissionAccess($this, 'role_listing', 'view');
+		permissionAccess('role_listing', 'view');
 		$selectData = static::$apiSelectClause;
 		return $this->apiQueryListFiltered($selectData, $filterList, $queryString, $start, $len);
 	}

@@ -1,5 +1,8 @@
 <?php
-require_once('application/models/Crud.php');
+namespace App\Entities;
+
+use App\Models\Crud;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the faculty table.
@@ -69,45 +72,43 @@ class Faculty extends Crud
 	protected function getDepartment()
 	{
 		$query = 'SELECT * FROM department WHERE faculty_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Department.php');
-		$resultObjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Department($value);
+    		$resultObjects[] = new \App\Entities\Department($value);
 		}
-
 		return $resultObjects;
 	}
 
 	protected function getProgramme()
 	{
 		$query = 'SELECT * FROM programme WHERE faculty_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Programme.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Programme($value);
+    		$resultObjects[] = new \App\Entities\Programme($value);
 		}
-
 		return $resultObjects;
 	}
 
 	public function getFacultyById($id)
 	{
-		$query = $this->db->get_where('faculty', array('id' => $id, 'active' => 1));
+		$query = $this->db->table('faculty')
+                  ->where('id', $id)->where('active', 1)
+                  ->get();
 
-		if ($query->num_rows() > 0) {
-			return $query->row();
+		if ($query->getNumRows() > 0) {
+			return $query->getRow();
 		} else {
 			return null;
 		}
@@ -115,11 +116,11 @@ class Faculty extends Crud
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'faculty_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('faculty_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'faculty_deletion', $currentUser->id, $id);
+			logAction($this->db, 'faculty_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -137,9 +138,9 @@ class Faculty extends Crud
 			$filterQuery .= " order by name asc ";
 		}
 
-		if ($len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+		if (isset($_GET['start']) && $len) {
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -150,9 +151,9 @@ class Faculty extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 

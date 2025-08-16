@@ -1,6 +1,7 @@
 <?php
-	
-require_once('application/models/Crud.php');
+namespace App\Entities;
+
+use App\Models\Crud;
 
 /**
  * This is a custom entity class different from the generated one that are mapped to the database table
@@ -16,7 +17,7 @@ class Admissions_programme_list extends Crud
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
-		$session = $this->input->get('session', true) ?? null;
+		$session = request()->getGet('session') ?? null;
 
 		if(!$session){
 			return [];
@@ -29,8 +30,8 @@ class Admissions_programme_list extends Crud
 		}
 
 		if ($len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery.=" limit $start, $len";
 		}
 
@@ -41,9 +42,9 @@ class Admissions_programme_list extends Crud
 		$query = "SELECT distinct SQL_CALC_FOUND_ROWS programme.* from programme $filterQuery";
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query,$filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2  = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res, $session);
 
 		return [$res,$res2];

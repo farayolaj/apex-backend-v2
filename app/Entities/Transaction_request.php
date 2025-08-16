@@ -1,7 +1,9 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/OutflowStatus.php';
+use App\Enums\OutflowStatusEnum as OutflowStatus;
+use App\Libraries\EntityLoader;
+use App\Models\Crud;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -357,21 +359,19 @@ class Transaction_request extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Request_type.php');
-		$resultObject = new Request_type($result[0]);
-		return $resultObject;
+		return new \App\Entities\Request_type($result[0]);
 	}
 
 	public function getPendingFundTransaction()
 	{
 		$query = "SELECT batch_ref from transaction_request where payment_status = ? and payment_status_description <> ? 
         and (rrr_code is not null or rrr_code != '') group by batch_ref";
-		return $this->query($query, ['00', OutflowStatus::SUCCESSFUL]);
+		return $this->query($query, ['00', OutflowStatus::SUCCESSFUL->value]);
 	}
 
 	public function getUserRequestByTransaction(string $batchRef)
 	{
-		loadClass($this->load, 'user_requests');
+		EntityLoader::loadClass($this, 'user_requests');
 		$query = "SELECT distinct a.id,a.request_no,a.title,a.user_id,a.request_id,a.amount,a.description,a.beneficiaries,
             a.deduction,a.withhold_tax,a.vat,a.stamp_duty,a.total_amount,a.request_status,a.project_task_id,a.feedback,
             a.date_approved,a.created_at,a.updated_at,a.action_timeline,a.stage,a.deduction_amount,a.retire_advance_doc,
@@ -404,12 +404,12 @@ class Transaction_request extends Crud
 			and a.payment_status_description = ?
 			GROUP BY months.month ORDER BY months.month ASC
 		";
-		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT]);
+		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT->value]);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 	public function getLast7DaysTransaction()
@@ -427,12 +427,12 @@ class Transaction_request extends Crud
 			and a.payment_status_description = ?
 			GROUP BY days.day ORDER BY days.day ASC
 		";
-		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT]);
+		$query = $this->db->query($query, [OutflowStatus::PENDING_CREDIT->value]);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 

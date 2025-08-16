@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Enums\CommonEnum as CommonSlug;
+
 trait CommonTrait
 {
     public static function isPaymentValid($value): bool

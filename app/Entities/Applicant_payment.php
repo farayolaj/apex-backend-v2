@@ -1,6 +1,10 @@
 <?php
-		require_once('application/models/Crud.php');
-		/**
+namespace App\Entities;
+
+use App\Models\Crud;
+use App\Libraries\EntityLoader;
+
+/**
 		* This class  is automatically generated based on the structure of the table. And it represent the model of the applicant_payment table.
 		*/
 		class Applicant_payment extends Crud
@@ -98,7 +102,7 @@ function getDate_createdFormField($value=''){
 
 public function getFeeDescription($description=null)
 {
-	loadClass($this->load,'fee_description');
+	EntityLoader::loadClass($this, 'fee_description');
 	$description = $description ? $description : $this->description;
 	$feeDesc = $this->fee_description->getWhere(['id'=>$description],$c,0,null,false);
 	$description = $feeDesc?$feeDesc[0]->description:null;
@@ -129,8 +133,8 @@ public function APIList($filterList, $queryString,$start,$len,$orderBy)
 	}
 
 	if ($len && isset($_GET['start'])) {
-		$start = $this->db->conn_id->escape_string($start);
-		$len = $this->db->conn_id->escape_string($len);
+		$start = $this->db->escapeString($start);
+		$len = $this->db->escapeString($len);
 		$filterQuery.=" limit $start, $len";
 	}
 
@@ -141,9 +145,9 @@ public function APIList($filterList, $queryString,$start,$len,$orderBy)
 	$query = "SELECT SQL_CALC_FOUND_ROWS applicant_payment.* from applicant_payment left join fee_description on fee_description.id = applicant_payment.description $filterQuery";
 	$query2 = "SELECT FOUND_ROWS() as totalCount";
 	$res = $this->db->query($query,$filterValues);
-	$res = $res->result_array();
+	$res = $res->getResultArray();
 	$res2  = $this->db->query($query2);
-	$res2 = $res2->result_array();
+	$res2 = $res2->getResultArray();
 	$res = $this->processList($res);
 
 	return [$res,$res2];
@@ -151,8 +155,8 @@ public function APIList($filterList, $queryString,$start,$len,$orderBy)
 
 private function processList($items)
 {
-	loadClass($this->load,'fee_description');
-	loadClass($this->load,'sessions');
+	EntityLoader::loadClass($this, 'fee_description');
+	EntityLoader::loadClass($this, 'sessions');
 	for ($i = 0; $i < count($items); $i++) {
 		$items[$i] = $this->loadExtras($items[$i]);
 	}

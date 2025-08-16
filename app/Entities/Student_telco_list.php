@@ -1,7 +1,7 @@
 <?php
+namespace App\Entities;
 
-require_once 'application/models/Crud.php';
-require_once APPPATH . 'constants/CommonSlug.php';
+use App\Models\Crud;
 
 /**
  * This class queries those who have paid for both RuS and SuS
@@ -39,8 +39,8 @@ class Student_telco_list extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -49,9 +49,9 @@ class Student_telco_list extends Crud
 		$query = "SELECT SQL_CALC_FOUND_ROWS a.id,a.firstname,a.lastname,a.othernames,a.gender,b.matric_number,a.telco_number,b.current_level as level,d.name as faculty from students a join academic_record b on b.student_id = a.id join programme c on c.id = b.programme_id left join faculty d on d.id = c.faculty_id $filterQuery";
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		if ($export) {
 			return [$res, $res2];
 		}

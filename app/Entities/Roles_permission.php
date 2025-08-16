@@ -1,7 +1,9 @@
 <?php
-
 namespace App\Entities;
+
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the roles_permission table.
@@ -112,24 +114,27 @@ class Roles_permission extends Crud
 	/**
 	 * Check if users has a role permission assigned to them *
 	 * @param  [type] $userID [description]
+	 * @return false [type]         [description]
 	 */
 	private function getUserRoleId($userID)
 	{
-		$query = $this->db->table('roles_user')->getWhere(array('user_id' => $userID));
+		$query = $this->db->table('roles_user')
+                  ->where('user_id', $userID)
+                  ->get();
 		if ($query->getNumRows() > 0) {
 			$user = $query->getRow();
 			return $user->role_id;
 		}
-		return null;
+		return false;
 	}
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'role_assign_permission_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('role_assign_permission_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'role_assign_permission_deletion', $currentUser->id, $id);
+			logAction($db, 'role_assign_permission_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -148,8 +153,8 @@ class Roles_permission extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -160,9 +165,9 @@ class Roles_permission extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		$res = $this->processList($res);
 
 		return [$res, $res2];
@@ -170,7 +175,7 @@ class Roles_permission extends Crud
 
 	private function processList($items)
 	{
-		loadClass($this->load, 'roles');
+		EntityLoader::loadClass($this, 'roles');
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i]);
 		}

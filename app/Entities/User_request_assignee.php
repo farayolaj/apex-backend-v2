@@ -1,6 +1,7 @@
 <?php
+namespace App\Entities;
 
-require_once('application/models/Crud.php');
+use App\Models\Crud;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -204,9 +205,7 @@ class User_request_assignee extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('Users_new.php');
-		$resultObject = new Users_new($result[0]);
-		return $resultObject;
+		return new \App\Entities\Users_new($result[0]);
 	}
 
 	protected function getUser_request()
@@ -220,9 +219,7 @@ class User_request_assignee extends Crud
 		if (!$result) {
 			return false;
 		}
-		include_once('User_requests.php');
-		$resultObject = new User_request($result[0]);
-		return $resultObject;
+		return new \App\Entities\User_requests($result[0]);
 	}
 
 

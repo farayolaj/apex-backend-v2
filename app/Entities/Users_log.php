@@ -1,5 +1,8 @@
 <?php
-require_once 'application/models/Crud.php';
+namespace App\Entities;
+
+use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the users_log table.
@@ -99,9 +102,9 @@ class Users_log extends Crud {
 	}
 
 	public function APIList($filterList, $queryString, $start, $len): array {
-		$q = $this->input->get('q', true) ?: false;
-		$action = $this->input->get('action', true);
-		$student = $this->input->get('student_id', true);
+		$q = request()->getGet('q') ?: false;
+		$action = request()->getGet('action');
+		$student = request()->getGet('student_id');
 
 		if ($action === 'remita_error') {
 			if ($q) {
@@ -136,8 +139,8 @@ class Users_log extends Crud {
 
 		$filterQuery .= " order by id desc";
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -159,8 +162,8 @@ class Users_log extends Crud {
 
 		$filterQuery .= " order by id desc";
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -184,13 +187,13 @@ class Users_log extends Crud {
 	}
 
 	private function loadExtras($item) {
-		if (isset($item['new_data']) && !empty($item['new_data'])) {
+		if (!empty($item['new_data'])) {
 			$data = json_decode($item['new_data'], true);
 			$rawData = $data['raw_data'];
 
-			$userType = isset($data['user_type']) ? $data['user_type'] : 'students';
+			$userType = $data['user_type'] ?? 'students';
 			if ($userType === 'students') {
-				loadClass($this->load, 'students');
+				EntityLoader::loadClass($this, 'students');
 				if ($item['student_id']) {
 					$student = $this->students->getWhere(['id' => $item['student_id']], $count, 0, 1, false);
 					if ($student) {
@@ -207,7 +210,7 @@ class Users_log extends Crud {
 			}
 
 			if ($userType === 'non-students') {
-				loadClass($this->load, 'users_custom');
+				EntityLoader::loadClass($this, 'users_custom');
 				if ($item['student_id']) {
 					$users = $this->users_custom->getWhere(['id' => $item['student_id']], $count, 0, 1, false);
 					if ($users) {
@@ -224,7 +227,7 @@ class Users_log extends Crud {
 			}
 
 			if ($userType === 'applicants') {
-				loadClass($this->load, 'applicants');
+				EntityLoader::loadClass($this, 'applicants');
 				if ($item['student_id']) {
 					$applicants = $this->applicants->getWhere(['applicant_id' => $item['student_id']], $count, 0, 1, false);
 					if ($applicants) {

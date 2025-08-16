@@ -31,11 +31,8 @@ class CorsFilter implements FilterInterface
         $allowed_domains = array(
             'http://127.0.0.1',
             'http://localhost:8080',
-            'http://localhost/gig/nairaboom/public',
-            'https://staging.nairaboom.ng',
-            'https://admin.nairaboom.ng',
-            'https://www.staging.nairaboom.ng',
-            'https://www.admin.nairaboom.ng',
+            'http://localhost:8083',
+            'https://apex.ui.edu.ng',
         );
         // this below code work on local server localhost:8080
         if (in_array($origin, $allowed_domains)) {

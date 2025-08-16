@@ -5,19 +5,23 @@
 
 namespace App\Models\Api;
 
+use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
+use App\Models\Api\EntityCreator;
 use App\Traits\EntityListTrait;
+use App\Traits\UploadTrait;
+use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Model;
 use App\Models\Api\EntityDetails;
-use App\Models\Api\EntityCreator;
 use App\Models\FormConfig;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class EntityModel
 {
-    use EntityListTrait;
+    use EntityListTrait, UploadTrait;
 
-    protected $db;
+    protected BaseConnection $db;
 
     private string $crudNameSpace = 'App\Models\Crud';
 
@@ -41,62 +45,60 @@ class EntityModel
                 // this handles /entity GET, will get list of entities and POST will insert a new one
                 if ($this->request->getMethod() === 'GET') {
                     // intercept/overload similar GET method that exist and call it first
-                    // the idea is to overload a method that work directly with the entity[APIList]
-                    // such that we can manually define the method that will be called.
+                    // the idea is to overload a method that work directly with the entity[APIList] method
+                    // such that we can manually define the method in webApiModel where it would be called.
                     if ($entityObject && is_callable([$entityObject, $entity])) {
                         return $entityObject->$entity($args);
                     } else {
                         $result = $this->listEntity($entity);
-                        return sendApiResponse(true, 'success', $result);
+                        return ApiResponse::success('Success', $result);
                     }
 
                 } elseif ($this->request->getMethod() === 'POST') {
                     return $this->insert($entity);
                 }
-                return;
+                return null;
             }
 
             if (count($args) == 1) {
-                // this handles entity detail view  and update
+                // this handles entity detail view and update
                 if (is_numeric($args[0])) {
                     if ($this->request->getMethod() === 'GET') {
-                        $param = $this->request->getGet(null);
+                        $param = $this->request->getGet();
                         $id = $args[0];
                         $result = $this->detail($entity, $id, $param);
                         if (!$result) {
-                            return sendApiResponse(false, 'sorry no data available');
+                            return ApiResponse::error('No data available');
                         }
-                        return sendApiResponse(true, 'success', $result);
+                        return ApiResponse::success('Success', $result);
                     } elseif ($this->request->getMethod() === 'POST') {
-                        $values = $this->request->getPost(null);
+                        $values = $this->request->getPost();
                         $id = $args[0];
                         $this->update($entity, $id, $values);
                     }
-                    return;
+                    return null;
                 } else {
                     if (strtolower($args[0]) == 'bulk_upload') {
                         $message = '';
                         $this->processBulkUpload($entity, $message);
-                        return;
+                        return null;
                     }
                 }
-                return;
+                return null;
             }
 
             if (count($args) == 2 && is_numeric($args[1])) {
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                if ($this->request->getMethod() === 'POST') {
                     if (strtolower($args[0]) == 'delete') {
                         $id = $args[1];
                         if ($this->delete($entity, $id)) {
-                            displayJson(true, 'success');
-                            return;
+                            return ApiResponse::success('Success');
                         }
-                        displayJson(false, 'unable to delete item');
-                        return;
+                        return ApiResponse::error('Unable to delete item');
                     }
 
-                    # handle the issue with the status
-                    if (strtolower($args[0]) == 'disable' || strtolower($args[0]) == 'remove' || strtolower($args[0]) == 'enable') {
+                    // handle the issue with the status
+                    if (strtolower($args[0]) == 'disable' || strtolower($args[0]) == 'enable') {
                         $operation = $args[0];
                         $id = $args[1];
                         $status = false;
@@ -105,23 +107,59 @@ class EntityModel
                         } else {
                             $status = $this->enable($entity, $id);
                         }
-                        displayJson($status, $status ? 'success' : 'unable to delete item');
+                        return $status ? ApiResponse::success('Success') : ApiResponse::error('Unable to disable item');
+                    }
 
+                    if (strtolower($args[0]) == 'toggle_action') {
+                        $operation = $args[0];
+                        $id = $args[1];
+                        $status = false;
+                        $values = $this->request->getPost(null);
+                        if ($operation === 'toggle_action') {
+                            $status = $this->updateEntityAction($entity, $id, $values);
+                        }
+                        return $status ? ApiResponse::success('Success') : ApiResponse::error('Unable to update item');
                     }
 
                 }
-                return;
+                return null;
             }
 
-            return $this->response->setStatusCode(404)->setJSON(['status' => false, 'message' => 'resource not found']);
+            if (count($args) == 3 && is_numeric($args[2])) {
+                if ($this->request->getMethod() === 'POST') {
+                    if (strtolower($args[0]) == 'delete') {
+                        $type = $args[1];
+                        $id = $args[2];
+                        if ($this->delete($entity, $id, $type)) {
+                            return ApiResponse::success('Success');
+                        }
+                        return ApiResponse::error('Unable to delete item');
+                    }
+
+                    // handle the issue with the status
+                    if (strtolower($args[0]) == 'disable' || strtolower($args[0]) == 'enable') {
+                        $operation = $args[0];
+                        $id = $args[1];
+                        $status = false;
+                        if ($operation == 'disable') {
+                            $status = $this->disable($entity, $id);
+                        } else {
+                            $status = $this->enable($entity, $id);
+                        }
+                        return $status ? ApiResponse::success('Success') : ApiResponse::error('Unable to disable item');
+                    }
+                }
+                return null;
+            }
+
+            return ApiResponse::error('Resource not found', null, 404);
         } catch (\Exception $e) {
-            displayJson(false, $e->getMessage());
-            return;
+            return ApiResponse::error($e->getMessage());
         }
 
     }
 
-    private function validateHeader(string $entity, array $header)
+    private function validateHeader(string $entity, array $header): bool
     {
         $entity = loadClass($entity);
         return $entity::$bulkUploadField == $header;
@@ -131,56 +169,24 @@ class EntityModel
     {
         $entity = loadClass($entity);
         $message = 'success';
-        $content = $this->loadUploadedFileContent($message);
+        $content = $this->getUploadedFileContent($message);
         if (!$content) {
-            displayJson(false, 'not uploaded content found');
-            return false;
+            return ApiResponse::error('Not uploaded content found');
         }
         $content = trim($content);
         $array = stringToCsv($content);
         $header = array_shift($array);
         if (!$this->validateHeader($entity, $header)) {
             $message = 'column does not match, please check the column template and try again';
-            displayJson(false, $message);
-            return false;
+            return ApiResponse::error($message);
         }
         $result = $entity->bulkUpload($header, $array, $message);
-        displayJson($result, $message);
+        return $result ? ApiResponse::success($message) : ApiResponse::error($message);
     }
 
-    private function loadUploadedFileContent(string &$message)
+    private function getUploadedFileContent(string &$message): bool|string
     {
-        $filename = 'upload_form';
-        $status = $this->checkFile($filename, $message);
-        if (!$status) {
-            return false;
-        }
-        if (!endsWith($_FILES[$filename]['name'], '.csv')) {
-            $message = "invalid file format";
-            return false;
-        }
-        $path = $_FILES[$filename]['tmp_name'];
-        $content = file_get_contents($path);
-        return $content;
-    }
-
-    private function checkFile(string $name, string &$message = null)
-    {
-        $error = !$_FILES[$name]['name'] || $_FILES[$name]['error'];
-        if ($error) {
-            if ((int)$error === 2) {
-                $message = 'file larger than expected';
-                return false;
-            }
-            return false;
-        }
-
-        if (!is_uploaded_file($_FILES[$name]['tmp_name'])) {
-            $this->db->transRollback();
-            $message = 'uploaded file not found';
-            return false;
-        }
-        return true;
+        return self::loadUploadedFileContent('upload_form', false, $message);
     }
 
     private function delete(string $entity, int $id): bool
@@ -202,34 +208,44 @@ class EntityModel
         if (method_exists($entityDetails, $methodName)) {
             return $entityDetails->$methodName($id);
         }
-        $entity = loadClass($entity);
-        $entity->id = $id;
-        if ($entity->load()) {
-            return $entity->toArray();
+        EntityLoader::loadClass($this, $entity);
+        $this->$entity->id = $id;
+        if ($this->$entity->load()) {
+            return $this->$entity->toArray();
         }
-        return false;
+        return null;
     }
 
     public function disable(string $model, int $id)
     {
         $this->db->transBegin();
-        $model = loadClass($model);
+        EntityLoader::loadClass($this, $model);
         //check that model is actually a subclass
-        if (!(empty($id) === false && is_subclass_of($model, $this->crudNameSpace))) {
-            return false;
+        if (!(empty($id) === false && is_subclass_of($this->$model, $this->crudNameSpace))) {
+            return null;
         }
-        return $model->disable($id, $this->db);
+        return $this->$model->disable($id, $this->db);
     }
 
     public function enable(string $model, int $id)
     {
         $this->db->transBegin();
-        $model = loadClass($model);
+        EntityLoader::loadClass($this, $model);
         //check that model is actually a subclass
-        if (!(empty($id) === false && is_subclass_of($model, $this->crudNameSpace))) {
+        if (!(empty($id) === false && is_subclass_of($this->$model, $this->crudNameSpace))) {
             return false;
         }
-        return $model->enable($id, $this->db);
+        return $this->$model->enable($id, $this->db);
+    }
+
+    public function updateEntityAction(string $entity, int $id, array $param)
+    {
+        $entityCreator = new EntityCreator($this->request);
+        EntityLoader::loadClass($this, $entity);
+        if (method_exists($this->$entity, 'transformUpdateData')) {
+            $param = $this->$entity->transformUpdateData($param);
+        }
+        return $entityCreator->updateAction($entity, $id, $param);
     }
 
     /**
@@ -243,12 +259,12 @@ class EntityModel
     {
         $entityCreator = new EntityCreator($this->request);
         $tempEntity = $entity;
-        $entity = loadClass($entity);
+        EntityLoader::loadClass($this, $entity);
 
-        if (property_exists($entity, 'allowedFields')) {
-            $allowParam = $entity::$allowedFields;
+        if (property_exists($this->$entity, 'allowedFields')) {
+            $allowParam = $this->$entity::$allowedFields;
             if (!$this->validateAllowedParameter($param, $allowParam)) {
-                return sendApiResponse(false, 'allowed parameters for update are:', ['parameters' => $allowParam]);
+                return ApiResponse::error('Allowed parameters for update are:', ['parameters' => $allowParam]);
             }
         }
         return $entityCreator->update($tempEntity, $id, true, $param);

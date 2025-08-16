@@ -6,6 +6,9 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
+// this is the api for finance sync between server[UI Admission]
+//$routes->get('api/integrations/finance/v1/transaction', 'FinanceIntegration::getTransactionData');
+
 $routes->post('api/authenticate', 'Auth::student', ['filter' => 'apiValidation:student']);
 $routes->post('api/validate_student', 'Auth::validate_student', ['filter' => 'apiValidation:student']);
 $routes->get('api/baseUrl', 'AjaxData::baseUrl');

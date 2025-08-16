@@ -1,5 +1,8 @@
 <?php
-require_once('application/models/Crud.php');
+namespace App\Entities;
+
+use App\Models\Crud;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the sessions table.
@@ -64,11 +67,11 @@ class Sessions extends Crud
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'session_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('session_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'session_deletion', $currentUser->id, $id);
+			logAction($db, 'session_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -88,10 +91,12 @@ class Sessions extends Crud
 
 	public function getSessionIdByDate($date)
 	{
-		$query = $this->db->get_where('sessions', array('date' => $date, 'active' => 1));
+		$query = $this->db->table('sessions')
+                  ->where('date', $date)->where('active', 1)
+                  ->get();
 
-		if ($query->num_rows() > 0) {
-			$row = $query->row();
+		if ($query->getNumRows() > 0) {
+			$row = $query->getRow();
 			return $row->id;
 		} else {
 			return '';
@@ -111,35 +116,35 @@ class Sessions extends Crud
 	public function getTransactionSession(){
 		$orderBy = " value desc";
 		if (isset($_GET['sortBy'])) {
-			$sortBy = $this->input->get('sortBy', true);
-			$sortDirection = $this->input->get('sortDirection', true);
+			$sortBy = request()->getGet('sortBy', true);
+			$sortDirection = request()->getGet('sortDirection', true);
 			$sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
 			$orderBy = " $sortBy $sortDirection ";
 		}
 		$query = "SELECT a.id,a.date as value from sessions a left join transaction b on b.session = a.id where a.active = '1' group by id, value order by $orderBy";
 		$query = $this->db->query($query);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 	public function getCompleteTransactionSession(){
 		$orderBy = " value desc";
 		if (isset($_GET['sortBy'])) {
-			$sortBy = $this->input->get('sortBy', true);
-			$sortDirection = $this->input->get('sortDirection', true);
+			$sortBy = request()->getGet('sortBy', true);
+			$sortDirection = request()->getGet('sortDirection', true);
 			$sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
 			$orderBy = " $sortBy $sortDirection ";
 		}
 		$query = "SELECT a.id,a.date as value from sessions a join transaction b on b.session = a.id where a.active = '1' group by id, value order by $orderBy";
 		$query = $this->db->query($query);
 		$result = [];
-		if ($query->num_rows() <= 0) {
+		if ($query->getNumRows() <= 0) {
 			return $result;
 		}
-		return $query->result_array();
+		return $query->getResultArray();
 	}
 
 }

@@ -14,8 +14,8 @@ trait EntityListTrait
     public function list(string $entity, array $extraFilter = []): array
     {
         $totalLength = 0;
-        $orderBy = 'ID asc';
-        $param = request()->getGet(null);
+        $orderBy = 'ID desc';
+        $param = request()->getGet();
 
         // get the parameter for paging
         $start = array_key_exists('start', $_GET) ? $param['start'] : 0;
@@ -64,12 +64,28 @@ trait EntityListTrait
         $toReturn = array();
         if (empty($data)) {
             return [
-                'length' => 0,
+                'paging' => 0,
                 'table_data' => null,
             ];
         }
         $paging = ($data[1] && is_array($data[1])) ? $data[1][0]['totalCount'] : $data[1];
-        $toReturn['length'] = (int)$paging;
+        $toReturn['paging'] = (int)$paging;
+        $toReturn['table_data'] = $data[0];
+
+        return $toReturn;
+    }
+
+    public function buildExternalApiListResponse(array $data): array
+    {
+        $toReturn = array();
+        if (empty($data)) {
+            return [
+                'total' => 0,
+                'table_data' => null,
+            ];
+        }
+        $paging = ($data[1] && is_array($data[1])) ? $data[1][0]['totalCount'] : $data[1];
+        $toReturn['total'] = (int)$paging;
         $toReturn['table_data'] = $data[0];
 
         return $toReturn;

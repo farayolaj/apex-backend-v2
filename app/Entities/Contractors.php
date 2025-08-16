@@ -1,6 +1,8 @@
 <?php
+namespace App\Entities;
 
-require_once('application/models/Crud.php');
+use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -220,8 +222,8 @@ class Contractors extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -233,9 +235,9 @@ class Contractors extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 
@@ -248,7 +250,7 @@ class Contractors extends Crud
 			$id = $this->array["id"];
 		}
 		$db = $this->db;
-		loadClass($this->load, 'users_new');
+		EntityLoader::loadClass($this, 'users_new');
 		if (!($contractor = $this->users_new->getRealUserInfo($id, 'contractors', 'contractor'))) {
 			throw new Exception("Unable to find contractor");
 		}
@@ -265,7 +267,7 @@ class Contractors extends Crud
 			$id = $this->array["id"];
 		}
 		$db = $this->db;
-		loadClass($this->load, 'users_new');
+		EntityLoader::loadClass($this, 'users_new');
 		if (!($contractor = $this->users_new->getRealUserInfo($id, 'contractors', 'contractor'))) {
 			throw new Exception("Unable to find contractor");
 		}

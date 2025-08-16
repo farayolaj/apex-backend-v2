@@ -4,12 +4,10 @@ namespace App\Controllers;
 
 use App\Entities\Staffs;
 use App\Entities\Students;
-use App\Enums\AuthEnum;
+use App\Enums\AuthEnum as AuthType;
 use App\Models\Mailer;
 use App\Models\WebSessionManager;
-use CodeIgniter\HTTP\RedirectResponse;
 use Exception;
-use App\Enums\AuthEnum as AuthType;
 
 /**
  * This is the authentication class handler for the web
@@ -89,8 +87,25 @@ class Auth extends BaseController
         if (!$user) {
             return false;
         }
+        $userDetails = $this->getUserDetails($user);
         $payload = $user->toArray() ?? null;
+        $payload['user_department'] = null;
         $userID = $user->id;
+        $loginType = 'admin';
+
+        if ($userDetails) {
+            $payload = array_merge($payload, $userDetails->toArray());
+            if ($userDetails->user_department && $userDetails->user_department != 0) {
+                $department = $this->getUserDepartment($userDetails->user_department);
+                if ($department) {
+                    $payload['user_department'] = [
+                        'id' => $department->id,
+                        'name' => $department->name,
+                    ];
+                    $loginType = 'department';
+                }
+            }
+        }
         $payload['id'] = $userID;
         unset($payload['user_pass'], $payload['password']);
 
@@ -99,8 +114,14 @@ class Auth extends BaseController
         $arr = [
             'token' => generateJwtToken($payload),
             'profile' => $payload,
+            'login_type' => $loginType
         ];
         return sendApiResponse(true, "You've successfully logged in", $arr);
+    }
+
+    private function getUserDepartment($user_department)
+    {
+        return $this->db->table('department')->where(['id' => $user_department, 'type' => 'academic'])->get()->getRow();
     }
 
     /**

@@ -10,7 +10,7 @@ use CodeIgniter\Router\RouteCollection;
 
 // this is test controller
 
-//$routes->add('web/tester','tester/test');
+$routes->post('tester/code','Tester::test', ['filter' => ['cors', 'apiValidation:admin']]);
 
 // this routes is for reporting controller
 $routes->post('web/senate_export_html/(:any)/(:any)/(:any)/(:any)/(:any)', 'Report::senateResponseHtml/$1/$2/$3/$4/$5');

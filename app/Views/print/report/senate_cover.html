@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		#pageNumber:after {
+			content: "Page " counter(page);
+			counter-increment: page;
+		}
+
+		@media screen {
+			.page-header, .page-header-space, .page-footer, .page-footer-space {
+				display: none;
+			}
+		}
+
+		@media all {
+			.page-break {
+				display: none;
+			}
+		}
+
+		@media print {
+			table {
+				page-break-after: auto
+			}
+
+			tr {
+				page-break-inside: avoid;
+				page-break-after: auto
+			}
+
+			td {
+				page-break-inside: avoid;
+				page-break-after: auto
+			}
+		}
+
+		.page-header, .page-header-space {
+			height: 178px;
+			background: #fff;
+		}
+
+		.page-footer, .page-footer-space {
+			height: 198px;
+			background: #fff;
+
+		}
+
+		.page-footer {
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+		}
+
+		.page-header {
+			position: fixed;
+			top: 0mm;
+			width: 100%;
+		}
+
+		@page {
+			margin: 5mm;
+		}
+
+		@media print {
+			thead {
+				display: table-header-group;
+			}
+
+			tfoot {
+				display: table-footer-group;
+			}
+
+			button {
+				display: none;
+			}
+
+			body {
+				margin: 0;
+			}
+		}
+	</style>
+</head>
+<body>
+
+<button onClick="history.back()"
+		style="width: 250px; padding: 10px; height: 45px; font-size: 22px; background: #000000; color: #FFFFFF; border: none; cursor: pointer">
+	GO BACK
+</button>
+<button onClick="window.print()"
+		style="width: 250px; padding: 10px; height: 45px; font-size: 22px; background: blue; color: #FFFFFF; border: none; cursor: pointer">
+	PRINT
+</button>
+
+<div class="page-header">
+	<table width="1200" cellpadding="0" cellspacing="0">
+		<tbody>
+		<tr>
+			<td>
+				<table width="700">
+					<tbody>
+					<tr>
+						<td width="110"><img src="{institution_logo}" alt="ui-logo-min" height="100"></td>
+						<td width="594">
+							<table width="583">
+								<tbody>
+								<tr>
+									<td width="579" style="font-size:14px;"><strong>UNIVERSITY OF IBADAN</strong></td>
+								</tr>
+								<tr>
+									<td style="font-size:14px;"><strong>Distance Learning Centre</strong></td>
+								</tr>
+								<tr>
+									<td style="font-size:14px;"><strong>DEPARTMENT OF {department}</strong></td>
+								</tr>
+								<tr>
+									<td style="font-size:14px;"><strong>{level} {session} ACADEMIC SESSION</strong></td>
+								</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><span id="pageNumber"></span></td>
+		</tr>
+		</tbody>
+	</table>
+	<table width="1200" border="0" cellspacing="6" cellpadding="2" style="font-size: 14px;">
+		<tbody>
+		<tr>
+			<td align="left"><strong>{programme}</strong></td>
+			<td align="right"><strong>{date_time}</strong></td>
+		</tr>
+		</tbody>
+	</table>
+	<table>
+		<tbody>
+		<tr>
+			<td>
+				<table width="1200" style="font-size: 12px; border:none" cellpadding="0" cellspacing="0">
+					<tbody>
+
+					<tr>
+						<td width="40" height="20" align="center" style="border: 1px solid #000000"><strong>S/N</strong>
+						</td>
+						<td width="65" style="border: 1px solid #000000"><strong>&nbsp;&nbsp;&nbsp;CODE</strong></td>
+						<td width="550" style="border: 1px solid #000000"><strong>&nbsp;&nbsp;&nbsp;COURSE
+							TITLE</strong></td>
+						<td width="45" align="center" style="border: 1px solid #000000"><strong>UNIT</strong></td>
+						<td width="80" align="center" style="border: 1px solid #000000"><strong>STATUS</strong></td>
+						<td width="80" align="center" style="border: 1px solid #000000"><strong>% PASSED</strong></td>
+						<td width="80" align="center" style="border: 1px solid #000000"><strong>% FAILED</strong></td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<div class="page-footer">
+	<table width="940" border="0" cellspacing="2" cellpadding="0" align="center">
+		<tbody>
+		<tr>
+			<td colspan="7" align="center"><strong>SUMMARY</strong>
+				<hr style="border: 1px solid #000000">
+			</td>
+		</tr>
+		<tr>
+			<td width="59">&nbsp;</td>
+			<td width="147">&nbsp;</td>
+			<td width="147">&nbsp;</td>
+			<td width="221" align="right"><strong>Total Number of Students</strong>&nbsp;&nbsp;</td>
+			<td width="77">{total_registered}</td>
+			<td width="143">&nbsp;</td>
+			<td width="146">&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="7">
+				<table width="940" border="0" cellspacing="0" cellpadding="0">
+					<tbody>
+					<tr>
+						<td width="315">
+							<table width="300" cellspacing="0" cellpadding="0"
+								   style="border: 1px solid #000000; font-size: 12px">
+								<tbody>
+								<tr>
+									<td width="200" style="border: 1px solid #000000">&nbsp;&nbsp;Total Number That
+										Passed
+									</td>
+									<td align="center" width="40" style="border: 1px solid #000000">0</td>
+									<td align="center" width="60" style="border: 1px solid #000000">0</td>
+								</tr>
+								<tr>
+									<td style="border: 1px solid #000000">&nbsp;&nbsp;Total Number With COVs Only</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+								</tr>
+								<tr>
+									<td style="border: 1px solid #000000">&nbsp;&nbsp;Total Number With OUTs Only</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+								</tr>
+								</tbody>
+							</table>
+						</td>
+						<td width="324">
+							<table width="300" cellspacing="0" cellpadding="0"
+								   style="border: 1px solid #000000; font-size: 12px">
+								<tbody>
+								<tr>
+									<td width="200" style="border: 1px solid #000000">&nbsp;&nbsp;Total Number With COVs
+										/ OUTs
+									</td>
+									<td align="center" width="40" style="border: 1px solid #000000">0</td>
+									<td align="center" width="60" style="border: 1px solid #000000">0</td>
+								</tr>
+								<tr>
+									<td style="border: 1px solid #000000">&nbsp;</td>
+									<td align="center" style="border: 1px solid #000000">&nbsp;</td>
+									<td align="center" style="border: 1px solid #000000">&nbsp;</td>
+								</tr>
+								<tr>
+									<td style="border: 1px solid #000000">&nbsp;&nbsp;Total Number Not Registered</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+								</tr>
+								</tbody>
+							</table>
+						</td>
+						<td width="301">
+							<table width="300" cellspacing="0" cellpadding="0"
+								   style="border: 1px solid #000000; font-size: 12px">
+								<tbody>
+								<tr>
+									<td width="200" style="border: 1px solid #000000">&nbsp;&nbsp;Total Number On
+										Probation
+									</td>
+									<td align="center" width="40" style="border: 1px solid #000000">0</td>
+									<td align="center" width="60" style="border: 1px solid #000000">0</td>
+								</tr>
+								<tr>
+									<td style="border: 1px solid #000000">&nbsp;&nbsp;Total Number With Withdrawn</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+								</tr>
+								<tr>
+									<td style="border: 1px solid #000000">&nbsp;&nbsp;Total Number Blocked</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+									<td align="center" style="border: 1px solid #000000">0</td>
+								</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td>&nbsp;</td>
+						<td>&nbsp;</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td align="center">_________________________________<br> <br><strong style="text-align: center">Exam.
+							Officer</strong></td>
+						<td align="center">_________________________________<br> <br><strong style="text-align: center">H.O.D</strong>
+						</td>
+						<td align="center">_________________________________<br> <br><strong style="text-align: center">Director</strong>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<table>
+
+	<thead>
+	<tr>
+		<td>
+			<!--place holder for the fixed-position header-->
+			<div class="page-header-space"></div>
+		</td>
+	</tr>
+	</thead>
+
+	<tbody>
+	<tr>
+		<td>
+			<!--*** CONTENT GOES HERE ***-->
+			<table width="1200" style="font-size: 12px; border:none" cellpadding="0" cellspacing="0">
+				<tbody>
+				{courses}
+				<tr>
+					<td width="40" height="20" align="center" style="border: 1px solid #000000">{count}</td>
+					<td width="65" style="border: 1px solid #000000">&nbsp;&nbsp;&nbsp;{course_code}</td>
+					<td width="550" style="border: 1px solid #000000">&nbsp;&nbsp;&nbsp;{course_title}</td>
+					<td width="45" align="center" style="border: 1px solid #000000">{course_unit}</td>
+					<td width="80" align="center" style="border: 1px solid #000000">&nbsp;&nbsp;&nbsp;{course_status}
+					</td>
+					<td width="80" align="center" style="border: 1px solid #000000">&nbsp;&nbsp;&nbsp;{percent_passed}
+					</td>
+					<td width="80" align="center" style="border: 1px solid #000000">{percent_failed}</td>
+				</tr>
+				{/courses}
+				<tr>
+					<td height="20" colspan="3" align="right" style="border: none">Total Number of Units&nbsp;&nbsp;&nbsp;</td>
+					<td align="center" style="border: 1px solid #000000">{total_unit}</td>
+					<td colspan="3" style="border: none">&nbsp;</td>
+				</tr>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+	</tbody>
+
+	<tfoot>
+	<tr>
+		<td>
+			<!--place holder for the fixed-position footer-->
+			<div class="page-footer-space"></div>
+		</td>
+	</tr>
+	</tfoot>
+
+</table>
+
+</body>
+</html>

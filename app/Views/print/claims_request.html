@@ -1,0 +1,482 @@
+<html>
+<head>
+	<title></title>
+	<style>
+		.table-space {
+			height: 25px;
+		}
+
+		@media print {
+			table {
+				page-break-after: auto;
+			}
+
+			tr {
+				page-break-inside: avoid;
+				page-break-after: auto;
+			}
+
+			td {
+				page-break-inside: avoid;
+				page-break-after: auto;
+			}
+		}
+
+		@page {
+			margin: 5mm;
+		}
+
+		@media print {
+			thead {
+				display: table-header-group;
+			}
+
+			tfoot {
+				display: table-footer-group;
+			}
+
+			button {
+				display: none;
+			}
+
+			body {
+				margin: 0;
+			}
+		}
+	</style>
+</head>
+
+<body
+	style="
+      font-size: 12pt;
+      font-family: Lato, sans-serif;
+      color: #000000;
+      background-color: transparent;
+      font-weight: 700;
+      font-style: normal;
+      font-variant: normal;
+      text-decoration: none;
+      vertical-align: baseline;
+    "
+>
+<button
+	onClick="history.back()"
+	style="
+        width: 250px;
+        padding: 10px;
+        height: 45px;
+        font-size: 22px;
+        background: #000000;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+      "
+>
+	GO BACK
+</button>
+<button
+	onClick="window.print()"
+	style="
+        width: 250px;
+        padding: 10px;
+        height: 45px;
+        font-size: 22px;
+        background: blue;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+      "
+>
+	PRINT
+</button>
+<div>
+	<div class="table-space"></div>
+	<table width="950" align="center" border="0" style="font-size: 12px">
+		<tbody>
+		<tr>
+		<tr>
+			<td colspan="3" align="center" style="font-size: 14px">
+				<strong>DISTANCE LEARNING CENTRE, NIGERIA</strong>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="center" style="font-size: 14px">
+				<strong>UNIVERSITY OF IBADAN, </strong>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="center" style="font-size: 14px">
+				<strong>CLAIMS FOR INTERACTIVE REVISION, TEACHING/EXAMS, TEACHING</strong>
+			</td>
+		</tr>
+		</tr>
+		</tbody>
+	</table>
+
+	<div class="table-space"></div>
+
+	<table width="950" border="0" style="font-size: 12px">
+		<tbody>
+		<tr>
+			<td>Claim No.: {claim_no}</td>
+		</tr>
+		<tr>
+			<td style="padding-left: 15pt;">
+				<table
+					border="0"
+					style="
+                border: none;
+                width: 100%;
+                font-family: Verdana, Arial, Helvetica, sansserif;
+                font-size: 11pt;
+              "
+					cellpadding="4px"
+				>
+					<tr>
+						<table border="0" style="font-size: 12px;">
+							<tr>
+								<td>Name:</td>
+								<td>
+									<table border="0" style="font-size: 12px;">
+										<tr>
+											<td
+												width="212"
+												style="border-bottom: 1px dotted #000000; padding-bottom: 0"
+											>
+												<span>{firstname}</span>
+											</td>
+											<td
+												widht="196"
+												style="border-bottom: 1px dotted #000000; padding-bottom: 0"
+											>
+												<span>{middlename}</span>
+											</td>
+											<td
+												widht="224"
+												style="border-bottom: 1px dotted #000000; padding-bottom: 0"
+											>
+												<span>{lastname}</span>
+											</td>
+										</tr>
+										<tr>
+											<td width="212" style="padding: 0 0 5px 5px; font-size: 8pt">
+												First
+											</td>
+											<td width="196" style="padding: 0 0 5px 5px; font-size: 8pt">
+												Middle
+											</td>
+											<td width="224" style="padding: 0 0 5px 5px; font-size: 8pt">
+												Last
+											</td>
+										</tr>
+									</table>
+								</td>
+								<td></td>
+								<td></td>
+								<td>
+									<table border="0" style="font-size: 12px;">
+										<tr>
+											<td width="40" style="padding-left: 16pt;padding-top:0pt;">Session:</td>
+											<td width="100" style="border-bottom: 1px dotted #000000;text-align: center;">
+												{session}
+											</td>
+										</tr>
+										<tr><td>&nbsp;</td></tr>
+										<tr>
+											<td width="40" style="padding-left: 16pt;">Semester:</td>
+											<td width="100" style="border-bottom: 1px dotted #000000;text-align: center;">
+											</td>
+										</tr>
+										<tr><td>&nbsp;</td></tr>
+										<tr>
+											<td width="60" style="padding-left: 16pt;">Print Date:</td>
+											<td width="100" style="border-bottom: 1px dotted #000000;text-align: center;">
+												{print_date}
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
+	<table width="550" border="0" align="" style="font-size: 12px">
+		<tbody>
+		<tr>
+			<td width="140" style="padding-left: 16pt">1. Address/Department:</td>
+			<td style="border-bottom: 1px dotted #000000; max-width: 50px">
+				{address}
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td width="140" style="padding-left: 16pt">2. Staff Number:</td>
+			<td style="border-bottom: 1px dotted #000000; max-width: 50px">
+				{staff_no}
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td width="140" style="padding-left: 16pt">3. Email address:</td>
+			<td style="border-bottom: 1px dotted #000000; max-width: 50px">
+				{email}
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td width="140" style="padding-left: 16pt">4. Telephone number:</td>
+			<td style="border-bottom: 1px dotted #000000; max-width: 50px">
+				{phone}
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td width="140" style="padding-left: 16pt">5. Bank name:</td>
+			<td style="border-bottom: 1px dotted #000000; max-width: 50px">
+				{bank_name}
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td width="140" style="padding-left: 16pt">6. Account number:</td>
+			<td style="border-bottom: 1px dotted #000000; max-width: 50px">
+				{account_number}
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td width="140" style="padding-left: 26pt">Branch:</td>
+			<td style="border-bottom: 1px dotted #000000; max-width: 50px">
+				{branch}
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+		<tr>
+			<td width="140" style="padding-left: 26pt">Sort code:</td>
+			<td style="border-bottom: 1px dotted #000000; max-width: 50px">
+				{sort}
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
+	<table>
+		<thead>
+		<tr>
+			<td>
+				<!--place holder for the fixed-position header-->
+				<div class="table-space"></div>
+			</td>
+		</tr>
+		</thead>
+	</table>
+	<table
+		width="950"
+		style="
+        font-size: 12px;
+        border: 1px solid #000000;
+        border-collapse: collapse;
+      "
+		cellpadding="0"
+		cellspacing="0"
+	>
+		<thead>
+		<tr style="font-weight: 600;">
+			<td
+				width="40"
+				height="20"
+				align="center"
+				style="border: 1px solid #000000";border-collapse: collapse;"
+			>
+			<span>S/N</span>
+			</td>
+			<td width="180" style="border: 1px solid #000000">
+				<span>&nbsp;&nbsp;&nbsp;</span>
+			</td>
+			<td width="100" align="center" style="border: 1px solid #000000">
+				<span>Course Title</span>
+			</td>
+			<td width="80" align="center" style="border: 1px solid #000000">
+				<span>Course Code</span>
+			</td>
+			<td
+				width="80"
+				height="70"
+				align="center"
+				style="border: 1px solid #000000"
+			>
+				<span>Number of Scripts/Students</span>
+			</td>
+			<td width="45" align="center" style="border: 1px solid #000000">
+				<span>Rate/Hour</span>
+			</td>
+			<td width="55" align="center" style="border: 1px solid #000000">
+				<span>N</span>
+			</td>
+			<td width="55" align="center" style="border: 1px solid #000000">
+				<span>K</span>
+			</td>
+		</tr>
+		</thead>
+		<tbody>
+		{interaction_item}
+		{script_item}
+		<tr style="font-weight: 600;">
+			<td
+				width="40"
+				height="40"
+				align="center"
+				style="border: 1px solid #000000";border-collapse: collapse"
+			>
+			<span></span>
+			</td>
+			<td
+				width="40"
+				height="20"
+				align="right"
+				style="border: 1px solid #000000;border-collapse: collapse;padding-right:20pt;"
+				colspan="5"
+			>
+				<span>TOTAL AMOUNT</span>
+			</td>
+			<td width="40" align="center" style="border: 1px solid #000000">
+				<span>{grand_amount}</span>
+			</td>
+			<td width="40" align="center" style="border: 1px solid #000000">
+				<span></span>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+	<table border="0" align="" style="font-size: 12px">
+		<tr style="font-size: 10pt;font-weight: 600;">
+			<td style="border-bottom: 1px solid #000000;">Note</td>
+		</tr>
+		<tr>
+			<table border="0" align="" style="font-size: 12px;padding: 10px;">
+				<tr>
+					<td>
+						<span>Please note the following:</span>
+						<ul>
+							<li style="padding-bottom: 10px;">Fill a single form for all your jobs/duties at DLC Semester by Semester (e.g Interactive, question authoring,Teaching etc.)</li>
+							<li style="padding-bottom: 10px;">Your forms must be endorsed by Coordinator and Deputy Coordinator.</li>
+							<li style="padding-bottom: 10px;">Attach letter of engagement.</li>
+							<li style="padding-bottom: 10px;">Attach per diem form where necessary.</li>
+							<li style="padding-bottom: 10px;">Attach the number of students supervised and courses where necessary.</li>
+							<li style="padding-bottom: 10px;">Endorsed attendance sheet for Lagos examination/Teaching.</li>
+						</ul>
+					</td>
+				</tr>
+			</table>
+
+		</tr>
+	</table>
+	<table width="950" border="0" align="" style="font-size: 12px">
+		<tbody>
+		<tr>
+			<td width="105">
+				Amount in words
+			</td>
+			<td style="border-bottom:1px dotted #000000;text-align: center;">
+				{amount_in_words} Naira Only
+			</td>
+		</tr>
+		<tr class="table-space">
+			<td></td>
+		</tr>
+		<tr class="table-space">
+			<td></td>
+		</tr>
+		<tr>
+			<table width="940" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td align="center">
+						...........................................
+						<br /><span style="text-align: center"
+					>Claimant</span>
+					</td>
+					<td align="center">
+						...........................................
+						<br /><span style="text-align: center">Head of Department</span>
+					</td>
+					<td align="center">
+						...........................................
+						<br /><span style="text-align: center">Deputy Coordinator</span>
+					</td>
+				</tr>
+			</table>
+		</tr>
+		</tbody>
+		<tfoot>
+		<tr>
+			<td>
+				<div class="table-space"></div>
+				<div class="table-space"></div>
+			</td>
+		</tr>
+		</tfoot>
+	</table>
+</div>
+</body>
+</html>

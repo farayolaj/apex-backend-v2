@@ -1,5 +1,7 @@
 <?php
-require_once('application/models/Crud.php');
+namespace App\Entities;
+
+use App\Models\Crud;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the users table.
@@ -78,28 +80,25 @@ class Users extends Crud
 	public function APIList($filterList, $queryString, $start, $len)
 	{
 		$temp = getFilterQueryFromDict($filterList);
-		$filterQuery = $temp[0];
+        $filterQuery = buildCustomWhereString($temp[0], $queryString);
 		$filterValues = $temp[1];
-		if ($filterQuery || $queryString) {
-			$filterQuery .= ($filterQuery ? ' and ' : ' where ') . $queryString;
-		}
-		$filterQuery .= " order by id desc ";
 
 		if ($len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
 			$filterValues = [];
 		}
 
-		$query = "SELECT SQL_CALC_FOUND_ROWS id,title,lastname,firstname,othernames,dob,gender,marital_status,user_phone ,user_email,user_login ,is_lecturer, address, active from users $filterQuery";
+		$query = "SELECT SQL_CALC_FOUND_ROWS id,title,lastname,firstname,othernames,dob,gender,
+            marital_status,user_phone ,user_email,user_login ,is_lecturer, address, active from users $filterQuery";
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 

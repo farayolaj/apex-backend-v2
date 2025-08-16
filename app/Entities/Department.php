@@ -1,5 +1,8 @@
 <?php
-require_once('application/models/Crud.php');
+namespace App\Entities;
+
+use App\Models\Crud;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the department table.
@@ -14,21 +17,39 @@ class Department extends Crud
 	/*this array contains the fields that are unique*/
 	static $uniqueArray = array();
 	/*this is an associative array containing the fieldname and the type of the field*/
-	static $typeArray = array('faculty_id' => 'int', 'name' => 'varchar', 'slug' => 'varchar', 'code' => 'varchar', 'active' => 'tinyint',
-		'date_created' => 'datetime', 'type' => 'enum');
+	static $typeArray = array(
+		'faculty_id' => 'int',
+		'name' => 'varchar',
+		'slug' => 'varchar',
+		'code' => 'varchar',
+		'active' => 'tinyint',
+		'date_created' => 'datetime',
+		'type' => 'enum'
+	);
 	static $displayField = 'name';
 	/*this is a dictionary that map a field name with the label name that will be shown in a form*/
-	static $labelArray = array('id' => '', 'faculty_id' => 'Faculty', 'name' => '', 'slug' => '', 'code' => '', 'active' => '',
-		'date_created' => '', 'type' => '');
+	static $labelArray = array(
+		'id' => '',
+		'faculty_id' => 'Faculty',
+		'name' => '',
+		'slug' => '',
+		'code' => '',
+		'active' => '',
+		'date_created' => '',
+		'type' => ''
+	);
 	/*associative array of fields that have default value*/
 	static $defaultArray = array();
-//populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
+	//populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
 //the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
 	static $documentField = array();//array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
 
-	static $relation = array('faculty' => array('faculty_id', 'ID')
-	, 'matric_number_generated' => array(array('ID', 'department_id', 1))
-	, 'programme' => array(array('ID', 'department_id', 1))
+	static $relation = array(
+		'faculty' => array('faculty_id', 'ID')
+		,
+		'matric_number_generated' => array(array('ID', 'department_id', 1))
+		,
+		'programme' => array(array('ID', 'department_id', 1))
 	);
 	static $tableAction = array('delete' => 'delete/department', 'edit' => 'edit/department');
 	static $apiSelectClause = ['id', 'name', 'code'];
@@ -104,33 +125,33 @@ class Department extends Crud
 	protected function getFaculty()
 	{
 		$query = 'SELECT * FROM faculty WHERE id=?';
-		if (!isset($this->array['ID'])) {
+		if (!isset($this->array['id'])) {
 			return null;
 		}
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Faculty.php');
-		$resultObject = new Faculty($result[0]);
-		return $resultObject;
+		return new \App\Entities\Faculty($result[0]);
 	}
 
-	protected function getMatric_number_generated()
+    /**
+     * @throws \Exception
+     */
+    protected function getMatric_number_generated()
 	{
 		$query = 'SELECT * FROM matric_number_generated WHERE department_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Matric_number_generated.php');
-		$resultobjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Matric_number_generated($value);
+    		$resultObjects[] = new \App\Entities\Matric_number_generated($value);
 		}
 
 		return $resultObjects;
@@ -139,16 +160,15 @@ class Department extends Crud
 	protected function getProgramme()
 	{
 		$query = 'SELECT * FROM programme WHERE department_id=?';
-		$id = $this->array['ID'];
+		$id = $this->array['id'];
 		$result = $this->db->query($query, array($id));
-		$result = $result->result_array();
+		$result = $result->getResultArray();
 		if (empty($result)) {
 			return false;
 		}
-		include_once('Programme.php');
-		$resultObjects = array();
+		$resultObjects = [];
 		foreach ($result as $value) {
-			$resultObjects[] = new Programme($value);
+    		$resultObjects[] = new \App\Entities\Programme($value);
 		}
 
 		return $resultObjects;
@@ -156,10 +176,12 @@ class Department extends Crud
 
 	public function getFacultyByDepartment($id)
 	{
-		$query = $this->db->get_where('department', array('id' => $id, 'active' => 1));
+		$query = $this->db->table('department')
+                  ->where('id', $id)->where('active', 1)
+                  ->get();
 
-		if ($query->num_rows() > 0) {
-			return $query->row();
+		if ($query->getNumRows() > 0) {
+			return $query->getRow();
 		} else {
 			return null;
 		}
@@ -167,11 +189,11 @@ class Department extends Crud
 
 	public function delete($id = null, &$dbObject = null, $type = null): bool
 	{
-		permissionAccess($this, 'faculty_department_delete', 'delete');
-		$currentUser = $this->webSessionManager->currentAPIUser();
+		permissionAccess('faculty_department_delete', 'delete');
+		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'department_deletion', $currentUser->id, $id);
+			logAction($this->db, 'department_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;
@@ -192,8 +214,8 @@ class Department extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escapeString($start);
+			$len = $this->db->escapeString($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
@@ -204,11 +226,14 @@ class Department extends Crud
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
-		$res = $res->result_array();
+		$res = $res->getResultArray();
 		$res2 = $this->db->query($query2);
-		$res2 = $res2->result_array();
+		$res2 = $res2->getResultArray();
 		return [$res, $res2];
 	}
 
-
+	public function getUserDepartment($user_department)
+	{
+		return $this->db->table('department')->getWhere(['id' => $user_department, 'type' => 'academic'])->getRow();
+	}
 }

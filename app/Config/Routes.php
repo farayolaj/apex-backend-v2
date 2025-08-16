@@ -20,6 +20,7 @@ require_once __DIR__ . '/Routes/download.php';
 require_once __DIR__ . '/Routes/applicant.php';
 require_once __DIR__ . '/Routes/export.php';
 require_once __DIR__ . '/Routes/import.php';
+require_once  __DIR__ . '/Routes/admin_api.php';
 
 require_once __DIR__ . '/Routes/admin.php'; // this handle the web version
 require_once __DIR__ . '/Routes/finance.php'; // this handle the payment[finance] outflow
