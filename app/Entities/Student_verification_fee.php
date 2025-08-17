@@ -1,9 +1,9 @@
 <?php
+
 namespace App\Entities;
 
-use App\Models\Crud;
-
 use App\Enums\FeeDescriptionCodeEnum as FeeDescriptionCode;
+use App\Models\Crud;
 use App\Models\WebSessionManager;
 
 /**
@@ -11,40 +11,40 @@ use App\Models\WebSessionManager;
  */
 class Student_verification_fee extends Crud
 {
-	protected static $tablename = 'Student_verification_fee';
+    protected static $tablename = 'Student_verification_fee';
 
-	static $apiSelectClause = ['id', 'firstname', 'lastname', 'othernames', 'user_login'];
+    static $apiSelectClause = ['id', 'firstname', 'lastname', 'othernames', 'user_login'];
 
-	public function APIList($filterList, $queryString, $start, $len, $orderBy)
-	{
-		$verifyStatus = false;
-		$tempPaymentStatus = [];
-		$temp = getFilterQueryFromDict($filterList);
-		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
-		$filterValues = $temp[1];
+    public function APIList($filterList, $queryString, $start, $len, $orderBy)
+    {
+        $verifyStatus = false;
+        $tempPaymentStatus = [];
+        $temp = getFilterQueryFromDict($filterList);
+        $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
+        $filterValues = $temp[1];
 
-		$filterQuery .= ($filterQuery ? ' and ' : ' where ') . " ((fee_description.code = ? or fee_description.code = ? ) 
+        $filterQuery .= ($filterQuery ? ' and ' : ' where ') . " ((fee_description.code = ? or fee_description.code = ? ) 
 			and payment_status in ('00', '01')) ";
-		$filterValues[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
-		$filterValues[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
+        $filterValues[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
+        $filterValues[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
 
-		if (isset($_GET['sortBy']) && $orderBy) {
-			$filterQuery .= " order by $orderBy ";
-		} else {
-			$filterQuery .= " order by vid desc ";
-		}
+        if (isset($_GET['sortBy']) && $orderBy) {
+            $filterQuery .= " order by $orderBy ";
+        } else {
+            $filterQuery .= " order by vid desc ";
+        }
 
-		if ($len) {
-			$start = $this->db->escapeString($start);
-			$len = $this->db->escapeString($len);
-			$filterQuery .= " limit $start, $len";
-		}
+        if ($len) {
+            $start = $this->db->escapeString($start);
+            $len = $this->db->escapeString($len);
+            $filterQuery .= " limit $start, $len";
+        }
 
-		if (!$filterValues) {
-			$filterValues = [];
-		}
+        if (!$filterValues) {
+            $filterValues = [];
+        }
 
-		$query = "SELECT distinct SQL_CALC_FOUND_ROWS transaction.ID as vid,students.id, CONCAT(students.lastname, ' ', students.firstname, ' ', students.othernames) AS fullname,
+        $query = "SELECT distinct SQL_CALC_FOUND_ROWS transaction.ID as vid,students.id, CONCAT(students.lastname, ' ', students.firstname, ' ', students.othernames) AS fullname,
 			passport, academic_record.matric_number,academic_record.current_level as level, sessions.date as year_of_entry,
 			department.name as department, faculty.name as faculty, programme.name as programme,document_verification,students.gender,academic_record.applicant_type 
 			from transaction join fee_description on fee_description.id = transaction.payment_id join students on students.id = transaction.student_id 
@@ -52,32 +52,32 @@ class Student_verification_fee extends Crud
 			join programme on programme.id = academic_record.programme_id left join department on department.id = programme.department_id left join 
 			faculty on faculty.id = programme.faculty_id $filterQuery";
 
-		$query2 = "SELECT FOUND_ROWS() as totalCount";
-		$res = $this->db->query($query, $filterValues);
-		$res = $res->getResultArray();
-		$res2 = $this->db->query($query2);
-		$res2 = $res2->getResultArray();
-		return [$res, $res2];
-	}
+        $query2 = "SELECT FOUND_ROWS() as totalCount";
+        $res = $this->db->query($query, $filterValues);
+        $res = $res->getResultArray();
+        $res2 = $this->db->query($query2);
+        $res2 = $res2->getResultArray();
+        return [$res, $res2];
+    }
 
-	public function getStudentUploadDocumentComplete(bool $logParam = false, bool $session = false)
-	{
-		$data[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
-		$data[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
-		$from = request()->getGet('start_date') ?? null;
-		$to = request()->getGet('end_date') ?? null;
+    public function getStudentUploadDocumentComplete(bool $logParam = false, bool $session = false)
+    {
+        $data[] = [FeeDescriptionCode::VERIFICATION_ONE->value];
+        $data[] = [FeeDescriptionCode::VERIFICATION_TWO->value];
+        $from = request()->getGet('start_date') ?? null;
+        $to = request()->getGet('end_date') ?? null;
 
-		$whereFrom = '';
-		if ($from && $to) {
-			$from = $this->db->escapeString($from);
-			$to = $this->db->escapeString($to);
-			$whereFrom = " and student_verification_documents.date_created between '$from' and '$to' ";
-		} else if ($from) {
-			$from = ($this->db->escapeString($from));
-			$whereFrom = " and student_verification_documents.date_created >= '$from' ";
-		}
+        $whereFrom = '';
+        if ($from && $to) {
+            $from = $this->db->escapeString($from);
+            $to = $this->db->escapeString($to);
+            $whereFrom = " and student_verification_documents.date_created between '$from' and '$to' ";
+        } else if ($from) {
+            $from = ($this->db->escapeString($from));
+            $whereFrom = " and student_verification_documents.date_created >= '$from' ";
+        }
 
-		$query = "SELECT distinct SQL_CALC_FOUND_ROWS transaction.ID as vid,students.id, CONCAT(students.lastname, ' ', students.firstname, ' ', students.othernames) AS fullname,
+        $query = "SELECT distinct SQL_CALC_FOUND_ROWS transaction.ID as vid,students.id, CONCAT(students.lastname, ' ', students.firstname, ' ', students.othernames) AS fullname,
 			passport, academic_record.matric_number,academic_record.current_level as level, sessions.date as year_of_entry, 
 			department.name as department, faculty.name as faculty, programme.name as programme,document_verification,
 			students.gender,academic_record.application_number,academic_record.olevel_details from transaction join 
@@ -87,38 +87,38 @@ class Student_verification_fee extends Crud
 			join faculty on faculty.id = programme.faculty_id join student_verification_documents on student_verification_documents.students_id = students.id 
 			where fee_description.code in (?, ?) and payment_status in ('00', '01') and document_verification = 'Pending' $whereFrom";
 
-		if ($session) {
-			$activeSession = get_setting('active_session_student_portal');
-			$query .= "and transaction.session= '$activeSession'";
-		}
+        if ($session) {
+            $activeSession = get_setting('active_session_student_portal');
+            $query .= "and transaction.session= '$activeSession'";
+        }
 
-		$result = $this->query($query, $data);
-		if (!$result) {
-			return [];
-		}
+        $result = $this->query($query, $data);
+        if (!$result) {
+            return [];
+        }
 
-		if ($logParam) {
-			$currentUser = WebSessionManager::currentAPIUser();
-			$logData = [
-				'start_from' => $from,
-				'end_to' => $to,
-				'print_datetime' => date('Y-m-d H:i:s')
-			];
-			$logData = json_encode($logData);
-			logAction($this->db, 'bulk_print_student_cover', $currentUser->user_login, null, null, $logData);
-		}
+        if ($logParam) {
+            $currentUser = WebSessionManager::currentAPIUser();
+            $logData = [
+                'start_from' => $from,
+                'end_to' => $to,
+                'print_datetime' => date('Y-m-d H:i:s')
+            ];
+            $logData = json_encode($logData);
+            logAction($this->db, 'bulk_print_student_cover', $currentUser->user_login, null, null, $logData);
+        }
 
-		return $result;
+        return $result;
 
-	}
+    }
 
-	public function hasStudentPaidOlevelVerification($studentID): bool
+    public function hasStudentPaidOlevelVerification($studentID)
     {
-		$query = "SELECT transaction.ID as vid,student_id from transaction join fee_description 
+        $query = "SELECT transaction.ID as vid,student_id from transaction join fee_description 
 		on fee_description.id = transaction.payment_id where (fee_description.code = ? or fee_description.code = ? ) and payment_status in ('00', '01') and student_id = ?";
-		$data = [FeeDescriptionCode::VERIFICATION_ONE->value, FeeDescriptionCode::VERIFICATION_TWO->value, $studentID];
-		$result = $this->query($query, $data);
-		return (bool)$result;
-	}
+        $data = [FeeDescriptionCode::VERIFICATION_ONE->value, FeeDescriptionCode::VERIFICATION_TWO->value, $studentID];
+        $result = $this->query($query, $data);
+        return $result ? true : false;
+    }
 
 }

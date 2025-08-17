@@ -4,6 +4,7 @@ namespace App\Entities;
 
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
+use App\Enums\CommonEnum as CommonSlug;
 use App\Models\WebSessionManager;
 
 /**
@@ -63,7 +64,7 @@ class Staffs extends Crud
     public static $typeArray = ['title' => 'varchar', 'staff_id' => 'varchar', 'firstname' => 'varchar', 'lastname' => 'varchar',
         'othernames' => 'varchar', 'gender' => 'enum', 'dob' => 'varchar', 'marital_status' => 'varchar', 'phone_number' => 'varchar',
         'email' => 'varchar', 'units_id' => 'int', 'user_rank' => 'varchar', 'role' => 'varchar', 'avatar' => 'varchar', 'address' => 'varchar',
-        'active' => 'tinyint', 'created_at' => 'timestamp', 'updated_at' => 'timestamp', 'can_upload' => 'tinyint'];
+        'active' => 'tinyint', 'created_at' => 'timestamp', 'updated_at' => 'timestamp', 'can_upload' => 'tinyint', 'department_id' => 'int'];
 
     /**
      * This is a dictionary that map a field name with the label name that
@@ -72,7 +73,7 @@ class Staffs extends Crud
      */
     public static $labelArray = ['id' => '', 'title' => '', 'staff_id' => '', 'firstname' => '', 'lastname' => '', 'othernames' => '',
         'gender' => '', 'dob' => '', 'marital_status' => '', 'phone_number' => '', 'email' => '', 'units_id' => '', 'user_rank' => '',
-        'role' => '', 'avatar' => '', 'address' => '', 'active' => '', 'created_at' => '', 'updated_at' => '', 'can_upload' => ''];
+        'role' => '', 'avatar' => '', 'address' => '', 'active' => '', 'created_at' => '', 'updated_at' => '', 'can_upload' => '', 'department_id' => ''];
 
     /**
      * Associative array of fields in the table that have default value
@@ -109,7 +110,7 @@ class Staffs extends Crud
     public static $tableAction = ['delete' => 'delete/staffs', 'edit' => 'edit/staffs'];
 
     public static $apiSelectClause = ['id', 'title', 'lastname', 'firstname', 'othernames', 'gender', 'dob', 'marital_status', 'phone_number',
-        'email', 'units_id', 'user_rank', 'role', 'avatar', 'address', 'active', 'created_at', 'updated_at'];
+        'email', 'units_id', 'user_rank', 'role', 'avatar', 'address', 'active', 'created_at', 'updated_at', 'staff_id'];
 
     public function __construct(array $array = [])
     {
@@ -326,7 +327,7 @@ class Staffs extends Crud
         if (parent::delete($id, $db)) {
             $query = "DELETE from users_new where user_table_id=? and user_type='staff'";
             if ($this->query($query, array($id))) {
-                logAction($db, 'user_deletion', $currentUser->id, $id);
+                logAction($this->db, 'user_deletion', $currentUser->id, $id);
                 return true;
             }
         }
@@ -357,7 +358,10 @@ class Staffs extends Crud
             $filterValues = [];
         }
 
-        $query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . " ,b.user_login as username,b.id as user_id from staffs a left join users_new b on b.user_table_id = a.id $filterQuery";
+        $query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . " ,b.user_login as username,b.id as user_id,c.name as department_name, d.name as unit_name from staffs a 
+			left join users_new b on b.user_table_id = a.id
+			left join department c on c.id = a.department_id 
+			left join department d on d.id = a.units_id $filterQuery";
         $query2 = "SELECT FOUND_ROWS() as totalCount";
 
         $res = $this->db->query($query, $filterValues);
@@ -377,7 +381,6 @@ class Staffs extends Crud
         return $items;
     }
 
-
     private function loadExtras($item)
     {
         if ($item['user_id']) {
@@ -385,12 +388,63 @@ class Staffs extends Crud
             $item['role'] = $userRole ? $userRole['name'] : '';
         }
 
+        $item['is_departmental_coord'] = 'no';
+        if (!empty($item['user_department'])) {
+            $item['is_departmental_coord'] = 'yes';
+        }
         return $item;
     }
 
     public function getStaffDepartment($user_department)
     {
         return $this->db->table('department')->getWhere(['id' => $user_department])->getRow();
+    }
+
+    public function getStaffExportQuery()
+    {
+        $department = request()->getGet('department');
+        $session = request()->getGet('session');
+        $data = [];
+        $etutor = CommonSlug::ETUTOR->value;
+
+        $query = "SELECT a.title,a.staff_id,
+		    a.firstname,a.lastname,a.othernames,a.phone_number,
+		    a.email,c.name AS department_name,
+		    GROUP_CONCAT(DISTINCT CONCAT(e.code, ' - ', e.title) SEPARATOR ', ') AS course_codes,
+		    f.account_name, f.account_number, g.name as bank_name, f.is_primary
+		FROM 
+		    staffs a
+		JOIN 
+		    users_new b ON b.user_table_id = a.id AND b.user_type = 'staff'
+		LEFT JOIN 
+		    department c ON c.id = a.department_id
+		LEFT JOIN 
+		    course_manager d ON (
+		        d.course_manager_id = b.id
+		        OR JSON_SEARCH(d.course_lecturer_id, 'one', CAST(b.id AS CHAR)) IS NOT NULL
+		    )
+		LEFT JOIN 
+		    courses e ON e.id = d.course_id 
+		LEFT JOIN user_banks f on f.users_id = b.id LEFT JOIN bank_lists g on g.code = f.bank_code
+		where (a.can_upload = '1' or user_rank = '$etutor') and a.active = '1' ";
+
+        $filterQuery = '';
+        if ($department && $department != 'All') {
+            $filterQuery .= " and a.department_id = ? ";
+            $data[] = $department;
+        }
+        if ($session) {
+            $filterQuery .= " and d.session_id = ? ";
+            $data[] = $session;
+        }
+
+        $query .= $filterQuery;
+        $query .= " GROUP BY 
+		    a.title,a.staff_id, a.firstname, a.lastname, a.othernames, a.gender, 
+		    a.phone_number, a.email, c.name, f.account_name, f.account_number, g.name, f.is_primary 
+		    order by c.code asc, staff_id asc";
+
+        return ['query' => $query, 'data' => $data];
     }
 
 

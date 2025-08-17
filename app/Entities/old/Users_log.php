@@ -99,9 +99,9 @@ class Users_log extends Crud {
 	}
 
 	public function APIList($filterList, $queryString, $start, $len): array {
-		$q = request()->getGet('q', true) ?: false;
-		$action = request()->getGet('action', true);
-		$student = request()->getGet('student_id', true);
+		$q = $this->input->get('q', true) ?: false;
+		$action = $this->input->get('action', true);
+		$student = $this->input->get('student_id', true);
 
 		if ($action === 'remita_error') {
 			if ($q) {

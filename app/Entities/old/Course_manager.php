@@ -14,9 +14,13 @@ class Course_manager extends Crud
 	/*this array contains the fields that are unique*/
 	static $uniqueArray = array();
 	/*this is an associative array containing the fieldname and the type of the field*/
-	static $typeArray = array('session_id' => 'varchar', 'course_id' => 'varchar', 'course_manager_id' => 'varchar', 'course_lecturer_id' => 'varchar', 'active' => 'tinyint', 'date_created' => 'datetime');
+	static $typeArray = array('session_id' => 'varchar', 'course_id' => 'varchar', 'course_manager_id' => 'varchar',
+		'course_lecturer_id' => 'varchar', 'active' => 'tinyint', 'date_created' => 'datetime',
+		'course_question_tutor_id' => 'varchar', 'course_e_tutor_id' => 'varchar');
 	/*this is a dictionary that map a field name with the label name that will be shown in a form*/
-	static $labelArray = array('id' => '', 'session_id' => '', 'course_id' => '', 'course_manager_id' => '', 'course_lecturer_id' => '', 'active' => '', 'date_created' => '');
+	static $labelArray = array('id' => '', 'session_id' => '', 'course_id' => '', 'course_manager_id' => '',
+		'course_lecturer_id' => '', 'active' => '', 'date_created' => '', 'course_question_tutor_id' => '',
+		'course_e_tutor_id' => '');
 	/*associative array of fields that have default value*/
 	static $defaultArray = array();
 //populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
@@ -175,11 +179,24 @@ class Course_manager extends Crud
 
 	public function APIList($filterList, $queryString, $start, $len, $orderBy): array
 	{
+		$departmentQuery = '';
+		$departmentWhere = '';
+		// the idea is to get the department id from the departmentalApiModel and use 
+		// it to filter the course manager
+		if (isset($filterList['api_department'])) {
+			$departmentID = $filterList['api_department'];
+			$departmentWhere .= " f.id = '$departmentID' ";
+			unset($filterList['api_department']);
+		}
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
-		$filterValues = $temp[1];
 
-		$filterQuery .= ($filterQuery ? " and " : " where ") . " d.user_type='staff' and a.active = '1' ";
+		$filterValues = $temp[1];
+		// $filterQuery .= ($filterQuery ? " and " : " where ") . " a.active = '1' ";
+
+		if ($departmentWhere) {
+			$filterQuery .= ($filterQuery ? " and " : " where ") . $departmentWhere;
+		}
 
 		if (isset($_GET['sortBy']) && $orderBy) {
 			$filterQuery .= " order by $orderBy ";
@@ -195,11 +212,17 @@ class Course_manager extends Crud
 		if (!$filterValues) {
 			$filterValues = [];
 		}
-		$tablename = strtolower(self::$tablename);
 		$query = "SELECT SQL_CALC_FOUND_ROWS a.id,c.date as session,a.course_lecturer_id,b.code as course_code,b.title as course_title, 
-		concat(e.title,' ',e.lastname,' ',e.firstname) as course_manager,a.course_manager_id from course_manager a join courses b 
-		on b.id = a.course_id join sessions c on c.id = a.session_id join users_new d on d.id = a.course_manager_id join staffs e on 
-		e.id = d.user_table_id $filterQuery";
+		CASE 
+        	WHEN a.course_manager_id IS NULL THEN 'N/A'
+        	ELSE CONCAT(COALESCE(e.title, ''), ' ', e.lastname, ' ', e.firstname) 
+    	END as course_manager,a.course_manager_id,a.course_e_tutor_id,a.course_question_tutor_id from course_manager a 
+    	join courses b on b.id = a.course_id 
+    	join sessions c on c.id = a.session_id 
+    	left join users_new d on d.id = a.course_manager_id and d.user_type='staff'
+    	left join staffs e on e.id = d.user_table_id 
+    	left join department f on f.id = b.department_id
+    	{$departmentQuery} $filterQuery";
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
@@ -219,7 +242,7 @@ class Course_manager extends Crud
 		return $items;
 	}
 
-	public function loadExtras($item)
+	public function loadExtras($item, $noManager = false)
 	{
 		if (isset($item['course_lecturer_id'])) {
 			$lecturers = json_decode($item['course_lecturer_id'], true);
@@ -235,6 +258,21 @@ class Course_manager extends Crud
 			$item['course_lecturer'] = $fullname;
 		}
 
+		if ($noManager) {
+			$manager = $this->users_new->getRealUserInfo($item['course_manager_id'], 'staffs', 'staff');
+			$item['course_manager'] = $manager ? $manager['title'] . ' ' . $manager['lastname'] . ' ' . $manager['firstname'] : '';
+		}
+
+		if ($item['course_e_tutor_id']) {
+			$eTutor = $this->users_new->getRealUserInfo($item['course_e_tutor_id'], 'staffs', 'staff');
+			$item['course_e_tutor'] = $eTutor ? $eTutor['title'] . ' ' . $eTutor['lastname'] . ' ' . $eTutor['firstname'] : '';
+		}
+
+		if ($item['course_question_tutor_id']) {
+			$questionTutor = $this->users_new->getRealUserInfo($item['course_question_tutor_id'], 'staffs', 'staff');
+			$item['course_question_tutor'] = $questionTutor ? $questionTutor['title'] . ' ' . $questionTutor['lastname'] . ' ' . $questionTutor['firstname'] : '';
+		}
+
 		$item['course_lecturer_id'] = ($item['course_lecturer_id'] != '') ? json_decode($item['course_lecturer_id'], true) : [];
 
 		return $item;
@@ -242,7 +280,7 @@ class Course_manager extends Crud
 
 	public function getCourseManagerByCourseId($course, $session)
 	{
-		$query = "SELECT * FROM course_manager WHERE course_id=? and session_id=? and active = '1'";
+		$query = "SELECT * FROM course_manager WHERE course_id=? and session_id=? and active = '1' order by date_created desc limit 1";
 		$result = $this->query($query, [$course, $session]);
 		if (!$result) {
 			return null;

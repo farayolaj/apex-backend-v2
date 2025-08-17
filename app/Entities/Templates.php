@@ -97,11 +97,12 @@ class Templates extends Crud
     public function getMessagingTemplate(string $template, array $variables)
     {
         $parser = Services::parser();
-        $temp = $this->getWhere(['slug' => $template, 'active' => '1'], $count, 0, null, false);
+        $temp = $this->getWhere(array('slug' => $template, 'active' => '1'), $count, 0, null, false);
         if ($temp) {
             foreach ($temp as $tmp) {
                 $message = base64_decode($tmp->content);
-                return $parser->setData($variables)->renderString($message);
+                $message = $parser->setData($variables)->renderString($message);
+                return $message;
             }
         }
     }

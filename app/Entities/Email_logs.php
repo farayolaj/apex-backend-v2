@@ -2,9 +2,13 @@
 
 namespace App\Entities;
 
-use App\Models\Crud;
 use App\Enums\CommonEnum as CommonSlug;
+use App\Libraries\EntityLoader;
+use App\Models\Crud;
 
+/**
+ * This class queries those who have paid for both RuS and SuS
+ */
 class Email_logs extends Crud
 {
     protected static $tablename = '';
@@ -27,12 +31,10 @@ class Email_logs extends Crud
         $applicantType = CommonSlug::EMAIL_BUILDER_APPLICANT->value;
         $studentType = CommonSlug::EMAIL_BUILDER_STUDENT->value;
 
-        $filterQuery .= ($filterQuery ? " and " : " where "). "action_performed in ('$applicantType', '$studentType') ";
-
         if (isset($_GET['sortBy']) && $orderBy) {
             $filterQuery .= " order by $orderBy ";
         } else {
-            $filterQuery .= " order by date_performed desc ";
+            $filterQuery .= " order by a.created_at desc ";
         }
 
         if (isset($_GET['start']) && $len) {
@@ -44,18 +46,18 @@ class Email_logs extends Crud
             $filterValues = [];
         }
 
-        $query = "SELECT SQL_CALC_FOUND_ROWS a.student_id as id, username as sent_by,
+        $query = "SELECT SQL_CALC_FOUND_ROWS concat(a.type,':',a.email_ref) as id, sender as sent_by,
 			CASE 
-			WHEN action_performed = '$applicantType' THEN 'Applicant'
-			WHEN action_performed = '$studentType' THEN 'Student'
+			WHEN type = '$applicantType' THEN 'Applicant'
+			WHEN type = '$studentType' THEN 'Student'
 			ELSE 'N/A' 
-			END as sent_to,date_performed, description as subject, 
+			END as sent_to, a.created_at as date_performed, a.subject, 
 			IF(
 				EXISTS (
-					SELECT 1 from email_logs b where b.email_ref = a.student_id LIMIT 1  
+					SELECT 1 from email_logs b where b.email_ref = a.email_ref LIMIT 1  
             	), 1, 0
             ) as is_sent
-			from users_log a $filterQuery";
+			from email_batches a $filterQuery";
 
         $query2 = "SELECT FOUND_ROWS() as totalCount";
         $res = $this->db->query($query, $filterValues);
@@ -65,7 +67,7 @@ class Email_logs extends Crud
         return [$res, $res2];
     }
 
-    public function APIListLog($filterList, $queryString, $start, $len, $orderBy=null): array
+    public function APIListLog($filterList, $queryString, $start, $len, $orderBy = null): array
     {
         $temp = getFilterQueryFromDict($filterList);
         $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
@@ -86,15 +88,51 @@ class Email_logs extends Crud
             $filterValues = [];
         }
 
-        $query = "SELECT SQL_CALC_FOUND_ROWS a.id, subject, to_email as sent_to, attempts, sent_at, created_at from 
-                email_logs a $filterQuery";
+        $query = "SELECT SQL_CALC_FOUND_ROWS a.id, a.to_email as sent_to, a.attempts, a.sent_at, a.created_at, a.type, identifier from 
+			email_logs a join email_batches b on b.email_ref = a.email_ref and b.type = a.type $filterQuery";
 
         $query2 = "SELECT FOUND_ROWS() as totalCount";
         $res = $this->db->query($query, $filterValues);
         $res = $res->getResultArray();
         $res2 = $this->db->query($query2);
         $res2 = $res2->getResultArray();
-        return [$res, $res2];
+        return [$this->processList($res), $res2];
+    }
+
+    private function processList($items): array
+    {
+        $generator = useGenerators($items);
+        $payload = [];
+        EntityLoader::loadClass($this, 'students');
+        foreach ($generator as $item) {
+            $payload[] = $this->loadExtras($item);
+        }
+        return $payload;
+    }
+
+    public function loadExtras($item)
+    {
+        if (isset($item['sent_to'])) {
+            $item['sent_to'] = maskEmail($item['sent_to']);
+        }
+
+        if ($item['identifier']) {
+            $fullname = null;
+            if ($item['type'] == 'email_builder_applicant') {
+                $user = fetchSingle($this, 'applicants', 'applicant_id', $item['identifier']);
+                if ($user) {
+                    $fullname = strtoupper($user['lastname']) . ', ' . ucfirst($user['firstname']);
+                }
+            } else if ($item['type'] == 'email_builder_student') {
+                $user = $this->students->getStudentRecordOnly($item['identifier']);
+                if ($user) {
+                    $fullname = strtoupper($user['lastname']) . ', ' . ucfirst($user['firstname']);
+                }
+            }
+            $item['fullname'] = $fullname;
+        }
+
+        return $item;
     }
 
 }

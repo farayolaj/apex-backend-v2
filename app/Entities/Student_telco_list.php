@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entities;
 
 use App\Models\Crud;
@@ -8,78 +9,78 @@ use App\Models\Crud;
  */
 class Student_telco_list extends Crud
 {
-	protected static $tablename = '';
+    protected static $tablename = '';
 
-	static $apiSelectClause = [];
+    static $apiSelectClause = [];
 
-	/**
-	 * @param mixed $filterList
-	 * @param mixed $queryString
-	 * @param mixed $start
-	 * @param mixed $len
-	 * @param mixed $orderBy
-	 * @return array
-	 */
-	public function APIList($filterList, $queryString, $start, $len, $orderBy, $export = false): array
-	{
-		$temp = getFilterQueryFromDict($filterList);
-		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
-		$filterValues = $temp[1];
+    /**
+     * @param mixed $filterList
+     * @param mixed $queryString
+     * @param mixed $start
+     * @param mixed $len
+     * @param mixed $orderBy
+     * @return array
+     */
+    public function APIList($filterList, $queryString, $start, $len, $orderBy, $export = false): array
+    {
+        $temp = getFilterQueryFromDict($filterList);
+        $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
+        $filterValues = $temp[1];
 
-		$filterQuery .= ($filterQuery ? " and " : " where ") . " telco_number <> '' ";
+        $filterQuery .= ($filterQuery ? " and " : " where ") . " telco_number <> '' ";
 
-		if (isset($_GET['sortBy']) && $orderBy) {
-			$filterQuery .= " order by $orderBy ";
-		} else {
-			if ($export) {
-				$filterQuery .= " order by faculty asc, matric_number asc ";
-			} else {
-				$filterQuery .= " order by entry_year desc ";
-			}
-		}
+        if (isset($_GET['sortBy']) && $orderBy) {
+            $filterQuery .= " order by $orderBy ";
+        } else {
+            if ($export) {
+                $filterQuery .= " order by faculty asc, matric_number asc ";
+            } else {
+                $filterQuery .= " order by entry_year desc ";
+            }
+        }
 
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escapeString($start);
-			$len = $this->db->escapeString($len);
-			$filterQuery .= " limit $start, $len";
-		}
-		if (!$filterValues) {
-			$filterValues = [];
-		}
-		$query = "SELECT SQL_CALC_FOUND_ROWS a.id,a.firstname,a.lastname,a.othernames,a.gender,b.matric_number,a.telco_number,b.current_level as level,d.name as faculty from students a join academic_record b on b.student_id = a.id join programme c on c.id = b.programme_id left join faculty d on d.id = c.faculty_id $filterQuery";
-		$query2 = "SELECT FOUND_ROWS() as totalCount";
-		$res = $this->db->query($query, $filterValues);
-		$res = $res->getResultArray();
-		$res2 = $this->db->query($query2);
-		$res2 = $res2->getResultArray();
-		if ($export) {
-			return [$res, $res2];
-		}
-		$res = $this->processList($res);
-		return [$res, $res2];
-	}
+        if (isset($_GET['start']) && $len) {
+            $start = $this->db->escapeString($start);
+            $len = $this->db->escapeString($len);
+            $filterQuery .= " limit $start, $len";
+        }
+        if (!$filterValues) {
+            $filterValues = [];
+        }
+        $query = "SELECT SQL_CALC_FOUND_ROWS a.id,a.firstname,a.lastname,a.othernames,a.gender,b.matric_number,a.telco_number,b.current_level as level,d.name as faculty from students a join academic_record b on b.student_id = a.id join programme c on c.id = b.programme_id left join faculty d on d.id = c.faculty_id $filterQuery";
+        $query2 = "SELECT FOUND_ROWS() as totalCount";
+        $res = $this->db->query($query, $filterValues);
+        $res = $res->getResultArray();
+        $res2 = $this->db->query($query2);
+        $res2 = $res2->getResultArray();
+        if ($export) {
+            return [$res, $res2];
+        }
+        $res = $this->processList($res);
+        return [$res, $res2];
+    }
 
-	private function processList($items): array
-	{
-		$generator = useGenerators($items);
-		$payload = [];
-		foreach ($generator as $item) {
-			$payload[] = $this->loadExtras($item);
-		}
-		return $payload;
-	}
+    private function processList($items): array
+    {
+        $generator = useGenerators($items);
+        $payload = [];
+        foreach ($generator as $item) {
+            $payload[] = $this->loadExtras($item);
+        }
+        return $payload;
+    }
 
-	public function loadExtras($item)
-	{
-		if ($item['level']) {
-			$item['level'] = formatStudentLevel($item['level']);
-		}
+    public function loadExtras($item)
+    {
+        if ($item['level']) {
+            $item['level'] = formatStudentLevel($item['level']);
+        }
 
-		if ($item['telco_number']) {
-			$item['telco_number'] = removeIntlOnPhoneNumber($item['telco_number']);
-		}
+        if ($item['telco_number']) {
+            $item['telco_number'] = removeIntlOnPhoneNumber($item['telco_number']);
+        }
 
-		return $item;
-	}
+        return $item;
+    }
 
 }

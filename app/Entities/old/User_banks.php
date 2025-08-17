@@ -313,8 +313,9 @@ class User_banks extends Crud
 		if ($queryType === 'project') {
 			$query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . " from $tablename a $filterQuery";
 		} else if ($queryType === 'all-staff') {
-			$query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . ", b.slug as bank_acronym,b.name as bank_name 
-			from $tablename a join bank_lists b on b.id = a.bank_lists_id join users_new c on c.id = a.users_id $filterQuery";
+			$query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . ", b.slug as bank_acronym,
+			b.name as bank_name from $tablename a join bank_lists b on b.id = a.bank_lists_id 
+			join users_new c on c.id = a.users_id $filterQuery";
 		}
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";

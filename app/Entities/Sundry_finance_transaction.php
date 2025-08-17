@@ -62,11 +62,11 @@ class Sundry_finance_transaction extends Crud
         }
 
         if ($from && $to) {
-            $from = $this->db->escapeString($from);
-            $to = $this->db->escapeString($to);
+            $from = ($this->db->escapeString($from));
+            $to = ($this->db->escapeString($to));
             $filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
         } else if ($from) {
-            $from = $this->db->escapeString($from);
+            $from = ($this->db->escapeString($from));
             $filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
         }
 

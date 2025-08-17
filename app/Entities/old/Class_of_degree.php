@@ -109,7 +109,7 @@ class Class_of_degree extends Crud
 		$currentUser = $this->webSessionManager->currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this, 'class_of_degree_deletion', $currentUser->id, $id);
+			logAction($this, 'class_of_degree_deletion', $currentUser->user_login);
 			return true;
 		}
 		return false;

@@ -22,7 +22,7 @@ class Student_transaction_change_programme extends Crud
      */
     public function APIList($filterList, $queryString, $start, $len, $orderBy)
     {
-        $type              = request()->getGet('type', true);
+        $type              = $this->input->get('type', true);
         $paymentStatus     = false;
         $tempPaymentStatus = [];
         if (isset($filterList['payment_status']) && $filterList['payment_status']) {
@@ -42,10 +42,10 @@ class Student_transaction_change_programme extends Crud
         if ($type == 'fresher') {
             $currentSession = get_setting('admission_session_update');
             // $filterQuery .= ($filterQuery ? " and " : " where ") . " ((academic_record.session_of_admission = '$currentSession')) ";
-            $directEntry = $this->db->escapeString(CommonSlug::DIRECT_ENTRY);
-            $olevel      = $this->db->escapeString(CommonSlug::O_LEVEL);
-            $olevelPutme = $this->db->escapeString(CommonSlug::O_LEVEL_PUTME);
-            $fastTrack   = $this->db->escapeString(CommonSlug::FAST_TRACK);
+            $directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY);
+            $olevel      = $this->db->escape_str(CommonSlug::O_LEVEL);
+            $olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME);
+            $fastTrack   = $this->db->escape_str(CommonSlug::FAST_TRACK);
 
             $filterQuery .= ($filterQuery ? " and " : " where ") . " (
 				(academic_record.entry_mode = '$directEntry' and academic_record.current_level = '2') ||
@@ -90,19 +90,25 @@ class Student_transaction_change_programme extends Crud
             $query = "SELECT distinct SQL_CALC_FOUND_ROWS students.id as student_id, CONCAT(students.lastname, ' ', students.firstname,
 			' ', students.othernames) AS fullname,passport, academic_record.application_number,
 	        academic_record.current_level as level, sessions.date as year_of_entry, department.name as department, faculty.name as faculty,
-	        programme.name as programme,programme.id as program_id from students join academic_record  on academic_record.student_id = students.id
-	        join sessions on sessions.id = academic_record.year_of_entry join programme on programme.id = academic_record.programme_id left join
-	        department on department.id = programme.department_id left join faculty on faculty.id = programme.faculty_id $filterQuery";
+	        programme.name as programme,programme.id as program_id from students 
+            join academic_record  on academic_record.student_id = students.id
+	        join sessions on sessions.id = academic_record.year_of_entry 
+            left join programme on programme.id = academic_record.programme_id 
+            left join department on department.id = programme.department_id 
+            left join faculty on faculty.id = programme.faculty_id $filterQuery";
         } else {
             $query = "SELECT distinct SQL_CALC_FOUND_ROWS students.id as student_id, CONCAT(students.lastname, ' ', students.firstname, ' ', students.othernames) AS fullname,
             passport, academic_record.application_number,academic_record.current_level as level, sessions.date as year_of_entry,
             department.name as department, faculty.name as faculty, programme.name as programme,programme.id as program_id,
             transaction.payment_status,transaction.date_performed, transaction.date_completed,transaction.payment_description,
             transaction.session as trans_session,academic_record.matric_number,students.user_login as student_email from transaction
-            join fee_description on fee_description.id = transaction.payment_id join students on students.id = transaction.student_id join
-            academic_record  on academic_record.student_id = students.id join sessions on sessions.id = academic_record.year_of_entry join programme
-            on programme.id = academic_record.programme_id join department on department.id = programme.department_id join faculty
-            on faculty.id = programme.faculty_id $filterQuery";
+            join fee_description on fee_description.id = transaction.payment_id 
+            join students on students.id = transaction.student_id 
+            join academic_record  on academic_record.student_id = students.id 
+            join sessions on sessions.id = academic_record.year_of_entry 
+            join programme on programme.id = academic_record.programme_id 
+            join department on department.id = programme.department_id 
+            join faculty on faculty.id = programme.faculty_id $filterQuery";
         }
 
         $query2 = "SELECT FOUND_ROWS() as totalCount";

@@ -43,9 +43,9 @@ class Department extends Crud
 
 	static $relation = array(
 		'faculty' => array('faculty_id', 'ID')
-		,
+	,
 		'matric_number_generated' => array(array('ID', 'department_id', 1))
-		,
+	,
 		'programme' => array(array('ID', 'department_id', 1))
 	);
 	static $tableAction = array('delete' => 'delete/department', 'edit' => 'edit/department');
@@ -230,6 +230,22 @@ class Department extends Crud
 
 	public function getUserDepartment($user_department)
 	{
-		return $this->db->table('department')->getWhere(['id' => $user_department, 'type' => 'academic'])->getRow();
+		return $this->db->get_where('department', ['id' => $user_department, 'type' => 'academic'])->row();
+	}
+
+	public function totalDepartmentStudent($department, $session, $semester)
+	{
+		$query = "SELECT COUNT(DISTINCT CASE WHEN e.total_score IS NOT NULL THEN e.student_id END) 
+			AS total FROM courses c JOIN course_enrollment e ON c.id = e.course_id where c.department_id = ? 
+			and e.session_id = ? and e.semester = ? GROUP BY c.department_id";
+		$result = $this->query($query, array($department, $session, $semester));
+		return $result[0]['total'] ?? 0;
+	}
+
+	public function checkDepartmentClaim($department, $session, $type)
+	{
+		$query = "SELECT * from course_request_claims where session_id = ? and exam_type = ? and department_id = ?
+                order by created_at desc";
+		return $this->query($query, [$session, $type, $department]);
 	}
 }

@@ -443,6 +443,10 @@ class Transaction_custom extends Crud {
 			$item['phone_number'] = decryptData($this, $item['phone_number']);
 		}
 
+		if(isset($item['email'])){
+			$item['email'] = maskEmail($item['email']);
+		}
+
 		return $item;
 	}
 

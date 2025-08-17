@@ -3,8 +3,6 @@
 namespace App\Entities;
 
 use App\Models\Crud;
-use DateInterval;
-use DateTime;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the otp_code table.
@@ -95,7 +93,7 @@ class Otp_code extends Crud
         # get the date from the token
         $time_generated = new DateTime($result[0]->time_generated);
         $timeNow = new DateTime($result[0]->now_time);
-        $adjustedTime = $time_generated->add($expiry);
+        $ajustedTime = $time_generated->add($expiry);
         if ($adjustedTime >= $timeNow) {
             $this->updateTokenValidation($token, $username, 0);
             return false;
@@ -110,7 +108,7 @@ class Otp_code extends Crud
     {
         $this->db->escapeString($status);
         $query = "update otp_code set time_verified=current_timestamp,status=$status where code=? and username=?";
-        return $this->db->query($query, array($token, $username));
+        return $this->db->query($query, array($tokien, $username));
     }
 
 

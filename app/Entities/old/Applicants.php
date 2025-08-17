@@ -606,7 +606,10 @@ class Applicants extends Crud
 	 */
 	protected function getApplicantTransaction()
 	{
-		$query = 'SELECT * FROM applicant_transaction WHERE applicant_id=?';
+		$query = 'SELECT a.*, c.name as programme_name FROM applicant_transaction a 
+			left join applicants b on b.id = a.applicant_id 
+			left join programme c on c.id = b.programme_id
+			WHERE a.applicant_id=?';
 		if (!isset($this->array['id'])) {
 			return null;
 		}

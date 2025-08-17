@@ -45,7 +45,7 @@ class Mandate_requests extends Crud
 	 */
 	public function APIList($filterList, $queryString, $start, $len, $orderBy=null, $type=null): array
 	{
-		$q = request()->getGet('q') ?: false;
+		$q = $this->input->get('q', true) ?: false;
 		if ($q) {
 			$searchArr = ['a.admon_reference', 'a.rrr_code', 'a.destination_account_number', 'a.destination_account_name'];
 			$queryString = buildCustomSearchString($searchArr, $q);

@@ -139,7 +139,7 @@ class Verification_documents_requirement extends Crud
 
     public function APIList($filterList, $queryString, $start, $len, $orderBy)
     {
-        $orderByString = !isset($_GET['sortBy']);
+        $orderByString = (isset($_GET['sortBy'])) ? false : true;
         $temp = getFilterQueryFromDict($filterList, 'a');
         $filterQuery = buildCustomWhereString($temp[0], $queryString, $orderByString);
         $filterValues = $temp[1];
@@ -157,7 +157,8 @@ class Verification_documents_requirement extends Crud
             $filterValues = [];
         }
 
-        $query = "SELECT SQL_CALC_FOUND_ROWS * from verification_documents_requirement where status = '1' ";
+        $query = "SELECT SQL_CALC_FOUND_ROWS * from verification_documents_requirement where status = '1'";
+
         $query2 = "SELECT FOUND_ROWS() as totalCount";
         $res = $this->db->query($query, $filterValues);
         $res = $res->getResultArray();

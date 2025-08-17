@@ -2,6 +2,7 @@
 
 require_once('application/models/Crud.php');
 require_once APPPATH . "constants/OutflowStatus.php";
+require_once APPPATH . "constants/RequestTypeSlug.php";
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -113,7 +114,7 @@ class User_requests extends Crud
 
 	public static $apiSelectClause = ['id', 'request_no', 'title', 'user_id', 'request_id', 'amount', 'description',
 		'beneficiaries', 'deduction', 'withhold_tax', 'vat', 'stamp_duty', 'total_amount', 'request_status', 'project_task_id', 'feedback',
-		'date_approved', 'created_at', 'updated_at', 'action_timeline', 'stage', 'deduction_amount', 'retire_advance_doc', 'voucher_document', 'admon_reference'];
+		'date_approved', 'created_at', 'updated_at', 'action_timeline', 'stage', 'deduction_amount', 'retire_advance_doc', 'voucher_document', 'admon_reference', 'request_from'];
 
 	public function __construct(array $array = [])
 	{
@@ -366,6 +367,44 @@ class User_requests extends Crud
 		return new Project_tasks($result[0]);
 	}
 
+	public function APIListRequestsActionPage($filterList, $queryString, ?array $timelineFilter=[])
+	{
+		$temp = getFilterQueryFromDict($filterList);
+		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
+		$filterValues = $temp[1];
+
+		if (!empty($timelineFilter)) {
+			$stage = $timelineFilter[0];
+			$stageAction = $timelineFilter[1];
+			$filterQuery .= ($filterQuery ? ' and ' : ' where ') . "JSON_CONTAINS(action_timeline, '{\"stage\": \"{$stage}\", \"state\": \"{$stageAction}\"}')";
+		}
+
+		if (!$filterValues) {
+			$filterValues = [];
+		}
+
+		return $this->apiListQueryPage($filterQuery, $filterValues);
+	}
+
+	private function apiListQueryPage(string $filterQuery, ?array $filterValues = []){
+		$filterQuery .= ($filterQuery ? " and " : " where ") . " a.request_from in ('staff', 'contractor') ";
+		$query = "
+				SELECT COUNT(*) AS total
+				FROM user_requests a
+				LEFT JOIN project_tasks  b ON b.id = a.project_task_id
+				LEFT JOIN projects       c ON c.id = b.project_id
+				JOIN request_type        d ON d.id = a.request_id
+				LEFT JOIN users_new      e ON e.id = a.user_id
+				LEFT JOIN staffs         f ON e.user_table_id = f.id AND e.user_type = 'staff'
+				LEFT JOIN contractors    g ON e.user_table_id = g.id AND e.user_type = 'contractor'
+			$filterQuery";
+
+		$res = $this->db->query($query, $filterValues);
+		$res = $res->result_array();
+
+		return $res[0]['total'];
+	}
+
 	public function APIList($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy): array
 	{
 		$temp = getFilterQueryFromDict($filterList);
@@ -392,26 +431,32 @@ class User_requests extends Crud
 
 	public function APIListRequests($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy): array
 	{
-		$from = request()->getGet('start_date', true) ?? null;
-		$to = request()->getGet('end_date', true) ?? null;
+		$q = $this->input->get('q', true) ?: false;
+		$from = $this->input->get('start_date', true) ?? null;
+		$to = $this->input->get('end_date', true) ?? null;
+
+		if ($q) {
+			$searchArr = ['q.title', 'q.firstname', 'q.lastname', 'q.staff_id', 'q.title', 'q.request_no'];
+			$queryString = buildCustomSearchString($searchArr, $q);
+		}
 
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
 
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
-			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
+			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(q.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
-			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) = date('$from') ";
+			$from = ($this->db->escape_str($from));
+			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(q.created_at) = date('$from') ";
 		}
 
 		if (isset($_GET['sortBy']) && $orderBy) {
 			$filterQuery .= " order by $orderBy ";
 		} else {
-			$filterQuery .= " order by a.created_at desc ";
+			$filterQuery .= " order by q.created_at desc ";
 		}
 
 		if (isset($_GET['start']) && $len) {
@@ -427,12 +472,12 @@ class User_requests extends Crud
 
 	public function APIListRequestsAction($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy, ?array $timelineFilter): array
 	{
-		$q = request()->getGet('q', true) ?: false;
-		$from = request()->getGet('start_date', true) ?? null;
-		$to = request()->getGet('end_date', true) ?? null;
+		$q = $this->input->get('q', true) ?: false;
+		$from = $this->input->get('start_date', true) ?? null;
+		$to = $this->input->get('end_date', true) ?? null;
 
 		if ($q) {
-			$searchArr = ['b.task_title', 'a.title', 'a.description', 'c.title'];
+			$searchArr = ['q.title', 'q.firstname', 'q.lastname', 'q.staff_id', 'q.title', 'q.request_no'];
 			$queryString = buildCustomSearchString($searchArr, $q);
 		}
 		$temp = getFilterQueryFromDict($filterList);
@@ -446,18 +491,18 @@ class User_requests extends Crud
 		}
 
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
-			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
+			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(q.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
-			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) = date('$from') ";
+			$from = ($this->db->escape_str($from));
+			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(q.created_at) = date('$from') ";
 		}
 
 		if (isset($_GET['sortBy']) && $orderBy) {
 			$filterQuery .= " order by $orderBy ";
 		} else {
-			$filterQuery .= " order by a.created_at desc ";
+			$filterQuery .= " order by q.created_at desc ";
 		}
 
 		if (isset($_GET['start']) && $len) {
@@ -474,7 +519,7 @@ class User_requests extends Crud
 
 	public function APIListVoucherRequests($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy, bool $allowCharges = true): array
 	{
-		$q = request()->getGet('q', true) ?: false;
+		$q = $this->input->get('q', true) ?: false;
 		if ($q) {
 			$searchArr = ['b.task_title', 'a.title', 'a.description', 'c.title'];
 			$queryString = buildCustomSearchString($searchArr, $q);
@@ -503,20 +548,28 @@ class User_requests extends Crud
 
 	public function APIListRequestTitle($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy): array
 	{
-		$from = request()->getGet('start_date', true) ?? null;
-		$to = request()->getGet('end_date', true) ?? null;
+		$from = $this->input->get('start_date', true) ?? null;
+		$to = $this->input->get('end_date', true) ?? null;
 
 		$temp = getFilterQueryFromDict($filterList);
 		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
 		$filterValues = $temp[1];
+		$userID = $filterList['user_id'] ?? null;
 
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
-			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
+			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) between '$from' and '$to' ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
-			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) = date('$from') ";
+			$from = ($this->db->escape_str($from));
+			$filterQuery .= ($filterQuery ? " and " : " where ") . " date(a.created_at) = '$from' ";
+		}
+
+		if ($userID) {
+			$filterQuery .= ($filterQuery ? " OR " : " where ") . " (
+					a.secondary_beneficiaries IS NOT NULL AND 
+					JSON_CONTAINS(a.secondary_beneficiaries, CAST(CONCAT('\"', $userID , '\"') AS JSON))
+				)";
 		}
 
 		if (isset($_GET['sortBy']) && $orderBy) {
@@ -526,15 +579,17 @@ class User_requests extends Crud
 		}
 
 		if (isset($_GET['start']) && $len) {
-			$start = $this->db->conn_id->escape_string($start);
-			$len = $this->db->conn_id->escape_string($len);
+			$start = $this->db->escape_str($start);
+			$len = $this->db->escape_str($len);
 			$filterQuery .= " limit $start, $len";
 		}
 		if (!$filterValues) {
 			$filterValues = [];
 		}
 
-		return $this->apiListQuery($filterQuery, $filterValues, 'project-title');
+		return $this->apiListQuery($filterQuery, $filterValues, 'project-title', true, [
+			'user_id' => $userID
+		]);
 	}
 
 	public function APIListSalaryAdvanceRequests($filterList, $queryString, ?int $start, ?int $len, ?string $orderBy): array
@@ -560,27 +615,63 @@ class User_requests extends Crud
 		return $this->apiListQuery($filterQuery, $filterValues, 'salary-advance');
 	}
 
-	private function apiListQuery(string $filterQuery, ?array $filterValues, string $queryType = 'non-project', bool $allowCharges = true): array
+	private function apiListQuery(string $filterQuery, ?array $filterValues, string $queryType = 'non-project', bool $allowCharges = true, $extraParam = null): array
 	{
 		$tablename = strtolower(self::$tablename);
 		if ($queryType == 'non-project') {
 			$query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . ",b.task_title,'prev_request' from $tablename a left join 
 			project_tasks b on b.id = a.project_task_id $filterQuery";
 		} else if ($queryType == 'project') {
-			$query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . ",b.task_title,c.title as project_title,
-			c.id as project_id,d.name as request_type,d.is_auditable,'prev_request' from $tablename a left join project_tasks b on b.id = a.project_task_id left join projects c 
-			on c.id = b.project_id join request_type d on d.id = a.request_id  $filterQuery";
+			$query = "
+				SELECT " . buildApiClause(static::$apiSelectClause, 'q') . ", q.task_title,
+				q.project_title, q.project_id,
+       			q.request_type, q.is_auditable, q.prev_request, q.firstname, q.lastname, q.staff_id
+				from ( 
+					SELECT " . buildApiClause(static::$apiSelectClause, 'a', false) . ", b.task_title,
+					c.title as project_title, c.id as project_id,d.name as request_type, d.is_auditable,
+					'prev_request' as prev_request, 
+					CASE
+					   WHEN e.user_type = 'staff' THEN f.firstname
+					   WHEN e.user_type = 'contractor' THEN g.registered_name
+					   ELSE NULL
+				   END AS firstname,
+				   CASE
+					   WHEN e.user_type = 'staff' THEN f.lastname
+					   WHEN e.user_type = 'contractor' THEN g.cac_number
+					   ELSE NULL
+				   END AS lastname,
+				   CASE
+		        		WHEN e.user_type = 'staff' THEN f.staff_id
+		        		ELSE NULL
+		        	END AS staff_id
+					from $tablename a 
+					left join project_tasks b on b.id = a.project_task_id 
+					left join projects c on c.id = b.project_id 
+					join request_type d on d.id = a.request_id
+					left join users_new e on e.id = a.user_id 
+					LEFT JOIN staffs f ON e.user_table_id = f.id AND e.user_type = 'staff'
+					LEFT JOIN contractors g ON e.user_table_id = g.id AND e.user_type = 'contractor' 
+			) q $filterQuery
+			";
+
 		} else if ($queryType == 'voucher') {
 			$dbColumn = $allowCharges ? ",'charges_list'" : "";
 			$query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . ",b.task_title,c.title as project_title,
 			c.id as project_id,d.name as request_type $dbColumn from $tablename a left join project_tasks b on b.id = a.project_task_id left join projects c 
 			on c.id = b.project_id join request_type d on d.id = a.request_id join user_request_assignee e on e.user_request_id = a.id  $filterQuery";
 		} else if ($queryType == 'project-title') {
-			$query = "SELECT a.id, request_no,title,a.user_id,description,a.created_at,a.request_status,a.request_id from $tablename a $filterQuery";
+			$userID = $extraParam['user_id'] ?? null;
+			$query = "SELECT a.id, request_no,title,a.user_id,description,a.created_at,a.request_status,a.request_id,  
+			CASE WHEN a.user_id = $userID THEN 'primary' 
+			WHEN JSON_CONTAINS(a.secondary_beneficiaries, CAST(CONCAT('\"', $userID , '\"') AS JSON)) THEN 'secondary' 
+        	ELSE 'none' END AS user_relationship from $tablename a
+			$filterQuery ";
 		} else if ($queryType == 'salary-advance') {
 			$query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . ", 'prev_request' from $tablename a $filterQuery";
 		}
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
+
+		// dddump($query);
 
 		$res = $this->db->query($query, $filterValues);
 		$res = $res->result_array();
@@ -595,6 +686,7 @@ class User_requests extends Crud
 	{
 		loadClass($this->load, 'request_type_charges');
 		loadClass($this->load, 'users_new');
+		loadClass($this->load, 'course_request_claims');
 
 		$generator = useGenerators($items);
 		$payload = [];
@@ -616,11 +708,13 @@ class User_requests extends Crud
 				$item['initiated_by'] = [
 					'id' => $item['user_id'],
 					'name' => $name,
+					'department_name' => $userInfo['department_name']
 				];
 			} else {
 				$item['initiated_by'] = [
 					'id' => $item['user_id'],
 					'name' => null,
+					'department_name' => null
 				];
 			}
 		}
@@ -676,7 +770,17 @@ class User_requests extends Crud
 			$item['retire_advance_doc'] = userImagePath($this, $item['retire_advance_doc'], 'retire_advance_path');
 		}
 
+		if ($this->getRequestTypeBySlug($item['request_id'], RequestTypeSlug::CLAIM)) {
+			$courses = $this->course_request_claims->getCoursesClaims($item['id']);
+			$item['course_breakdown'] = $courses ?: [];
+		}
 		return $item;
+	}
+
+	private function getRequestTypeBySlug($requestID, $slug)
+	{
+		$query = "SELECT id,name,slug from request_type where id = ? and slug = ? limit 1";
+		return $this->query($query, [$requestID, $slug]);
 	}
 
 	private function getPrevUserRequest($newRequestID)
@@ -690,8 +794,7 @@ class User_requests extends Crud
 		$query = "SELECT c.name as request_charge,c.slug,c.amount,a.is_editable,a.active from 
 		request_type_charges a join request_type b on a.request_type_id = b.id join request_charges c on 
 		c.id = a.request_charge_id where a.request_type_id = $requestID";
-		$result = $this->query($query);
-		return $result;
+		return $this->query($query);
 	}
 
 	public function chargeAuditable($requestID)
@@ -719,7 +822,7 @@ class User_requests extends Crud
 		return json_encode($feedbacks);
 	}
 
-	public static function actionTimelineData(object $currentUser, string $stage, string $action, bool $isAuditable)
+	public static function actionTimelineData(object $currentUser, ?string $stage = null, ?string $action = null, bool $isAuditable = true)
 	{
 		$empty = [];
 		$insertParam = [
@@ -1017,6 +1120,16 @@ class User_requests extends Crud
 			return $result;
 		}
 		return $query->result_array();
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	public function getUserRequestWithRequestType($requestID)
+	{
+		$query = "SELECT a.*, b.slug as request_slug from user_requests a join request_type b on b.id = a.request_id where a.id = ?";
+		$result = $this->query($query, [$requestID]);
+		return $result ? new User_requests($result[0]) : null;
 	}
 
 

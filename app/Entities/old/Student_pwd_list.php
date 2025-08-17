@@ -70,7 +70,7 @@ class Student_pwd_list extends Crud
 		}
 
 		if ($item['passport']) {
-			$item['passport'] = studentImagePath($item['passport']);
+			$item['passport'] = studentImagePath($item['passport'], $this);
 		}
 
 		if ($item['level']) {

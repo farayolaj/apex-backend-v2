@@ -3,13 +3,17 @@ require_once 'application/models/Crud.php';
 require_once APPPATH . 'constants/PaymentFeeDescription.php';
 require_once APPPATH . 'constants/FeeDescriptionCode.php';
 require_once APPPATH . 'traits/CommonTrait.php';
+require_once APPPATH . 'traits/StudentTrait.php';
 require_once APPPATH . 'constants/CommonSlug.php';
+require_once APPPATH . 'constants/StudentStatus.php';
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the students table.
  */
 class Students extends Crud
 {
+	use StudentTrait;
+
 	protected static $tablename = 'Students';
 	/* this array contains the field that can be null*/
 	static $nullArray = ['referee', 'alternative_email', 'verified_by', 'verify_attempt', 'screened_by', 'screening_attempt', 'date_created'];
@@ -578,7 +582,7 @@ class Students extends Crud
 	public function updatePassportPath()
 	{
 
-		$passport = studentImagePath($this->passport);
+		$passport = studentImagePath($this->passport, $this);
 		$this->passport = $passport;
 
 		return $this->passport;
@@ -649,7 +653,8 @@ class Students extends Crud
 	 */
 	protected function getStudentTransaction()
 	{
-		$query = "SELECT transaction.*,programme.name as programme_name from transaction left join programme on programme.id = transaction.programme_id where student_id=?";
+		$query = "SELECT transaction.*,programme.name as programme_name from transaction 
+			left join programme on programme.id = transaction.programme_id where student_id=?";
 		$result = $this->query($query, [$this->id]);
 		if (!$result) {
 			return [];
@@ -660,7 +665,7 @@ class Students extends Crud
 			if ($item['payment_option']) {
 				$item['is_part_payment'] = $currentSession == $item['session'] && !isPaymentComplete($item['payment_option']) ? true : false;
 				$item['encoded_real_payment_id'] = hashids_encrypt($item['real_payment_id']);
-				$item['is_current_sch_fee'] = $currentSession == $item['session'] && ($item['payment_id'] == PaymentFeeDescription::SCH_FEE_FIRST || $item['payment_id'] == PaymentFeeDescription::SCH_FEE_SECOND);
+				$item['is_current_sch_fee'] = $currentSession == $item['session'] && $item['payment_id'] == PaymentFeeDescription::SCH_FEE_SECOND;
 				$content[] = $item;
 			}
 		}
@@ -693,7 +698,12 @@ class Students extends Crud
 	public function getStudentCurrentSessionPayment($semester = null, $id = null)
 	{
 		$schoolFeesCode = get_setting('school_fees_code');
-		$query = "SELECT students.id as student_id, students.*, academic_record.*, academic_record.programme_id as programme_id_code, academic_record.current_session as current_session_code, fee_description.*, fee_description.code as payment_code, transaction.*, transaction.session as trans_session from students left join academic_record on academic_record.student_id = students.id left join transaction on transaction.student_id = students.id left join fee_description on fee_description.id = transaction.payment_id where transaction.student_id = ? and fee_description.code = ? and transaction.session = academic_record.current_session";
+		$query = "SELECT students.id as student_id, students.*, academic_record.*, academic_record.programme_id as programme_id_code, 
+       		academic_record.current_session as current_session_code, fee_description.*, fee_description.code as payment_code, 
+       		transaction.*, transaction.session as trans_session from students left join academic_record on 
+       		academic_record.student_id = students.id left join transaction on transaction.student_id = students.id 
+       		left join fee_description on fee_description.id = transaction.payment_id where transaction.student_id = ? and 
+       		fee_description.code = ? and transaction.session = academic_record.current_session";
 		if ($semester) {
 			$query .= " and transaction.payment_id = '$semester'";
 		}
@@ -703,7 +713,7 @@ class Students extends Crud
 			return false;
 		}
 		foreach ($results as $res) {
-			if (isset($res['payment_status']) && $res['payment_status'] == '01' || isset($res['payment_status']) && $res['payment_status'] == '00') {
+			if (isset($res['payment_status']) && CommonTrait::isPaymentValid($res['payment_status'])) {
 				return $res;
 			}
 		}
@@ -744,6 +754,19 @@ class Students extends Crud
 		$result = $this->query($query, [$id]);
 		if (!$result) {
 			return false;
+		}
+		return $result[0];
+	}
+
+	public function getStudentRecordOnly($matric)
+	{
+		$query = "SELECT a.id, a.lastname, a.firstname, a.othernames, a.user_login 
+		from students a 
+       	join academic_record b on b.student_id = a.id 
+    	where b.matric_number = ?";
+		$result = $this->query($query, [$matric]);
+		if (!$result) {
+			return null;
 		}
 		return $result[0];
 	}
@@ -1032,249 +1055,6 @@ class Students extends Crud
 	}
 
 	/**
-	 * @param mixed $prerequisite_fee
-	 * @param mixed $session
-	 * @param mixed $level
-	 * @return array<string,mixed>
-	 * @deprecated - Not used again since we changed prerequisites approach using payment id directly
-	 */
-	public function transformPaymentParam($prerequisite_fee, $session, $level)
-	{
-		loadClass($this->load, 'sessions');
-		$preqFee = $prerequisite_fee != 0 ? $this->fee_description->getWhere(['id' => $prerequisite_fee], $c, 0, null, false) : null;
-		$prerequisiteDesc = $preqFee ? $preqFee[0]->description : null;
-		$sess = $this->sessions->getWhere(['id' => $session], $c, 0, null, false);
-		$session_name = $sess ? " - " . $sess[0]->date : '';
-
-		// check globally if acceptance fee had been paid irrespective of the paid session
-		if (PaymentFeeDescription::ACCEPTANCE_FEE == $prerequisite_fee) {
-			$session = null;
-			$level = null;
-		}
-		// check if prerequistes had been paid
-		$checkPaymentTransaction = $this->payment->getPaymentTransaction($prerequisite_fee, $this->id, $session, $level);
-		$paymentId = $this->payment->getPaymentByDescription($prerequisite_fee, $session);
-		$prerequisite_fee = hashids_encrypt(@$paymentId['id']);
-
-		return [
-			'prerequisite' => @$prerequisite_fee ?? 0,
-			'description' => $prerequisite_fee ? $prerequisiteDesc . $session_name : null,
-			'paid' => $checkPaymentTransaction ? true : false,
-			'paid_id' => $checkPaymentTransaction ? $checkPaymentTransaction->id : null,
-		];
-	}
-
-	private function transformPrerequisiteDesc($description, $session): ?string
-	{
-		$preqFee = $description != 0 ? $this->fee_description->getWhere(['id' => $description], $c, 0, null, false) : null;
-		$prerequisiteDesc = $preqFee ? $preqFee[0]->description : null;
-		$sess = $this->sessions->getWhere(['id' => $session], $c, 0, null, false);
-		$session_name = $sess ? " - " . $sess[0]->date : '';
-		return $prerequisiteDesc . $session_name;
-	}
-
-	private function processSinglePaymentPrerequisite(object $payment, object $academic_record, $session, $level, bool $isVisible = false, $acceptanceSession = null)
-	{
-		loadClass($this->load, 'sessions');
-		loadClass($this->load, 'fee_description');
-		loadClass($this->load, 'sessions');
-		$isVisiblePassed = true;
-		$showPayment = true;
-		$acceptanceSession = $acceptanceSession ?: get_setting('session_semester_payment_start');
-		$isPaymentFull = true;
-		$studentID = $academic_record->student_id;
-
-		if ($isVisible) {
-			$isVisiblePassed = $payment->is_visible == 1;
-		}
-		if ($isVisiblePassed && $payment) {
-			$newSession = $payment->session != 0 ? $payment->session : $session;
-			$preqDesc = $this->transformPrerequisiteDesc($payment->description, $newSession);
-			// check globally if acceptance fee had been paid irrespective of the paid session
-			if (PaymentFeeDescription::ACCEPTANCE_FEE == $payment->description) {
-				$session = null;
-				$level = null;
-			}
-			$paidTransaction = false;
-			$checkPaymentTransaction = $this->payment->getPaymentTransaction($payment->description, $studentID, $session, $level);
-			$paidTransaction = $checkPaymentTransaction && $isPaymentFull;
-			$paidTransactionID = $paidTransaction ? $checkPaymentTransaction->id : null;
-			$prerequisiteFee = hashids_encrypt($payment->id);
-			$preqDesc = $prerequisiteFee ? $preqDesc : null;
-
-			if ($checkPaymentTransaction && !isPaymentComplete($checkPaymentTransaction->payment_option)) {
-				$isPaymentFull = false;
-				$preqDesc .= ($preqDesc) ? " Balance" : null;
-				$paymentCode = inferPaymentCode($payment->description);
-				$checkPaymentTransaction = $this->payment->getPaymentTransaction($payment->description, $studentID, $session, null, $paymentCode);
-				$paidTransaction = $checkPaymentTransaction ? true : false;
-				$paidTransactionID = $paidTransaction ? $checkPaymentTransaction->id : null;
-			}
-
-			if ($payment->description == PaymentFeeDescription::ACCEPTANCE_FEE && $acceptanceSession > $academic_record->year_of_entry) {
-				$showPayment = false;
-			}
-
-			if ($showPayment) {
-				return [
-					'prerequisite' => @$prerequisiteFee ?? 0,
-					'description' => $preqDesc,
-					'paid' => $paidTransaction,
-					'paid_id' => $paidTransactionID,
-				];
-			}
-		}
-	}
-
-	/**
-	 * @param mixed $academic_record
-	 * @param mixed $prerequisite_fee
-	 * @param mixed $session
-	 * @param mixed $level
-	 * @param mixed $isVisible
-	 * @return array<int,array<string,mixed>>
-	 */
-	public function transformPaymentPrerequisiteParam($academic_record, $prerequisite_fee, $session, $level = null, $isVisible = false)
-	{
-		loadClass($this->load, 'payment');
-		$prerequisites = [];
-		$acceptanceSession = get_setting('session_semester_payment_start');
-
-		foreach ($prerequisite_fee as $preq) {
-			$payment = $this->payment->getWhere(['id' => $preq], $c, 0, null, false);
-			$payment = @$payment[0];
-			$preqResult = $this->processSinglePaymentPrerequisite($payment, $academic_record, $session, $level, $isVisible, $acceptanceSession);
-			if ($preqResult) {
-				$prerequisites[] = $preqResult;
-			}
-		}
-
-		return $prerequisites;
-	}
-
-	/**
-	 * @param mixed $prerequisite_fee
-	 * @param mixed $session
-	 * @param mixed $transactionRef
-	 * @return array<string,mixed>
-	 */
-	public function transformDirectPaymentParam($prerequisite_fee, $session, $transactionRef = null, $paymentDesc = null)
-	{
-		loadClass($this->load, 'sessions');
-		$preqDesc = null;
-		if ($paymentDesc) {
-			$preqDesc = $paymentDesc;
-		} else {
-			$preqDesc = $this->transformPrerequisiteDesc($prerequisite_fee, $session);
-		}
-		$paymentId = $this->payment->getPaymentByDescription($prerequisite_fee);
-		$prerequisite_fee = hashids_encrypt(@$paymentId['id']);
-
-		return [
-			'transaction_ref' => $transactionRef ?? null,
-			'payment_transaction' => "trans_normal",
-			'prerequisite' => @$prerequisite_fee ?? 0,
-			'description' => $prerequisite_fee ? $preqDesc : null,
-			'paid' => false,
-			'paid_id' => null,
-		];
-	}
-
-	/**
-	 * @param mixed $prerequisite_fee
-	 * @param mixed $session
-	 * @param mixed $payment
-	 * @param mixed $isVisible
-	 * @return array<string,mixed>
-	 */
-	public function transformDirectTransactionPaymentParam($prerequisite_fee, $session, array $payment, bool $isVisible = false, ?string $transactionRef = null, ?string $paymentDesc = null): ?array
-	{
-		loadClass($this->load, 'sessions');
-		$preqDesc = $paymentDesc ?: $this->transformPrerequisiteDesc($prerequisite_fee, $session);
-		$isVisiblePassed = true;
-
-		if ($isVisible) {
-			$isVisiblePassed = $payment['is_visible'] == 1;
-		}
-		$prerequisite_fee = hashids_encrypt($payment['id']);
-
-		if ($isVisiblePassed) {
-			return [
-				'transaction_ref' => $transactionRef ?: null,
-				'payment_transaction' => "trans_normal",
-				'prerequisite' => @$prerequisite_fee ?? 0,
-				'description' => $prerequisite_fee ? $preqDesc : null,
-				'paid' => false,
-				'paid_id' => null,
-			];
-		}
-		return null;
-	}
-
-	public function transformDirectPreqTransactionParam(array $transaction, $prerequisite_fee, $session): array
-	{
-		loadClass($this->load, 'sessions');
-		$preqDesc = @$transaction['payment_description'] ?: $this->transformPrerequisiteDesc($prerequisite_fee, $session);
-		$prerequisite_fee = hashids_encrypt($transaction['real_payment_id']);
-
-		return [
-			'transaction_ref' => @$transaction['transaction_ref'] ?: null,
-			'payment_transaction' => "trans_normal",
-			'prerequisite' => @$prerequisite_fee ?? 0,
-			'description' => $prerequisite_fee ? $preqDesc : null,
-			'paid' => false,
-			'paid_id' => null,
-		];
-	}
-
-	/**
-	 * @param mixed $transactionPaymentSession
-	 * @return array<string,mixed>
-	 */
-	public function prepPaymentAmount(object $payment, $transactionPaymentSession = null)
-	{
-		$toReturn = [];
-
-		$feeDesc = $this->fee_description->getWhere(['id' => $payment->description], $c, 0, null, false);
-		$sess = $this->sessions->getWhere(['id' => $transactionPaymentSession], $c, 0, null, false);
-
-		$description = $feeDesc ? $feeDesc[0]->description : null;
-		$session_name = $sess ? $sess[0]->date : null;
-		$date_due = null;
-		$penalty_fee = 0;
-		if (@$payment->date_due != '') {
-			$dueDateParam = $payment->getFormatDueDateParam($payment);
-			$penalty_fee = (int)$dueDateParam[0];
-			$date_due = $dueDateParam[1];
-		}
-		$serviceCharge = (int)$payment->service_charge;
-		$originalAmount = (int)$payment->amount;
-
-		// if($discountAmount = $payment->validateVerificationFee($academic_record,$payment->id)){
-		// 	if($discountAmount){
-		// 		$originalAmount = $discountAmount;
-		// 	}
-		// }
-
-		if ($payment->subaccount_amount) {
-			$originalAmount += $payment->subaccount_amount;
-		}
-
-		$originalAmountService = $originalAmount + $serviceCharge;
-		$totalAmount = ($originalAmountService + $penalty_fee);
-
-		$toReturn['description'] = $transactionPaymentSession ? $description . " " . $session_name : $description;
-		$toReturn['penalty_fee'] = $penalty_fee;
-		$toReturn['date_due'] = $date_due;
-		$toReturn['serviceCharge'] = $serviceCharge;
-		$toReturn['originalAmount'] = $originalAmount;
-		$toReturn['originalAmountService'] = $originalAmountService;
-		$toReturn['totalAmount'] = $totalAmount;
-
-		return $toReturn;
-	}
-
-	/**
 	 * @param mixed $student
 	 * @param mixed $code
 	 * @param mixed $session
@@ -1337,19 +1117,19 @@ class Students extends Crud
 	}
 
 	/**
-	 * Validate year of entry using just the pre-session layer[2018] of the session format [2019/2019]
-	 * for comparison and evaluation
+	 * Validate year of entry using just the pre-session layer[2018] of the session
+	 * format [2018/2019] for comparison and evaluation
 	 * @param $session
 	 * @param mixed $yearOfEntry
 	 * @return bool@param mixed $session
 	 */
 	private function validateYearOfEntry($session, $yearOfEntry): bool
 	{
-		$sessionLatter = explode('/', $session);
-		$yearOfEntryLatter = explode('/', $yearOfEntry);
+		$sessionFormer = explode('/', $session);
+		$yearOfEntryFormer = explode('/', $yearOfEntry);
 
-		if (isset($sessionLatter[0]) && isset($yearOfEntryLatter[0])) {
-			return $sessionLatter[0] >= $yearOfEntryLatter[0];
+		if (isset($sessionFormer[0]) && isset($yearOfEntryFormer[0])) {
+			return $sessionFormer[0] >= $yearOfEntryFormer[0];
 		}
 		return false;
 	}
@@ -1361,6 +1141,13 @@ class Students extends Crud
 	private function validateStudentSpecialPrerequisites($academic_record): array
 	{
 		$structure = [
+			[
+				'session' => '2023/2024',
+				'ros' => 83,
+				'sus' => 88,
+				'ros_code' => 'RoS',
+				'sus_code' => 'SuS',
+			],
 			[
 				'session' => '2022/2023',
 				'ros' => 63,
@@ -1439,7 +1226,7 @@ class Students extends Crud
 						}
 					}
 
-					// excluding the student year of entry
+					// excluding the student year of entry with special case
 					if ($academic_record->year_of_entry != getSessionValue('session_2020_special')) {
 						if ($academic_record->year_of_entry != $session && $session == $currentStudentSession) {
 							// check if student paid sch-fees in prev session
@@ -1469,7 +1256,7 @@ class Students extends Crud
 		if ($payment->is_visible == 1 && $payment->description != PaymentFeeDescription::ACCEPTANCE_FEE) {
 			$sessionSemesterStart = get_setting('session_semester_payment_start');
 			if ($session >= $sessionSemesterStart) {
-				// this checks for session 22 second semester successful transaction
+				// this checks for session [2021/2022] second semester successful transaction
 				$transaction = $this->checkStudentPaymentByCode($academic_record->student_id, FeeDescriptionCode::SCHOOL_FEE, $session, PaymentFeeDescription::SCH_FEE_SECOND);
 				if (!$transaction) {
 					$pendingPayment = $this->checkStudentPendingPaymentByCode($academic_record->student_id, FeeDescriptionCode::OUTSTANDING_FEE, null, PaymentFeeDescription::OUTSTANDING_22);
@@ -1526,7 +1313,6 @@ class Students extends Crud
 	{
 		$isCompleted = $this->payment->getCompleteTransaction($academic_record->student_id, $paymentDescription, $session);
 		if ($isCompleted) {
-			// means there is a pending transaction
 			if (!CommonTrait::isPaymentValid($isCompleted['payment_status'])) {
 				if ($returnPayment) {
 					$result = $this->payment->getSingleTransactionByRef($isCompleted['transaction_ref'], false);
@@ -1542,6 +1328,7 @@ class Students extends Crud
 				}
 			}
 		}
+
 		// check if there is a part payment and need to pay it equiv balance or the full payment
 		$prevLevel = CommonTrait::inferPreviousLevel($academic_record->entry_mode, $academic_record->current_level);
 		$param = [
@@ -1594,7 +1381,6 @@ class Students extends Crud
 	 * @param mixed $academic_record
 	 * @param bool $returnPayment
 	 * @return array
-	 * @throws Exception
 	 */
 	private function validateStudentOutstanding(object $payment, object $academic_record, bool $returnPayment = false): array
 	{
@@ -1609,6 +1395,7 @@ class Students extends Crud
 						$payload = array_merge($payload, $temp);
 					}
 				} else {
+					// this checks for outstanding in session [2021/2022] only
 					$temp = $this->validateCompleteOutstanding($session, $payment, $academic_record, $returnPayment);
 					if (!empty($temp)) {
 						$payload[] = $temp;
@@ -1616,7 +1403,6 @@ class Students extends Crud
 				}
 			}
 		}
-
 		return $payload;
 	}
 
@@ -1624,16 +1410,20 @@ class Students extends Crud
 	 * @param mixed $academic_record
 	 * @param mixed $payment
 	 * @param mixed $currentSemester
-	 * @return array|array<<missing>,<missing>>
+	 * @return array
 	 */
-	public function validateSpecialPaymentPrequisites($academic_record, $payment, $currentSemester): array
+	public function validateSpecialPaymentPrequisites($academic_record, $payment, $currentSemester = null): array
 	{
 		$prerequisites = [];
 		// check for special prerequisite on student current session excluding acceptance fee
 		$currentStudentSession = get_setting('active_session_student_portal');
 		if ($academic_record->has_matric_number == 1) {
-			if ($currentStudentSession == $academic_record->current_session && $currentSemester == 1) {
-				if ((PaymentFeeDescription::SCH_FEE_FIRST == $payment->description || PaymentFeeDescription::TOPUP_FEE_22 == $payment->description) && $payment->description != PaymentFeeDescription::ACCEPTANCE_FEE) {
+			if ($currentStudentSession == $academic_record->current_session) {
+				if ((PaymentFeeDescription::SCH_FEE_FIRST == $payment->description ||
+						PaymentFeeDescription::SCH_FEE_SECOND == $payment->description ||
+						PaymentFeeDescription::TOPUP_FEE_BAL == $payment->description ||
+						PaymentFeeDescription::TOPUP_FEE_22 == $payment->description) &&
+					PaymentFeeDescription::ACCEPTANCE_FEE != $payment->description) {
 					$specialPrerequisites = $this->validateStudentSpecialPrerequisites($academic_record);
 					$prerequisites = array_merge($prerequisites, $specialPrerequisites);
 				}
@@ -1641,7 +1431,7 @@ class Students extends Crud
 		}
 
 		// checking for outstanding payment in a session
-		if ($academic_record->topup_session == null && $academic_record->outstanding_session) {
+		if ($academic_record->outstanding_session != null) {
 			$specialPrerequisites = $this->validateStudentOutstanding($payment, $academic_record);
 			$prerequisites = array_merge($prerequisites, $specialPrerequisites);
 		}
@@ -1678,7 +1468,7 @@ class Students extends Crud
 		} else if ($transactionRef) {
 			$tempTransaction = $payment->getSingleTransactionByRef($transactionRef, false);
 			if ($tempTransaction) {
-				$isPaymentFull = !isPaymentComplete($tempTransaction['payment_option']) ? false : true;
+				$isPaymentFull = isPaymentComplete($tempTransaction['payment_option']);
 				if (!$isPaymentFull) {
 					return $this->prepStudentPartPaymentParam($payment, $tempTransaction);
 				}
@@ -1686,7 +1476,6 @@ class Students extends Crud
 		}
 
 		$transactionPaymentSession = $transaction ? $transaction->session : $payment->session;
-		$currentSemester = get_setting('active_semester');
 
 		// load course pack fee
 		$preselectedFee = null;
@@ -1738,7 +1527,8 @@ class Students extends Crud
 			$paymentTotal = ($totalAmount - $transaction->total_amount) + $serviceCharge;
 			$paymentDescription .= " Balance";
 			$paymentTypeOption = inferPaymentOption($payment->description);
-			// using original payment_id to validate since it would be present when paying for the balance
+			// using original payment_id to validate since it would be present 
+			// when paying for the balance
 			$transaction = $payment->getSuccessTransaction($this->id, $transactionSession);
 			if ($transaction) {
 				$transactionRef = $transaction->transaction_ref;
@@ -1781,6 +1571,7 @@ class Students extends Crud
 			'transactionID' => $paidTransaction_id,
 			'transaction_rrr' => $transaction->rrr_code ?? null,
 			'payment_type_option' => $paymentTypeOption,
+			'payment_group' => []
 		];
 	}
 
@@ -1790,67 +1581,67 @@ class Students extends Crud
 	 * @param  [type] $academic_record [description]
 	 * @param  [type] $session         [description]
 	 * @param  [type] $transactionRef  [description]
-	 * @return array<string,mixed>@param mixed $payment
+	 * @return array<string,mixed>
 	 */
 	public function prepStudentPaymentParam($payment, $academic_record, $session = null, $transactionRef = null, $transactionLevel = null): array
 	{
 		$prerequisites = [];
 		$isPaymentFull = true;
 		$transactionSession = $session ?: $academic_record->current_session;
-		if (!$transactionLevel) {
-			$transactionLevel = @$payment->trans_level ?? $academic_record->current_level;
-		}
+		$transactionLevel = $transactionLevel ?? @$payment->trans_level ?? $academic_record->current_level;
 
-		// check globally if acceptance fee had been paid irrespective of the paid session
+		// Check globally if acceptance fee had been paid irrespective of the paid session
 		if (PaymentFeeDescription::ACCEPTANCE_FEE == $payment->description) {
 			$transactionSession = null;
 			$transactionLevel = null;
 		}
 
 		$transaction = $payment->getSuccessTransactionByDescription($this->id, $transactionSession, $transactionLevel, $transactionRef, false);
+
+		// return part payment early if there is a pending transaction
 		if ($transaction && !isPaymentComplete($transaction->payment_option)) {
 			$isPaymentFull = false;
 			$paymentCode = inferPaymentCode($payment->description);
 			$checkPaymentTransaction = $payment->getTransactionByOption($this->id, $paymentCode, $session, $transactionLevel);
 			if ($checkPaymentTransaction) {
-				$checkPaymentTransaction = $checkPaymentTransaction->toArray();
-				return $this->prepStudentPartPaymentParam($payment, $checkPaymentTransaction);
+				return $this->prepStudentPartPaymentParam($payment, $checkPaymentTransaction->toArray());
 			}
-
 		} else if ($transactionRef) {
 			$tempTransaction = $payment->getSingleTransactionByRef($transactionRef, false);
 			if ($tempTransaction) {
-				$isPaymentFull = !isPaymentComplete($tempTransaction['payment_option']) ? false : true;
+				$isPaymentFull = isPaymentComplete($tempTransaction['payment_option']);
 				if (!$isPaymentFull) {
 					return $this->prepStudentPartPaymentParam($payment, $tempTransaction);
 				}
 			}
 		}
 
-		$transactionPaymentSession = $transaction ? $transaction->session : $payment->session;
+		$transactionPaymentSession = $transaction->session ?? $payment->session;
 		$currentSemester = get_setting('active_semester');
 		// now check for prerequisite
 		if ($payment->prerequisite_fee != '') {
 			$prerequisitesID = json_decode($payment->prerequisite_fee, true);
 			if (!empty($prerequisitesID)) {
-				$tempPrerequsites = $this->transformPaymentPrerequisiteParam($academic_record, $prerequisitesID, $payment->session, $transactionLevel);
-				$prerequisites = array_merge($prerequisites, $tempPrerequsites);
+				$tempPrerequisites = $this->transformPaymentPrerequisiteParam($academic_record, $prerequisitesID, $payment->session, $transactionLevel);
+				$prerequisites = array_merge($prerequisites, $tempPrerequisites);
 			}
 		}
 
-		// NOTE: THIS IS MEANT TO BE TEMPORAL PREREQUISITES
+		// TODO: TURN THIS TO DYNAMIC TO AVOID ADD MANUALLY
+		// NOTE: THIS IS MEANT TO BE TEMPORAL PREREQUISITES WHICH HANDLES OUTSTANDIINGS
+		// SUSPENSION AND REACTIVATION OF STUDY AS A MEANS OF PREREQUISITES
 		$tempPrerequisites = $this->validateSpecialPaymentPrequisites($academic_record, $payment, $currentSemester);
 		if ($tempPrerequisites) {
 			$prerequisites = array_merge($prerequisites, $tempPrerequisites);
 		}
 
-		// load course pack fee
+		// Load course pack fee
 		$preselectedFee = null;
 		$preselectedFeeAmount = 0;
 		if ($payment->preselected_fee != 0) {
 			$preselected = $this->transformPaymentAmount($payment->preselected_fee);
-			$preselectedFeeAmount = $preselected['amount'];
-			$preselectedFee = $preselected['desc'];
+			$preselectedFeeAmount = $preselected['amount'] ?? 0;
+			$preselectedFee = $preselected['desc'] ?? null;
 		}
 
 		$paymentParam = $this->prepPaymentAmount($payment, $transactionPaymentSession);
@@ -1861,40 +1652,48 @@ class Students extends Crud
 		$originalAmount = $paymentParam['originalAmount'];
 		$originalAmountService = $paymentParam['originalAmountService'];
 		$totalAmount = $paymentParam['totalAmount'];
+		$descriptionCode = $paymentParam['descriptionCode'];
 
 		$paymentType = ($payment->fee_category == 1) ? 'Main' : 'Sundry';
+
 		if ($transaction && $isPaymentFull) {
-			$transactionRef = $transaction->transaction_ref ?: null;
+			$transactionRef = $transaction->transaction_ref ?? null;
 		}
 
 		$enablePayment = 0;
-		if ($paymentType == 'Main') {
+		if ($paymentType === 'Main') {
 			$enablePayment = (get_setting('disable_all_school_fees') == 0) ? 1 : 0;
-		}
-
-		if ($paymentType == 'Sundry') {
+		} elseif ($paymentType === 'Sundry') {
 			$enablePayment = (get_setting('disable_all_sundry_fees') == 0) ? 1 : 0;
 		}
-
 		if ($enablePayment == 1) {
 			$enablePayment = $payment->status;
 		}
 
-		$paymentTypeOption = paymentOptionsType($transaction ? $transaction->payment_option : $payment->options, true);
-		$paymentCode = $transaction && $isPaymentFull ? $transaction->payment_description : $payment->description;
-		$paymentDescription = $transaction && $isPaymentFull ? $transaction->payment_description : $description;
+		// Add course pack for PUTME students if not a balance
+		if ($this->isStudentAPutme($academic_record) && $isPaymentFull && $paymentType == 'Main') {
+			if (strpos($description, 'Balance') === false) {
+				// $description .= " + Course Pack";
+			}
+		}
+
+		$paymentTypeOption = paymentOptionsType($transaction->payment_option ?? $payment->options, true);
+		$paymentCode = ($transaction && $isPaymentFull) ? $transaction->payment_description : $payment->description;
+		$paymentDescription = ($transaction && $isPaymentFull) ? $transaction->payment_description : $description;
 		$paymentTotal = ($transaction && $transaction->total_amount) ? $transaction->total_amount : $totalAmount;
 		$paidTransaction = $transaction && $isPaymentFull;
 		$paidTransactionID = $transaction && $isPaymentFull ? $transaction->id : null;
 		$paidPaymentTransactionID = $transaction && $isPaymentFull ? $transaction->payment_id : null;
 		$paidTransaction_id = $transaction && $isPaymentFull ? $transaction->transaction_id : null;
+		$paymentGroup = [];
 
 		if ($transaction && !$isPaymentFull) {
 			$serviceCharge = 505;
-			$paymentTotal = ($totalAmount - $transaction->total_amount) + $serviceCharge;
+			$amountPaid = $transaction->cumulative_total ?? $transaction->total_amount;
+			$paymentTotal = ($totalAmount - $amountPaid) + $serviceCharge;
 			$paymentDescription .= " Balance";
 			$paymentTypeOption = inferPaymentOption($payment->description);
-			// using original payment_id to validate since it would be present when paying for the balance
+			// Using the original payment_id to validate since it should be present when paying for the balance
 			$transaction = $payment->getSuccessTransaction($this->id, $transactionSession);
 			if ($transaction) {
 				$transactionRef = $transaction->transaction_ref;
@@ -1904,15 +1703,25 @@ class Students extends Crud
 				$paidTransaction_id = $transaction->transaction_id;
 			}
 
-			// if payment is 1st sem balance, prerequisites is not needed
+			// If payment is 1st sem balance, prerequisites is not needed
 			if ($payment->description == PaymentFeeDescription::SCH_FEE_FIRST) {
 				$prerequisites = [];
 			}
 		}
 
-		// if payment is outstanding, prerequisites is not needed
-		if ($payment->description == PaymentFeeDescription::OUTSTANDING_22) {
+		// If payment is an outstanding payment for 2021/2022, reactivation, or suspension, prerequisites is not needed
+		if (
+			$payment->description == PaymentFeeDescription::OUTSTANDING_22 ||
+			($descriptionCode && (
+					$descriptionCode == FeeDescriptionCode::REACTIVATION_CODE ||
+					$descriptionCode == FeeDescriptionCode::SUSPENSION_CODE
+				))
+		) {
 			$prerequisites = [];
+		}
+
+		if ($payment->payment_group != null) {
+			$paymentGroup = $this->prepPaymentGroupParam($payment->payment_group, $payment->session, $paymentTotal);
 		}
 
 		return [
@@ -1921,7 +1730,7 @@ class Students extends Crud
 			'payment_transaction' => 'trans_normal',
 			'payment_code' => $paymentCode,
 			'payment_code2' => $payment->description,
-			'level' => $transaction ? $transaction->level : $transactionLevel,
+			'level' => $transaction->level ?? $transactionLevel,
 			'session' => $transactionPaymentSession,
 			'prerequisites' => $prerequisites,
 			'preselected' => @$payment->preselected_fee ?? 0,
@@ -1947,74 +1756,15 @@ class Students extends Crud
 			'transactionID' => $paidTransaction_id,
 			'transaction_rrr' => $transaction->rrr_code ?? null,
 			'payment_type_option' => $paymentTypeOption,
-		];
-	}
-
-	public function prepStudentPartPaymentParam($payment, $transaction): array
-	{
-		$paidTransaction = false;
-		$paymentTypeOption = paymentOptionsType($transaction ? $transaction['payment_option'] : $payment->options, true);
-		if ($transaction && CommonTrait::isPaymentValid($transaction['payment_status'])) {
-			$paidTransaction = true;
-		}
-
-		$preselectedFee = null;
-		$preselectedFeeAmount = 0;
-
-		$paymentType = ($payment->fee_category == 1) ? 'Main' : 'Sundry';
-		$enablePayment = 0;
-		if ($paymentType == 'Main') {
-			$enablePayment = (get_setting('disable_all_school_fees') == 0) ? 1 : 0;
-		}
-
-		if ($paymentType == 'Sundry') {
-			$enablePayment = (get_setting('disable_all_sundry_fees') == 0) ? 1 : 0;
-		}
-
-		if ($enablePayment == 1) {
-			$enablePayment = $payment->status;
-		}
-
-		return [
-			'payment_id' => hashids_encrypt($payment->id),
-			'transaction_ref' => $transaction['transaction_ref'],
-			'payment_transaction' => "trans_normal",
-			'payment_code' => $transaction['payment_description'],
-			'payment_code2' => $transaction['payment_id'],
-			'level' => $transaction['level'],
-			'session' => $transaction['session'],
-			'prerequisites' => [],
-			'preselected' => 0,
-			'preselected_fee_readable' => $preselectedFee,
-			'preselected_amount' => $preselectedFeeAmount,
-			'fee_category' => $payment->fee_category,
-			'fee_category_readable' => $paymentType,
-			'description' => $transaction['payment_description'],
-			'amount' => $transaction['total_amount'],
-			'penalty_fee' => 0,
-			'service_charge' => $transaction['service_charge'],
-			'total_fee_service_charge' => $transaction['total_amount'],
-			'total' => $transaction['total_amount'],
-			'date_due' => null,
-			'paid' => $paidTransaction,
-			'paid_id' => $paidTransaction ? $transaction['id'] : null,
-			'is_active' => $enablePayment,
-			'is_visible' => $payment->is_visible,
-			'payment_category' => strtolower($paymentType),
-			'transaction_payment_id' => $paidTransaction ? $transaction['payment_id'] : null,
-			'date_performed' => $transaction['date_performed'] ?? null,
-			'date_completed' => $transaction['date_completed'] ?? null,
-			'transactionID' => $transaction['transaction_id'] ?? null,
-			'transaction_rrr' => $transaction['rrr_code'] ?? null,
-			'payment_type_option' => $paymentTypeOption,
+			'payment_group' => $paymentGroup,
 		];
 	}
 
 	/**
-	 * This would prep part payment details
+	 * This would prep part payment initiate details
 	 * @param  [type] $payment         [description]
 	 * @param  [type] $academic_record [description]
-	 * @return array<string,mixed>@param mixed $payment
+	 * @return array<string,mixed>
 	 */
 	public function prepStudentPaymentDirectParam($payment, $academic_record, $transactionLevel = null): array
 	{
@@ -2072,10 +1822,13 @@ class Students extends Crud
 		$paymentTotal = ($transaction && $transaction->total_amount) ? $transaction->total_amount : $totalAmount;
 		if ($transaction && !$isPaymentFull) {
 			$serviceCharge = 505;
-			$paymentTotal = ($totalAmount - $transaction->total_amount) + $serviceCharge;
+			$amountPaid = $transaction->cumulative_total ?: $transaction->total_amount;
+			$paymentTotal = ($totalAmount - $amountPaid) + $serviceCharge;
 			$paymentDescription .= " Balance";
 			$paymentTypeOption = inferPaymentOption($payment->description);
 		}
+		$paymentGroup = $payment->payment_group ?
+			$this->prepPaymentGroupParam($payment->payment_group, $payment->session, $paymentTotal) : [];
 
 		return [
 			'payment_id' => hashids_encrypt($payment->id),
@@ -2094,7 +1847,7 @@ class Students extends Crud
 			'description' => $paymentDescription,
 			'amount' => $originalAmount,
 			'penalty_fee' => ($penalty_fee != 0) ? $penalty_fee : 0,
-			'service_charge' => $serviceCharge, // 0,
+			'service_charge' => $serviceCharge,
 			'total_fee_service_charge' => $originalAmountService,
 			'total' => $paymentTotal,
 			'date_due' => $date_due,
@@ -2109,6 +1862,7 @@ class Students extends Crud
 			'transactionID' => $transaction && $isPaymentFull ? $transaction->transaction_id : null,
 			'transaction_rrr' => $transaction->rrr_code ?? null,
 			'payment_type_option' => $paymentTypeOption,
+			'payment_group' => $paymentGroup,
 		];
 	}
 
@@ -2119,7 +1873,7 @@ class Students extends Crud
 	 * @param  [type] $session         [description]
 	 * @param mixed $useTransactionRRR
 	 * @param mixed $transactionRef
-	 * @return array<string,mixed>@param mixed $payment
+	 * @return array<string,mixed>
 	 */
 	public function prepExistingStudentPaymentParam($payment, $academic_record, $session, $useTransactionRRR, $transactionRef = null): array
 	{
@@ -2190,6 +1944,7 @@ class Students extends Crud
 			'transactionID' => $transaction->transaction_id ?? null,
 			'transaction_rrr' => $transaction->rrr_code ?? null,
 			'payment_type_option' => $paymentTypeOption,
+			'payment_group' => []
 		];
 	}
 
@@ -2201,15 +1956,13 @@ class Students extends Crud
 	 * @param mixed $paymentType
 	 * @param mixed $transactionRef
 	 * @param mixed $useTransactionRRR
-	 * @return array<string,null>@param mixed $payment
-	 * @throws Exception
+	 * @return array<string,null>
 	 */
 	private function convertPayment($payment, $academic_record, $session = null, $paymentType = 'main', $transactionRef = null, $useTransactionRRR = false): array
 	{
 		$payment = new Payment($payment);
 		$payment_schedule = [];
 		if ($useTransactionRRR) {
-			// useful if the details already exists in the transaction table
 			$payment_schedule = $this->prepExistingStudentPaymentParam($payment, $academic_record, $session, $useTransactionRRR, $transactionRef);
 		} else {
 			$payment_schedule = $this->prepStudentPaymentParam($payment, $academic_record, $session, $transactionRef);
@@ -2237,10 +1990,10 @@ class Students extends Crud
 	/**
 	 * @throws Exception
 	 */
-	private function convertMainPayment(array $payment, object $academic_record, $session = null, $level = null): array
+	private function convertMainPayment(array $payment, object $academic_record): array
 	{
 		$payment = new Payment($payment);
-		$payment_schedule = $this->prepStudentPaymentParam($payment, $academic_record, $session, null, $level);
+		$payment_schedule = $this->prepStudentPaymentParam($payment, $academic_record);
 
 		$this->load->model('remita');
 		$remitaResponse = null;
@@ -2262,6 +2015,8 @@ class Students extends Crud
 	}
 
 	/**
+	 * This was created to convert payment object without considering the normal/main
+	 * prerequisites that holds
 	 * @throws Exception
 	 */
 	private function convertMainOutstandingPayment(array $payment, object $academic_record, $session = null, $level = null): array
@@ -2293,7 +2048,6 @@ class Students extends Crud
 	 * @param array $transaction [description]
 	 * @param object|null $payment [description]
 	 * @return array<string,mixed>
-	 * @throws Exception
 	 */
 	public function convertTransaction(array $transaction, ?object $payment = null): array
 	{
@@ -2339,7 +2093,13 @@ class Students extends Crud
 			'transactionID' => $transaction->transaction_id ?? null,
 			'transaction_rrr' => $transaction->rrr_code ?? null,
 			'payment_type_option' => $paymentTypeOption,
+			'payment_group' => []
 		];
+	}
+
+	private function shouldSkipAcceptanceFee($payment, $acceptanceSession, $academic_record): bool
+	{
+		return $acceptanceSession > $academic_record->year_of_entry && $payment['description'] == PaymentFeeDescription::ACCEPTANCE_FEE;
 	}
 
 	/**
@@ -2351,56 +2111,65 @@ class Students extends Crud
 	 * @return array
 	 * @throws Exception
 	 */
-	public function loadMainFees($academic_record, $extra = false, $param = true, &$message = '')
+	public function loadMainFees($academic_record, $extra = null, $useExtraParam = true, &$message = ''): array
 	{
-		$query = "SELECT payment.id,payment.amount,payment.description,fee_category,payment.session,payment.level,payment.prerequisite_fee,
-       date_due,payment.penalty_fee,payment.service_charge,payment.status,is_visible,payment.date_created,payment.preselected_fee,payment.discount_amount,
-       payment.subaccount_amount,payment.options from payment where fee_category=1 and session=? and is_visible=1 and
-    	( ( JSON_SEARCH(programme,'one',?) is not null and JSON_SEARCH(level,'one',?) is not null and  JSON_SEARCH(entry_mode,'one',?) is not null )
-    	or ( JSON_SEARCH(programme,'one',?) is not null and JSON_SEARCH(level_to_include,'one',?) is not null and
-    	JSON_SEARCH(entry_mode_to_include,'one',?) is not null) )";
+		$query = "SELECT a.id, a.amount, a.description, fee_category, a.session, a.level, a.prerequisite_fee,
+       	date_due, a.penalty_fee, a.service_charge, a.status, is_visible, a.date_created, a.preselected_fee, 
+	      a.discount_amount, a.subaccount_amount, a.options, a.payment_group FROM payment a
+	      WHERE fee_category=1 AND session=? AND is_visible=1 AND
+    	( 
+	        (JSON_SEARCH(programme,'one',?) IS NOT NULL AND JSON_SEARCH(level,'one',?) IS NOT NULL AND 
+	         JSON_SEARCH(entry_mode,'one',?) IS NOT NULL)
+			OR 
+	        (JSON_SEARCH(programme,'one',?) IS NOT NULL AND JSON_SEARCH(level_to_include,'one',?) IS NOT NULL AND
+	         JSON_SEARCH(entry_mode_to_include,'one',?) IS NOT NULL)
+    	)";
 
 		if ($extra) {
-			$query .= ($param) ? " and payment.description = ?" : ""; // to load only the description(sch fees)
-			$param = $extra;
+			if ($useExtraParam) {
+				$query .= " AND a.description = ?";
+			}
+			$params = $extra;
 		} else {
-			$param = [
+			$entryMode = $this->db->escape_str(trim($academic_record->entry_mode));
+			if ($studentEntry = $this->isStudentAPutme($academic_record)) {
+				$entryMode = $studentEntry;
+			}
+			$params = [
 				trim($academic_record->current_session),
 				trim($academic_record->programme_id),
 				trim($academic_record->current_level),
-				$this->db->escapeString(trim($academic_record->entry_mode)),
+				$entryMode,
 				trim($academic_record->programme_id),
 				trim($academic_record->current_level),
-				$this->db->escapeString(trim($academic_record->entry_mode)),
+				$entryMode,
 			];
 		}
-		$payments = $this->query($query, $param);
+
+		$payments = $this->query($query, $params);
 		if (!$payments) {
-			return null;
+			return [];
 		}
 
-		$toReturn = [];
+		$mainFees = [];
 		$acceptanceSession = get_setting('session_semester_payment_start');
 		foreach ($payments as $payment) {
-			$showPayment = true;
-
-			// Now allowing payment to show but handle from FE
-			// if ($this->isFreshStudent($academic_record) && $payment['description'] != PaymentFeeDescription::ACCEPTANCE_FEE &&
-			// 	!$this->is_verified) {
-			// 	$showPayment = true;
-			// }
-
-			// acceptance payment should start from student having year of entry >= 22.
-			if ($payment['description'] == PaymentFeeDescription::ACCEPTANCE_FEE && $acceptanceSession > $academic_record->year_of_entry) {
-				$showPayment = false;
+			if ($this->shouldSkipAcceptanceFee($payment, $acceptanceSession, $academic_record)) {
+				continue;
 			}
-
-			if ($showPayment) {
-				$toReturn[] = $this->convertMainPayment($payment, $academic_record);
-			}
+			$mainFees[] = $this->convertMainPayment($payment, $academic_record);
 		}
 
-		return $toReturn;
+		return $mainFees;
+	}
+
+	public function isStudentAPutme(object $academic)
+	{
+		// this is to map those with outstanding course pack top up payment
+		if ($this->isFreshStudent($academic) && $academic->applicant_type === CommonSlug::APPLICANT_PUTME_ENTITY) {
+			return $academic->putme_topup ? CommonSlug::O_LEVEL_PUTME_TOP : $academic->entry_mode;
+		}
+		return null;
 	}
 
 	/**
@@ -2587,22 +2356,25 @@ class Students extends Crud
 		return false;
 	}
 
-	public function getOutstandingFees()
+	public function getOutstandingFees($isGraduated = false)
 	{
 		loadClass($this->load, 'fee_description');
 		loadClass($this->load, 'payment');
 
 		$academic_record = $this->academic_record;
 		$paymentOutstanding = null;
-
+		$entryMode = $this->db->escape_str(trim($academic_record->entry_mode));
+		if ($studentEntry = $this->isStudentAPutme($academic_record)) {
+			$entryMode = $studentEntry;
+		}
 		$param = [
 			$academic_record->current_session,
 			$academic_record->programme_id,
 			$academic_record->current_level,
-			$academic_record->entry_mode,
+			$entryMode,
 			$academic_record->programme_id,
 			$academic_record->current_level,
-			$academic_record->entry_mode,
+			$entryMode,
 			PaymentFeeDescription::SCH_FEE_FIRST,
 		];
 		$result = $this->loadMainFeesSkeleton($academic_record, $param);
@@ -2613,7 +2385,7 @@ class Students extends Crud
 			if ($paymentOutstanding) {
 				$paymentOutstanding = [...$paymentOutstanding][0];
 				$paymentOutstanding['payment_id'] = hashids_encrypt($paymentOutstanding['id']);
-				$result = $this->loadAllOutstandingFee($paymentOutstanding, $academic_record);
+				$result = $this->loadAllOutstandingFee($paymentOutstanding, $academic_record, $isGraduated);
 				if ($result) {
 					return $result;
 				}
@@ -2624,57 +2396,104 @@ class Students extends Crud
 
 	}
 
-	private function loadAllOutstandingFee($payment, $academic_record): array {
+	private function pluckPrerequisiteParam(array $data): array
+	{
+		return array_map(function ($item) {
+			return [
+				'transaction_ref' => $item['transaction_ref'],
+				'payment_transaction' => $item['payment_transaction'],
+				'prerequisite' => $item['payment_id'],
+				'description' => $item['description'],
+				'paid' => $item['paid'],
+				'paid_id' => $item['paid_id']
+			];
+		}, $data);
+	}
+
+	private function loadAllOutstandingFee($payment, $academic_record, $isGraduated = false): array
+	{
 		$outstandingResult = [];
-		if ($academic_record->topup_session == null && $academic_record->outstanding_session) {
+
+		if ($payment) {
+			$currentStudentSession = get_setting('active_session_student_portal');
 			$paymentID = hashids_decrypt($payment['payment_id']);
 			$tempPayment = $this->payment->getWhere(['id' => $paymentID], $c, 0, 1, false);
 			if ($tempPayment) {
 				$tempPayment = $tempPayment[0];
-				$result = $this->validateStudentOutstanding($tempPayment, $academic_record, true);
-				if ($result) {
-					$outstandingResult = $result;
+
+				if ($academic_record->has_matric_number == 1 &&
+					$currentStudentSession == $academic_record->current_session) {
+					if ((PaymentFeeDescription::SCH_FEE_FIRST == $tempPayment->description ||
+							PaymentFeeDescription::SCH_FEE_SECOND == $tempPayment->description ||
+							PaymentFeeDescription::TOPUP_FEE_BAL == $tempPayment->description ||
+							PaymentFeeDescription::TOPUP_FEE_22 == $tempPayment->description
+						) &&
+						PaymentFeeDescription::ACCEPTANCE_FEE != $tempPayment->description) {
+						$result = $this->validateStudentSpecialPrerequisites($academic_record);
+						if (!empty($result)) {
+							$outstandingResult = $result;
+						}
+					}
+				}
+
+				// this get the previous session outstanding
+				if ($academic_record->outstanding_session != null) {
+					$result = $this->validateStudentOutstanding($tempPayment, $academic_record, true);
+					if ($result) {
+						$result = $this->pluckPrerequisiteParam($result);
+						$outstandingResult = array_merge($outstandingResult, $result);
+					}
+				}
+
+				// this get the currernt session outstanding
+				if (!$isGraduated && $this->isStudentActive() && $academic_record->current_session) {
+					$result = $this->validateStudentCurrentOutstanding($tempPayment, $academic_record);
+					if ($result) {
+						$result = $this->pluckPrerequisiteParam([$result]);
+						$outstandingResult = array_merge($outstandingResult, $result);
+					}
 				}
 			}
 		}
-
-		if ($academic_record->topup_session == null && $academic_record->current_session) {
-			$paymentID = hashids_decrypt($payment['payment_id']);
-			$tempPayment = $this->payment->getWhere(['id' => $paymentID], $c, 0, 1, false);
-			if ($tempPayment) {
-				$tempPayment = $tempPayment[0];
-				$result = $this->validateStudentCurrentOutstanding($tempPayment, $academic_record);
-				if ($result) {
-					$outstandingResult[] = $result;
-				}
-			}
-		}
-
 		return $outstandingResult;
 	}
 
-	private function validateStudentCurrentOutstanding($payment, $academic_record){
+	private function isStudentActive()
+	{
+		if ($this->active == StudentStatus::ACTIVE) {
+			return true;
+		}
+		return false;
+	}
+
+	private function validateStudentCurrentOutstanding($payment, $academic_record)
+	{
 		$session = get_setting('active_session_student_portal');
-		$paymentDescription = get_setting('active_semester') == '1' ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
+		$paymentDescription = PaymentFeeDescription::SCH_FEE_FIRST;
 		$isCompleted = $this->payment->getPartialTransactionOption($academic_record->student_id, $paymentDescription, $session);
 		if ($isCompleted) {
-			if(!CommonTrait::isPaymentValid($isCompleted['payment_status'])){
+			if (!CommonTrait::isPaymentValid($isCompleted['payment_status'])) {
 				$tempPayment = $this->payment->getPaymentById($isCompleted['real_payment_id']);
 				return $this->convertTransaction($isCompleted, $tempPayment);
-			}	
+			}
+		}
+
+		$entryMode = $this->db->escape_str(trim($academic_record->entry_mode));
+		if ($studentEntry = $this->isStudentAPutme($academic_record)) {
+			$entryMode = $studentEntry;
 		}
 		$param = [
 			$session,
 			$academic_record->programme_id,
 			$academic_record->current_level,
-			$academic_record->entry_mode,
+			$entryMode,
 			$academic_record->programme_id,
 			$academic_record->current_level,
-			$academic_record->entry_mode,
+			$entryMode,
 			$paymentDescription,
 		];
 		$newPayment = $this->loadMainFeesSkeleton($academic_record, $param);
-		if($newPayment){
+		if ($newPayment) {
 			$newPayment = $newPayment[0];
 			return $this->convertMainOutstandingPayment($newPayment, $academic_record, $session, $academic_record->current_level);
 		}
@@ -2683,7 +2502,7 @@ class Students extends Crud
 	/**
 	 * This get the main/compulsory fees to be paid by the student
 	 * @param string|null $message [description]
-	 * @return bool|array|array<<missing>,<missing>>
+	 * @return array|bool
 	 * @throws Exception
 	 */
 	public function loadFees(?string &$message = '')
@@ -2700,7 +2519,8 @@ class Students extends Crud
 		$academic_record = $this->academic_record;
 		$prevProgramme = $academic_record->prev_programme_id ?? null;
 		$paymentOutstanding = null;
-		if ($prevProgramme != null && $prevProgramme != $academic_record->programme_id) {
+
+		if ($prevProgramme !== null && $prevProgramme != $academic_record->programme_id) {
 			$progParam = $this->loadPreviousStudentProgramme($this->id, $prevProgramme, $academic_record->current_session);
 			$currentSemester = get_setting('active_semester');
 			$param = [
@@ -2713,68 +2533,67 @@ class Students extends Crud
 				$progParam['old_entry_mode'],
 			];
 
-			$extraParam = false;
-			if ($currentSemester == 2) {
+			$extraParam = ($currentSemester == 2);
+			if ($extraParam) {
 				$param[] = 1;
-				$extraParam = true;
-			}
-			$result = $this->loadStudentNewProgrammePayment($academic_record);
-			if ($result) {
-				$toReturn = array_merge($toReturn, $result);
 			}
 
-			// the idea is to load only prev programme first semester paid fee
+			$newProgrammePayments = $this->loadStudentNewProgrammePayment($academic_record);
+			if ($newProgrammePayments) {
+				$toReturn = array_merge($toReturn, $newProgrammePayments);
+			}
+
 			if ($extraParam) {
-				$oldPayment = $this->loadMainFees($academic_record, $param, $extraParam);
-				if ($oldPayment) {
-					$toReturn = array_merge($toReturn, $oldPayment);
+				$oldPayments = $this->loadMainFees($academic_record, $param, $extraParam);
+				if (!empty($oldPayments)) {
+					$toReturn = array_merge($toReturn, $oldPayments);
 				}
 			}
 		} else {
-			$result = $this->loadStudentPreviousPayment($academic_record);
-			if ($result) {
-				$toReturn = array_merge($toReturn, $result);
+			$previousPayments = $this->loadStudentPreviousPayment($academic_record);
+			if ($previousPayments) {
+				$toReturn = array_merge($toReturn, $previousPayments);
 			}
 
-			$result = $this->loadMainFees($academic_record, false, true, $message);
-			if (!empty($result)) {
-				$paymentOutstanding = array_filter($result, function ($item) {
-					return $item['payment_code2'] == PaymentFeeDescription::SCH_FEE_FIRST;
-				}, ARRAY_FILTER_USE_BOTH);
+			$mainFees = $this->loadMainFees($academic_record, null, true, $message);
+			if (!empty($mainFees)) {
+				$paymentOutstanding = array_filter($mainFees, fn($item) => $item['payment_code2'] == PaymentFeeDescription::SCH_FEE_FIRST, ARRAY_FILTER_USE_BOTH);
 				if ($paymentOutstanding) {
 					$paymentOutstanding = [...$paymentOutstanding][0];
 				}
-				$toReturn = array_merge($toReturn, $result);
+				$toReturn = array_merge($toReturn, $mainFees);
 			} else if ($message) {
 				return false;
 			}
 		}
 
-		// load topup fees on the payment card page
-		if ($academic_record->topup_session && $academic_record->topup_session != null) {
-			$result = $this->loadTopupFees($academic_record, PaymentFeeDescription::TOPUP_FEE_22);
-			if ($result) {
-				$toReturn = array_merge($toReturn, $result);
+		if ($academic_record->topup_session !== null) {
+			$topupFees = $this->loadTopupFees($academic_record, PaymentFeeDescription::TOPUP_FEE_22);
+			if ($topupFees) {
+				$toReturn = array_merge($toReturn, $topupFees);
 			}
 		}
 
-		// adding only once outstanding fee alongside other fees on student dashboard
 		if ($paymentOutstanding) {
-			$result = $this->loadOutstandingFees($paymentOutstanding, $academic_record);
-			if ($result) {
-				if ($result) {
-					$toReturn = array_merge($toReturn, $result);
-				}
+			$outstandingFees = $this->loadOutstandingFees($paymentOutstanding, $academic_record);
+			if ($outstandingFees) {
+				$toReturn = array_merge($toReturn, $outstandingFees);
 			}
 		}
 
-		// adding sundry transaction to the main fee
 		$sundryFees = $this->loadSundryTransaction($academic_record);
 		if ($sundryFees) {
 			$toReturn = array_merge($toReturn, $sundryFees);
 		}
 
 		return $this->removeDuplicateTransaction($toReturn);
+	}
+
+	private function getPartPaymentTopup()
+	{
+		$query = "SELECT a.* from payment a join fee_description b on b.id = a.description where b.code = ? and a.is_visible = '1' order by a.id desc limit 1";
+		$result = $this->query($query, [FeeDescriptionCode::PART_TOPUP_FEE_BAL]);
+		return @$result[0] ?: null;
 	}
 
 	private function removeDuplicateTransaction(?array $data): array
@@ -2797,7 +2616,7 @@ class Students extends Crud
 	private function loadOutstandingFees($payment, $academic_record): array
 	{
 		$outstandingResult = [];
-		if ($academic_record->topup_session == null && $academic_record->outstanding_session) {
+		if ($academic_record->outstanding_session != null) {
 			$paymentID = hashids_decrypt($payment['payment_id']);
 			$payment = $this->payment->getWhere(['id' => $paymentID], $c, 0, 1, false);
 			if ($payment) {
@@ -2806,7 +2625,6 @@ class Students extends Crud
 			}
 		}
 		return $outstandingResult;
-
 	}
 
 	/**
@@ -2862,18 +2680,57 @@ class Students extends Crud
 	 */
 	private function getSundryFees(): array
 	{
-		$result = [];
-		$query = "SELECT * from payment where fee_category=2 and is_visible=1";
+		$query = "SELECT * FROM payment WHERE fee_category = 2 AND is_visible = 1";
 		$temp = $this->query($query);
-		if (!$temp) {
+
+		if (empty($temp)) {
 			return [];
 		}
 
 		$academic_record = $this->academic_record;
+		$result = [];
+
 		foreach ($temp as $item) {
+			$isPartPayment = !isPaymentComplete($item['options']);
+
+			if (
+				($isPartPayment && (
+						isFinalistOrExtraYear($academic_record) ||
+						$this->hasPaidSchFee($academic_record) ||
+						$this->isNewlyAdmitted($academic_record)
+					))
+			) {
+				continue;
+			}
+
 			$result[] = $this->convertPayment($item, $academic_record, null, 'sundry');
 		}
+
 		return $result;
+	}
+
+	private function hasPaidSchFee(object $academicRecord): bool
+	{
+		$paymentDescription = get_setting('active_semester') == '1' ?
+			PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
+		if ($this->hasPayment($this->id, $academicRecord->current_session, $paymentDescription)) {
+			return true;
+		}
+		return false;
+	}
+
+	private function isFinalistOrExtraYear($academic): bool
+	{
+		return isFinalistOrExtraYear($academic);
+	}
+
+	private function isNewlyAdmitted($academic): bool
+	{
+		$currentActiveSession = get_setting('active_session_student_portal');
+		if ($academic->current_session != $currentActiveSession) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -3079,8 +2936,7 @@ class Students extends Crud
 		if ($semester) {
 			$query .= " and course_enrollment.semester = '$semester'";
 		}
-		$result = $this->query($query, [$student_id, $level_id, $session_id]);
-		return $result;
+		return $this->query($query, [$student_id, $level_id, $session_id]);
 	}
 
 	/**
@@ -3120,7 +2976,7 @@ class Students extends Crud
 		$id = $id ?: $this->id;
 		$allSession = $this->query($query, [$id]);
 		if (!$allSession) {
-			return false;
+			return null;
 		}
 		return $allSession;
 	}
@@ -3136,7 +2992,7 @@ class Students extends Crud
 		$id = $id ?: $this->id;
 		$allSession = $this->query($query, [$id]);
 		if (!$allSession) {
-			return false;
+			return [];
 		}
 		return $allSession;
 	}
@@ -3167,7 +3023,7 @@ class Students extends Crud
 	 * @param mixed $student_level
 	 * @return bool
 	 */
-	public function alreadyHasRegistration($student_id, $course_id, $session_id, $student_level)
+	public function alreadyHasRegistration($student_id, $course_id, $session_id, $student_level): bool
 	{
 		$query = "SELECT id,course_id from course_enrollment where student_id=? and course_id=? and session_id=? and student_level=?";
 		$result = $this->query($query, [$student_id, $course_id, $session_id, $student_level]);
@@ -3528,9 +3384,15 @@ class Students extends Crud
 
 	public function getStudentRecordData($student = false)
 	{
-		$query = "SELECT students.id as studentID,students.*, academic_record.*,students.id as id, s1.date as entry_year, s2.date as current_academic_session, programme.name as programme, department.name as department, faculty.name as faculty from students join
-        academic_record on academic_record.student_id = students.id left join sessions s1 on s1.id = academic_record.year_of_entry left join sessions s2 on s2.id = academic_record.current_session join programme on programme.id = academic_record.programme_id left join department on department.id = programme.department_id left join
-        faculty on faculty.id = programme.faculty_id where students.id = ?";
+		$query = "SELECT students.id as studentID,students.*, academic_record.*,students.id as id, 
+		s1.date as entry_year, s2.date as current_academic_session, programme.name as programme, 
+		department.name as department, faculty.name as faculty from students 
+		join academic_record on academic_record.student_id = students.id 
+		left join sessions s1 on s1.id = academic_record.year_of_entry 
+		left join sessions s2 on s2.id = academic_record.current_session 
+		left join programme on programme.id = academic_record.programme_id 
+		left join department on department.id = programme.department_id 
+		left join faculty on faculty.id = programme.faculty_id where students.id = ?";
 		$id = $student ? $student : $this->id;
 		$result = $this->query($query, [$id]);
 		if (!$result) {
@@ -4143,7 +4005,7 @@ class Students extends Crud
 
 		$query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . " ,CONCAT(upper(a.lastname), ', ', a.firstname) AS fullname,
 		b.matric_number as matric_number,b.current_level as level, c.date as year_of_entry,
-		e.name as department, f.name as faculty, d.name as programme,b.application_number
+		e.name as department, f.name as faculty, d.name as programme,b.application_number,a.active
 		from students a join academic_record b on b.student_id = a.id left join sessions c on c.id = b.year_of_entry
 		join programme d on d.id = b.programme_id join department e on e.id = d.department_id join
 		faculty f on f.id = d.faculty_id $filterQuery";
@@ -4242,8 +4104,8 @@ class Students extends Crud
 	{
 		$orderBy = " svc.id desc";
 		if (isset($_GET['sortBy'])) {
-			$sortBy = request()->getGet('sortBy', true);
-			$sortDirection = request()->getGet('sortDirection', true);
+			$sortBy = $this->input->get('sortBy', true);
+			$sortDirection = $this->input->get('sortDirection', true);
 			$sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
 			$orderBy = " $sortBy $sortDirection ";
 		}
@@ -4569,8 +4431,9 @@ class Students extends Crud
 	public function checkStudentPaymentBySession($student, $session = null, $paymentId = null)
 	{
 		$code = get_setting('school_fees_code');
-		$query = "SELECT a.id,b.code as payment_code,a.payment_id as payment_id,total_amount,amount_paid,rrr_code,payment_option,session FROM
-		transaction a join fee_description b ON b.id = a.payment_id where a.student_id = ? and b.code = ? and a.payment_status in ('00', '01')";
+		$query = "SELECT a.id,b.code as payment_code,a.payment_id as payment_id,total_amount,amount_paid,rrr_code,
+       	payment_option,session FROM transaction a join fee_description b ON b.id = a.payment_id 
+       	where a.student_id = ? and b.code = ? and a.payment_status in ('00', '01')";
 		$param = [$student, $code];
 
 		if ($session) {
@@ -4592,7 +4455,7 @@ class Students extends Crud
 
 	public function getStudentWithOutstanding()
 	{
-		$query = "SELECT student_id as id, outstanding_session from academic_record where 
+		$query = "SELECT student_id as id, outstanding_session, matric_number from academic_record where 
                 outstanding_session <> '' and outstanding_session is not null ";
 		$result = $this->query($query);
 		if (!$result) {
@@ -4601,5 +4464,54 @@ class Students extends Crud
 		return $result;
 	}
 
+	public function getFullStudentWithOutstanding()
+	{
+		$query = "SELECT a.student_id as id, a.outstanding_session, a.matric_number, b.firstname, b.lastname,b.othernames,b.user_login as email from academic_record a join students b on b.id = a.student_id where 
+                outstanding_session <> '' and outstanding_session is not null ";
+		$result = $this->query($query);
+		if (!$result) {
+			return null;
+		}
+		return $result;
+	}
+
+	public function getStudentWithOutstandingButPaid()
+	{
+		$query = "SELECT s.firstname, s.lastname, s.othernames, s.user_login as email,
+    		ar.matric_number,
+    		t35.student_id,
+    		t35.date_performed AS payment_date FROM transaction t35
+			JOIN students s ON t35.student_id = s.id
+			JOIN academic_record ar ON s.id = ar.student_id
+			WHERE t35.session = 35
+ 		 	AND t35.payment_status IN ('00', '01')  -- Successful payments
+  			AND t35.payment_id IN ('1', '2')       -- School fee payments only
+  			AND EXISTS (
+	    		-- Check for unpaid fees in previous sessions
+	    		SELECT 1
+	    		FROM transaction t_prev
+	    		WHERE t_prev.student_id = t35.student_id
+	      		AND t_prev.session IN (22, 23)
+	      		AND t_prev.payment_status IN ('00', '01')
+	      		AND t_prev.payment_id IN ('1', '2')
+	    		GROUP BY t_prev.student_id, t_prev.payment_id
+	   			 HAVING (
+	      		-- No full payment for this semester
+	      		COUNT(DISTINCT CASE WHEN t_prev.payment_option = t_prev.payment_id THEN t_prev.id END) = 0
+	      		AND NOT (
+	        	-- Not both partial payments
+	        	COUNT(DISTINCT CASE WHEN t_prev.payment_option = CONCAT(t_prev.payment_id, 'A') THEN t_prev.id END) > 0
+	        		AND COUNT(DISTINCT CASE WHEN t_prev.payment_option = CONCAT(t_prev.payment_id, 'B') THEN t_prev.id END) > 0
+	      			)
+	    		)
+	  		)
+			ORDER BY t35.date_performed DESC
+		";
+		$result = $this->query($query);
+		if (!$result) {
+			return null;
+		}
+		return $result;
+	}
 
 }

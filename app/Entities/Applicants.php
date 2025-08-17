@@ -1,9 +1,9 @@
 <?php
 namespace App\Entities;
 
-use App\Enums\CommonEnum as CommonSlug;
 use App\Models\Crud;
 
+use App\Enums\CommonEnum as CommonSlug;
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the applicants table.
  */
@@ -602,11 +602,14 @@ class Applicants extends Crud
 	}
 
 	/**
-	 * @return array|array[]
-     */
+	 * @return null|<missing>
+	 */
 	protected function getApplicantTransaction()
 	{
-		$query = 'SELECT * FROM applicant_transaction WHERE applicant_id=?';
+		$query = 'SELECT a.*, c.name as programme_name FROM applicant_transaction a 
+			left join applicants b on b.id = a.applicant_id 
+			left join programme c on c.id = b.programme_id
+			WHERE a.applicant_id=?';
 		if (!isset($this->array['id'])) {
 			return null;
 		}

@@ -2,6 +2,7 @@
 
 namespace App\Entities;
 
+use App\Libraries\EntityLoader;
 use App\Models\Crud;
 
 /**
@@ -221,7 +222,8 @@ class Student_verification_documents extends Crud
         if (!$result) {
             return false;
         }
-        return new \App\Entities\Students($result[0]);
+        EntityLoader::loadClass($this, 'students');
+        return new Students($result[0]);
     }
 
     protected function getVerification_documents_requirement()
@@ -235,7 +237,8 @@ class Student_verification_documents extends Crud
         if (!$result) {
             return false;
         }
-        return new \App\Entities\Verification_documents_requirement($result[0]);
+        EntityLoader::loadClass($this, 'verification_documents_requirement');
+        return new Verification_documents_requirement($result[0]);
     }
 
 

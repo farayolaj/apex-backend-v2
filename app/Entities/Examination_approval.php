@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entities;
 
 use App\Models\Crud;
@@ -8,128 +9,213 @@ use App\Models\Crud;
  */
 class Examination_approval extends Crud
 {
-	protected static $tablename = '';
+    protected static $tablename = '';
 
-	static $apiSelectClause = [];
+    static $apiSelectClause = [];
 
-	/**
-	 * @param mixed $filterList
-	 * @param mixed $queryString
-	 * @param mixed $start
-	 * @param mixed $len
-	 * @param mixed $orderBy
-	 * @return array
-	 */
-	public function APIList($filterList, $queryString, $start, $len, $orderBy): array
-	{
-		$temp = getFilterQueryFromDict($filterList);
-		$filterQuery = buildCustomWhereString($temp[0], $queryString, false);
-		$filterValues = $temp[1];
-		$filter = request()->getGet('category');
-		$session = request()->getGet('session');
-		$q = request()->getGet('q');
-		if (!$filter) {
-			$filter = 'all';
-		}
+    /**
+     * @param mixed $filterList
+     * @param mixed $queryString
+     * @param mixed $start
+     * @param mixed $len
+     * @param mixed $orderBy
+     * @return array
+     */
+    public function APIList($filterList, $queryString, $start, $len, $orderBy): array
+    {
+        $temp = getFilterQueryFromDict($filterList);
+        $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
+        $filterValues = $temp[1];
+        $filter = request()->getGet('category') ?: 'all';
+        $session = request()->getGet('session');
+        $q = request()->getGet('q');
 
-		if ($session) {
-			$filterQuery = (!$filter || $filter == 'all') ? " where session_id='$session' " : " where sessions.id='$session' ";
-		}
+        if ($session) {
+            $filterQuery = " where c.id='$session' ";
+        }
 
-		if ($q) {
-			if ($filterQuery) {
-				$filterQuery .= ($filter == 'all') ? " and course_code like '%$q%' or title like '%$q%' " : " and courses.code like '%$q%' or title like '%$q%' ";
-			} else {
-				$filterQuery .= ($filter == 'all') ? " where course_code like '%$q%' or title like '%$q%' " : " where courses.code like '%$q%' or title like '%$q%' ";
-			}
-		}
+        if ($q) {
+            $qValue = " '%$q%' ";
+            $filterQuery .= ($filterQuery ? ' AND ' : ' WHERE ') . "(b.code LIKE {$qValue} OR title LIKE {$qValue})";
+        }
 
-		if (!$filterValues) {
-			$filterValues = [];
-		}
+        if (!$filterValues) {
+            $filterValues = [];
+        }
 
-		if ($filter == 'approved') {
-			$query = $this->getApprovedQuery($filterQuery);
-		} else if ($filter == 'disapproved') {
-			$query = $this->getDisapprovedQuery($filterQuery);
-		} else {
-			$query = $this->getAllQuery($filterQuery);
-		}
+        $query = null;
+        $query2 = null;
+        if ($filter == 'approved') {
+            $queryString = $this->getApprovedQuery($filterQuery);
+            $query = $queryString[0];
+            $query2 = $queryString[1];
+        } else if ($filter == 'disapproved') {
+            $queryString = $this->getDisapprovedQuery($filterQuery);
+            $query = $queryString[0];
+            $query2 = $queryString[1];
+        } else {
+            $queryString = $this->getAllQuery($filterQuery);
+            $query = $queryString[0];
+            $query2 = $queryString[1];
+        }
 
-		if (isset($_GET['sortBy']) && $orderBy) {
-			$query .= " order by $orderBy ";
-		} else {
-			if ($filter == 'all') {
-				$query .= " order by session desc,course_code asc ";
-			} else if ($filter == 'approved') {
-				$query .= " order by session desc,course_code asc ";
-			} else {
-				$query .= " order by session desc,course_code asc ";
-			}
-		}
+        if ($filter == 'all') {
+            $query .= " GROUP BY b.id, b.code, c.date, c.id, d.course_id, b.title";
+        } else {
+            $query .= " GROUP BY b.id, b.code, c.date, c.id, b.title";
+        }
 
-		if (isset($_GET['start']) && $len) {
-			$start = $this->db->escapeString($start);
-			$len = $this->db->escapeString($len);
-			$query .= " limit $start, $len";
-		}
+        if (isset($_GET['sortBy']) && $orderBy) {
+            $query .= " order by $orderBy ";
+        } else {
+            $query .= " order by c.date desc, b.code asc ";
+        }
 
-		$query2 = "SELECT FOUND_ROWS() as totalCount";
-		$res = $this->db->query($query, $filterValues);
-		$res = $res->getResultArray();
-		$res2 = $this->db->query($query2);
-		$res2 = $res2->getResultArray();
-		return [$res, $res2];
-	}
+        if (isset($_GET['start']) && $len) {
+            $start = $this->db->escapeString($start);
+            $len = $this->db->escapeString($len);
+            $query .= " limit $start, $len";
+        }
 
-	private function getAllQuery($filterQuery): string
-	{
-		$query = "SELECT SQL_CALC_FOUND_ROWS * from (
-			(SELECT courses.id,code as course_code,sessions.date as session,ANY_VALUE(sessions.id) as session_id,
-				ANY_VALUE(1) as status,count(*) as registered,
-				count(total_score) as with_score,courses.title FROM course_enrollment join courses on courses.id=course_enrollment.course_id join 
-				sessions on sessions.id=course_enrollment.session_id join approved_courses on course_enrollment.course_id=approved_courses.course_id 
-				and course_enrollment.session_id=approved_courses.session_id group by course_code,session 
-			)
-			UNION
+        $res = $this->db->query($query, $filterValues);
+        $res = $res->getResultArray();
+        $res2 = $this->db->query($query2);
+        $res2 = $res2->getResultArray()[0]['total'];
+        return [$res, $res2];
+    }
+
+    private function getAllQuery(?string $filterQuery): array
+    {
+        $query = "SELECT b.id, b.code as course_code, c.date as session, c.id as session_id, b.title,
+			CASE WHEN d.course_id IS NOT NULL THEN '1' ELSE '0' END as status,
+    		COUNT(DISTINCT a.student_id) as registered,
+    		COUNT(DISTINCT CASE WHEN a.total_score IS NOT NULL THEN a.student_id END) as with_score
+    		FROM course_enrollment a 
+			JOIN courses b ON b.id = a.course_id 
+    		JOIN sessions c ON c.id = a.session_id 
+    		LEFT JOIN approved_courses d ON d.course_id = a.course_id AND d.session_id = a.session_id 
+			$filterQuery ";
+
+        $query1 = "SELECT COUNT(DISTINCT CONCAT(b.id, '-', c.id)) AS total FROM 
+    		course_enrollment a
+    		JOIN courses b ON b.id = a.course_id 
+    		JOIN sessions c ON c.id = a.session_id 
+    		LEFT JOIN approved_courses d ON d.course_id = a.course_id AND d.session_id = a.session_id 
+			$filterQuery ";
+
+        return [$query, $query1];
+    }
+
+    public function getApprovedQuery($filterQuery): array
+    {
+        $query = "SELECT b.id, code AS course_code, c.date AS session, '1' AS status, b.title,
+    		COUNT(DISTINCT a.student_id) AS registered, c.id as session_id,
+    		COUNT(DISTINCT CASE WHEN a.total_score IS NOT NULL THEN a.student_id END) AS with_score
+			FROM course_enrollment a
+    		JOIN courses b ON b.id = a.course_id 
+    		JOIN sessions c ON c.id = a.session_id 
+    		JOIN approved_courses d ON d.course_id = a.course_id AND d.session_id = a.session_id $filterQuery";
+
+        $query2 = "SELECT COUNT(DISTINCT CONCAT(b.id, '-', c.id)) AS total
+			FROM course_enrollment a
+    		JOIN courses b ON b.id = a.course_id 
+    		JOIN sessions c ON c.id = a.session_id 
+    		JOIN approved_courses d ON d.course_id = a.course_id AND d.session_id = a.session_id $filterQuery";
+
+        return [$query, $query2];
+    }
+
+    public function getDisapprovedQuery($filterQuery): array
+    {
+        $filterQuery .= ($filterQuery ? ' and ' : ' where ') . ' d.course_id is null ';
+
+        $query = "SELECT b.id,code as course_code,c.date as session, '0' as status, b.title,
+			count(DISTINCT a.student_id) as registered, c.id as session_id,
+			count(DISTINCT CASE WHEN a.total_score IS NOT NULL THEN a.student_id END) as with_score
+			 FROM course_enrollment a
+			join courses b on b.id=a.course_id 
+			join sessions c on c.id=a.session_id  
+			left join approved_courses d on d.course_id=a.course_id and d.session_id=a.session_id $filterQuery";
+
+        $query2 = "SELECT COUNT(*) AS total FROM 
 			(
-				SELECT courses.id, code as course_code,sessions.date as session,ANY_VALUE(sessions.id) as session_id,
-				ANY_VALUE(0) as status,count(*) as registered,count(total_score) as with_score,
-				courses.title FROM course_enrollment join courses on courses.id=course_enrollment.course_id join sessions on sessions.id=course_enrollment.
-				session_id  left join approved_courses on course_enrollment.course_id=approved_courses.course_id and 
-				course_enrollment.session_id=approved_courses.session_id where approved_courses.course_id is null
-				group by course_code,session)
-			) all_courses $filterQuery";
-//		$query1 = "SELECT COUNT(*) as totalCount FROM (SELECT courses.id,sessions.id as session_id
-//    			FROM course_enrollment JOIN courses ON courses.id = course_enrollment.course_id JOIN sessions ON sessions.id = course_enrollment.session_id
-//    			JOIN approved_courses ON course_enrollment.course_id = approved_courses.course_id AND
-//    			course_enrollment.session_id = approved_courses.session_id
-//    			GROUP BY courses.id, courses.code, sessions.date) AS all_courses $filterQuery ";
-		return $query;
-	}
+    			SELECT b.id, c.date FROM sessions c
+        		JOIN course_enrollment a ON c.id = a.session_id
+        		JOIN courses b ON b.id = a.course_id
+        		LEFT JOIN approved_courses d ON d.course_id = a.course_id AND d.session_id = a.session_id
+    			$filterQuery GROUP BY b.id, c.date
+			) AS subquery";
 
-	public function getApprovedQuery($filterQuery): string
-	{
-		$query = "SELECT SQL_CALC_FOUND_ROWS courses.id,code as course_code,sessions.date as session,ANY_VALUE(1) as status,
-		count(*) as registered,count(total_score) as with_score,courses.title FROM course_enrollment join courses on courses.id=course_enrollment.course_id 
-		join sessions on sessions.id=course_enrollment.session_id join approved_courses on course_enrollment.course_id=approved_courses.course_id 
-		and course_enrollment.session_id=approved_courses.session_id $filterQuery group by course_code,session ";
-		return $query;
-	}
+        return [$query, $query2];
+    }
 
-	function getDisapprovedQuery($filterQuery): string
-	{
-		if ($filterQuery) {
-			$filterQuery .= ' and approved_courses.course_id is null ';
-		} else {
-			$filterQuery .= ' where approved_courses.course_id is null ';
-		}
-		$query = "SELECT SQL_CALC_FOUND_ROWS courses.id,code as course_code,sessions.date as session,ANY_VALUE(0) as status,
-			count(*) as registered,count(total_score) as with_score,courses.title FROM course_enrollment join courses on courses.id=course_enrollment.course_id 
-			join sessions on sessions.id=course_enrollment.session_id  left join approved_courses on course_enrollment.course_id=approved_courses.course_id 
-			and course_enrollment.session_id=approved_courses.session_id $filterQuery group by course_code,session ";
-		return $query;
-	}
+    public function processSingleApproval(string $courseId, string $sessionId, string $flag): bool
+    {
+        if ($flag === 'disapprove') {
+            $query = "DELETE from approved_courses where course_id=? and session_id=?";
+            if (!$this->db->query($query, [$courseId, $sessionId])) {
+                return false;
+            }
+            return true;
+        }
+
+        $query = "INSERT ignore into approved_courses(session_id,course_id) 
+	   		values(?,?)";
+        if (!$this->db->query($query, [$sessionId, $courseId])) {
+            return false;
+        }
+        return true;
+    }
+
+    public function processBulkApproval(string $flag): bool
+    {
+        $session = @request()->getPost('session') ?: null;
+        $course = trim(@request()->getPost('q'));
+        $where = '';
+        $session = $this->db->escapeString($session);
+        $course = $this->db->escapeString($course);
+        if ($session) {
+            $where = " where course_enrollment.session_id='$session' ";
+        }
+
+        if ($course) {
+            $where .= ($where ? ' and ' : ' where ') . " course_enrollment.course_id in (
+				SELECT id from courses where code like '$course%'
+			) ";
+        }
+
+        if ($flag === 'approve') {
+            return $this->approvalActionQuery($where);
+        } else {
+            return $this->disapproveActionQuery($session, $course);
+        }
+    }
+
+    private function approvalActionQuery(string $where): bool
+    {
+        $query = "INSERT ignore into approved_courses(session_id,course_id) 
+			SELECT distinct session_id,course_id from course_enrollment $where ";
+
+        if (!$this->db->query($query)) {
+            return false;
+        }
+        return true;
+    }
+
+    private function disapproveActionQuery($session, $course = null): bool
+    {
+        $query = "DELETE ac FROM approved_courses ac where ac.session_id = '$session'  ";
+        if ($course) {
+            $query .= " AND ac.course_id IN (
+				SELECT DISTINCT ce.course_id FROM course_enrollment ce JOIN courses c ON ce.course_id = c.id
+   				WHERE ce.session_id = '$session' AND c.code LIKE '$course%' ) ";
+        }
+
+        if (!$this->db->query($query)) {
+            return false;
+        }
+        return true;
+    }
 
 
 }

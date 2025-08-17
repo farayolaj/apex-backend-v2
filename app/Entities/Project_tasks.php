@@ -366,8 +366,7 @@ class Project_tasks extends Crud
             $item['contractor'] = null;
             if ($contractor) {
                 $contractor = $contractor[0];
-                $config = config('ImagePath');
-                $contractor->cac_certificate = base_url($config->cacCertificatePath . '' . $contractor->cac_certificate);
+                $contractor->cac_certificate = site_url("{$this->config->item('cac_certificate_path')}{$contractor->cac_certificate}");
                 $item['contractor'] = $contractor->toArray();
             }
         }

@@ -4,12 +4,15 @@ namespace App\Entities;
 
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
+use App\Traits\EntityListTrait;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the users table.
  */
 class Users_new extends Crud
 {
+    use EntityListTrait;
+
     /**
      * This is the entity name equivalent to the table name
      * @var string
@@ -167,7 +170,7 @@ class Users_new extends Crud
             $filterValues = [];
         }
 
-        $query = "SELECT SQL_CALC_FOUND_ROWS id,title,lastname,firstname,othernames,dob,gender,marital_status,user_phone ,user_email,user_login ,is_lecturer, address, active from users_new join  $filterQuery";
+        $query = "SELECT SQL_CALC_FOUND_ROWS a.id,a.title,a.lastname,a.firstname,a.othernames,a.dob,a.gender,a.marital_status,a.user_phone,a.user_email,a.user_login,a.is_lecturer, a.address,a.active from users_new a $filterQuery";
         $query2 = "SELECT FOUND_ROWS() as totalCount";
         $res = $this->db->query($query, $filterValues);
         $res = $res->getResultArray();
@@ -190,7 +193,7 @@ class Users_new extends Crud
         return $result[0];
     }
 
-    public function getRealUserInfo($userID, string $table, string $userType)
+    public function getRealUserInfo($userID, string $table, string $userType = 'staff')
     {
         $query = "SELECT b.*,a.id as user_id,a.user_login as username from users_new a join {$table} b on b.id = a.user_table_id
     	where a.id = ? and a.user_type = ?";
@@ -206,6 +209,17 @@ class Users_new extends Crud
         $query = "SELECT b.*,a.id as user_id,a.user_login as username from users_new a join {$table} b on b.id = a.user_table_id
         where a.user_table_id = ? and a.user_type = ?";
         $result = $this->query($query, [$userTableID, $userType]);
+        if (!$result) {
+            return false;
+        }
+        return $result[0];
+    }
+
+    public function getUserInfoByStaffNo(string $table, string $staffNo, string $userType = 'staff')
+    {
+        $query = "SELECT b.*,a.id as user_id,a.user_login from users_new a join {$table} b on b.id = a.user_table_id
+        where b.staff_id = ? and a.user_type = ?";
+        $result = $this->query($query, [$staffNo, $userType]);
         if (!$result) {
             return false;
         }
@@ -240,22 +254,51 @@ class Users_new extends Crud
 			   WHEN A.user_type = 'staff' THEN B.lastname
 			   WHEN A.user_type = 'contractor' THEN C.cac_number
 			   ELSE NULL
-		   END AS lastname FROM users_new A LEFT JOIN staffs B ON A.user_table_id = B.id AND A.user_type = 'staff'
-		LEFT JOIN contractors C ON A.user_table_id = C.id AND A.user_type = 'contractor' where A.id = ?";
+		   END AS lastname,
+		   CASE
+        		WHEN A.user_type = 'staff' THEN D.name
+        		ELSE NULL
+    		END AS department_name FROM users_new A LEFT JOIN staffs B ON A.user_table_id = B.id AND A.user_type = 'staff'
+		LEFT JOIN contractors C ON A.user_table_id = C.id AND A.user_type = 'contractor'
+		LEFT JOIN department D ON B.department_id = D.id AND A.user_type = 'staff' 
+		where A.id = ?";
         return $this->query($query, [$userID]);
     }
 
-    public function getAllUsers()
+    public function getAllUsers($departmentID = null)
     {
-        $query = "SELECT b.*,a.id as orig_user_id,a.user_login as username from users_new a join staffs b on b.id = a.user_table_id where a.user_type = 'staff' and a.active = '1'";
+        $query = "SELECT distinct b.*,a.id as orig_user_id,a.user_login as username 
+			from users_new a join staffs b on b.id = a.user_table_id and b.can_upload = '1' 
+			where a.user_type = 'staff' and a.active = '1' and b.active = '1' 
+			and a.user_login IN (
+		        SELECT DISTINCT user_login
+		        FROM users_new
+		        WHERE user_type = 'staff' 
+		          AND active = '1'
+		    )";
+
+        if ($departmentID) {
+            $query .= " and b.department_id = '$departmentID' ";
+        }
+        if (isset($_GET['cm_filter'])) {
+            $tutor = $_GET['cm_filter'];
+            $query .= " and b.user_rank like '%$tutor%' ";
+        }
+
+        $q = request()->getGet('q') ?: null;
+        if ($q) {
+            $queryString = $this->buildWhereString('users_new', $q);
+            $query .= " and ({$queryString}) ";
+        }
+
         $result = $this->query($query);
         if (!$result) {
-            return false;
+            return [];
         }
         return $result;
     }
 
-    public function getUserDetails(object $user)
+    public function getUserDetails(object $object, object $user)
     {
         $content = [
             'staff' => 'staffs',

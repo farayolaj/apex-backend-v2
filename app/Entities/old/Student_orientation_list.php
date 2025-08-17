@@ -30,10 +30,10 @@ class Student_orientation_list extends Crud
 		// $filterQuery .= ($filterQuery ? " and " : " where ") . " orientation_attendance <> '' 
 		// and b.session_of_admission = '$currentAdmissionSession' ";
 
-		$directEntry = $this->db->escapeString(CommonSlug::DIRECT_ENTRY);
-		$olevel = $this->db->escapeString(CommonSlug::O_LEVEL);
-		$olevelPutme = $this->db->escapeString(CommonSlug::O_LEVEL_PUTME);
-		$fastTrack = $this->db->escapeString(CommonSlug::FAST_TRACK);
+		$directEntry = $this->db->escape_str(CommonSlug::DIRECT_ENTRY);
+		$olevel = $this->db->escape_str(CommonSlug::O_LEVEL);
+		$olevelPutme = $this->db->escape_str(CommonSlug::O_LEVEL_PUTME);
+		$fastTrack = $this->db->escape_str(CommonSlug::FAST_TRACK);
 
 		$filterQuery .= ($filterQuery ? " and " : " where ") . " orientation_attendance <> '' and (
 			(b.entry_mode = '$directEntry' and b.current_level = '2') ||
@@ -90,7 +90,7 @@ class Student_orientation_list extends Crud
 	public function loadExtras($item)
 	{
 		if ($item['passport']) {
-			$item['passport'] = studentImagePath($item['passport']);
+			$item['passport'] = studentImagePath($item['passport'], $this);
 		}
 
 		if ($item['level']) {

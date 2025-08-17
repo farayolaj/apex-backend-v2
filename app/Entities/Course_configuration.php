@@ -3,6 +3,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Models\WebSessionManager;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the course_configuration table.
@@ -167,15 +168,15 @@ class Course_configuration extends Crud
             $param['semester'] = $courseSemester;
         }
         $item = $this->getWhere($param, $c, 0, null, false);
-        if (!$item) { // if not found, it doesn't apply then
+        if (!$item) {
             return true;
         }
         $item = $item[0];
         return $item->enable_reg;
     }
 
-// TODO: REMEMBER TO REMOVE ALWAYS TRUE VALUE RETURN
-// WHILE WE WAIT TO IMPLEMENT PROFILE UPDATE
+    // TODO: REMEMBER TO REMOVE ALWAYS TRUE VALUE RETURN
+    // WHILE WE WAIT TO IMPLEMENT PROFILE UPDATE
     public function isPassportCheckValid($student)
     {
         return true;
@@ -193,6 +194,49 @@ class Course_configuration extends Crud
             return true;
         }
         return false;
+    }
+
+    public function delete($id = null, &$dbObject = null, $type = null): bool
+    {
+        permissionAccess('course_config_delete', 'delete');
+        $currentUser = WebSessionManager::currentAPIUser();
+        $db = $dbObject ?? $this->db;
+        if (parent::delete($id, $db)) {
+            logAction($this->db, 'course_config_delete', $currentUser->user_login);
+            return true;
+        }
+        return false;
+    }
+
+    public function APIList($filterList, $queryString, $start, $len, $orderBy)
+    {
+        $temp = getFilterQueryFromDict($filterList);
+        $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
+        $filterValues = $temp[1];
+
+        if (isset($_GET['sortBy']) && $orderBy) {
+            $filterQuery .= " order by $orderBy ";
+        } else {
+            $filterQuery .= " order by b.name asc ";
+        }
+
+        if (isset($_GET['start']) && $len) {
+            $start = $this->db->escapeString($start);
+            $len = $this->db->escapeString($len);
+            $filterQuery .= " limit $start, $len";
+        }
+        if (!$filterValues) {
+            $filterValues = [];
+        }
+
+        $query = "SELECT SQL_CALC_FOUND_ROWS a.*, b.name as programme_name from course_configuration a 
+                join programme b on b.id = a.programme_id $filterQuery";
+        $query2 = "SELECT FOUND_ROWS() as totalCount";
+        $res = $this->db->query($query, $filterValues);
+        $res = $res->getResultArray();
+        $res2 = $this->db->query($query2);
+        $res2 = $res2->getResultArray();
+        return [$res, $res2];
     }
 
 

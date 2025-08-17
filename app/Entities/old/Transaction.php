@@ -4,6 +4,7 @@ require_once 'application/models/Crud.php';
 require_once APPPATH . 'constants/CommonSlug.php';
 require_once APPPATH . 'constants/PaymentFeeDescription.php';
 require_once APPPATH . 'constants/RemitaResponse.php';
+require_once APPPATH . 'constants/FeeDescriptionCode.php';
 require_once APPPATH . 'traits/CommonTrait.php';
 
 /**
@@ -549,8 +550,30 @@ class Transaction extends Crud
 		return $resultObjects;
 	}
 
+	/**
+	 * @throws Exception
+	 */
+	public function studentCancelTransaction($transactionResult): array
+	{
+		$id = $transactionResult['id'];
+		$getTransactionStatus = $this->checkTransactionPaymentStatus($id, 'transaction', $transactionResult);
+		if (isset($getTransactionStatus['status']) && !$getTransactionStatus['status']) {
+			return [false, $getTransactionStatus['message']];
+		}
+
+		if (!$this->moveTransactionToArchive($id)) {
+			return [false, "An error occurred, Transaction cannot be cancelled. Please try again"];
+		}
+
+		if (!parent::delete($id)) {
+			return [false, "An error occurred, Transaction cannot be cancelled at the moment. Please try again"];
+		}
+		return [true, "Transaction deleted successfully"];
+	}
+
 	public function delete($id = NULL, &$dbObject = NULL, $type = null)
 	{
+		// db transaction already started from the calling method
 		if ($type == 'student_trans') {
 			$currentUser = $this->webSessionManager->currentAPIUser() ?? 0;
 			if (!checkPermission($this, 'transaction_delete', $currentUser->id)) {
@@ -610,7 +633,7 @@ class Transaction extends Crud
 
 		if ($type == 'custom_trans') {
 			$currentUser = $this->webSessionManager->currentAPIUser() ?? 0;
-			if (!checkPermission($this, 'transaction_delete', $currentUser->id)) {
+			if (!checkPermission($this, 'transaction_custom_delete', $currentUser->id)) {
 				$message = permissionDenied("It looks like you do not have access to delete this item.");
 				return sendAPiResponse(false, $message);
 			}
@@ -654,14 +677,19 @@ class Transaction extends Crud
 	 * @param mixed $entity
 	 * @return array<string,mixed>|bool
 	 */
-	public function checkTransactionPaymentStatus($transactionID, $entity)
+	public function checkTransactionPaymentStatus($transactionID, $entity, $transactionResult = null)
 	{
-		$query = "SELECT * from $entity where id = ?";
-		$result = $this->query($query, [$transactionID]);
-		if (!$result) {
-			return ['status' => false, 'message' => 'No transaction found'];
+		if (!$transactionResult) {
+			$query = "SELECT * from $entity where id = ?";
+			$result = $this->query($query, [$transactionID]);
+			if (!$result) {
+				return ['status' => false, 'message' => 'No transaction found'];
+			}
+			$result = $result[0];
+		} else {
+			$result = $transactionResult;
 		}
-		$result = $result[0];
+
 		if (!$result['rrr_code']) {
 			return true;
 		}
@@ -673,23 +701,12 @@ class Transaction extends Crud
 			if (!$transactionRef) {
 				return ['status' => false, 'message' => 'Invalid transaction reference'];
 			}
-			$temp = $this->remita->getRemitaData($result['transaction_ref'], null, null, $transactionRef);
-			// when $temp['curlStatus'] is false, the curl method is GET method
-			if (!$temp['curlStatus']) {
-				$extraData = $temp['extraData'];
-				$response = $this->remita->remitaTransactionDetails($extraData['url'], $temp['header']);
-				if (ENVIRONMENT === 'production' || ENVIRONMENT === 'development') {
-					if (!isset($response['status'])) {
-						return true;
-						// return ['status' => false, 'message' => 'Transaction RRR status not found'];
-					}
-				}
 
-				if (CommonTrait::isPaymentValid($response['status'])) {
-					return ['status' => false, 'message' => "Transaction could not be deleted, transaction status might have changed to success"];
-				} else {
-					return true;
-				}
+			$remita = $this->remita->verifyPlainTransaction($result['transaction_ref']);
+			if ($remita['payment_status']) {
+				return ['status' => false, 'message' => "Transaction could not be deleted, transaction status might have changed to success"];
+			} else {
+				return true;
 			}
 		}
 	}
@@ -707,6 +724,18 @@ class Transaction extends Crud
 			return false;
 		}
 		$get_details = new Transaction($result[0]);
+
+		if(startsWith($get_details->payment_description, 'BK')){
+			loadClass($this->load, 'student_payment_bookstore');
+			$bookstoreOrder = fetchSingle($this, 'student_payment_bookstore', 'transaction_ref', $get_details->transaction_ref);
+			if($bookstoreOrder){
+				$processBookCancel = $this->student_payment_bookstore->bookstorePaymentCancel($bookstoreOrder['order_id']);
+				if(!$processBookCancel[0]){
+					return false;
+				}
+			}
+		}
+
 		if (@$get_details->transaction_ref != '') {
 			$transaction_details = array(
 				'transaction_id' => $get_details->id,
@@ -864,16 +893,22 @@ class Transaction extends Crud
 	 * @param mixed $entity
 	 * @return bool
 	 */
-	public function restoreTransactionToArchive($transactionID, $entity)
+	public function restoreTransactionToArchive($transactionID, $entity, $archiveObject = null)
 	{
-		$query = "SELECT * FROM transaction_archive where id = ? and source_table = ?";
-		$result = $this->query($query, [$transactionID, $entity]);
-		if (!$result) {
-			return false;
+		$get_details = null;
+		if($archiveObject){
+			$get_details = $archiveObject;
+		}else{
+			$query = "SELECT * FROM transaction_archive where id = ? and source_table = ?";
+			$result = $this->query($query, [$transactionID, $entity]);
+			if (!$result) {
+				return false;
+			}
+
+			include_once 'Transaction_archive.php';
+			$get_details = new Transaction_archive($result[0]);
 		}
 
-		include_once 'Transaction_archive.php';
-		$get_details = new Transaction_archive($result[0]);
 		if (@$get_details->transaction_id != '') {
 			$transaction_details = null;
 			if ($entity == 'transaction') {
@@ -931,6 +966,37 @@ class Transaction extends Crud
 					'mainaccount_amount' => $get_details->mainaccount_amount,
 					'beneficiary_3' => $get_details->beneficiary_3,
 				);
+			} else if ($entity == 'transaction_custom') {
+				$transaction_details = array(
+					'id' => $get_details->transaction_id,
+					'real_payment_id' => 0,
+					'payment_id' => $get_details->payment_id,
+					'payment_description' => $get_details->payment_description,
+					'payment_option' => 0,
+					'student_id' => $get_details->custom_users_id,
+					'programme_id' => 0,
+					'session' => $get_details->session,
+					'level' => 0,
+					'transaction_ref' => $get_details->transaction_ref,
+					'rrr_code' => $get_details->rrr_code,
+					'payment_status' => $get_details->payment_status,
+					'beneficiary_1' => $get_details->beneficiary_1,
+					'beneficiary_2' => $get_details->beneficiary_2,
+					'payment_status_description' => $get_details->payment_status_description,
+					'amount_paid' => $get_details->amount_paid,
+					'penalty_fee' => '',
+					'service_charge' => $get_details->service_charge,
+					'total_amount' => $get_details->total_amount,
+					'payment_url' => '',
+					'date_performed' => $get_details->date_performed,
+					'date_completed' => $get_details->date_completed,
+					'date_payment_communicated' => $get_details->date_payment_communicated,
+					'preselected_payment' => 0,
+					'transaction_ref_id' => $get_details->transaction_id,
+					'subaccount_amount' => $get_details->subaccount_amount,
+					'mainaccount_amount' => $get_details->mainaccount_amount,
+					'beneficiary_3' => $get_details->beneficiary_3,
+				);
 			}
 
 			$this->db->insert($entity, $transaction_details);
@@ -950,14 +1016,14 @@ class Transaction extends Crud
 	public function APIList($filterList, $queryString, $start, $len, $orderBy = null)
 	{
 
-		$paymentStatus = request()->getGet('payment_status', true) ?? null;
-		$paymentType = request()->getGet('payment_type', true) ?? null;
-		$department = request()->getGet('department', true) ?? null;
-		$session = request()->getGet('session', true) ?? null;
-		$from = request()->getGet('start_date', true) ?? null;
-		$to = request()->getGet('end_date', true) ?? null;
-		$q = request()->getGet('q', true) ?? null;
-		$export = request()->getGet('export', true) ?? null;
+		$paymentStatus = $this->input->get('payment_status', true) ?? null;
+		$paymentType = $this->input->get('payment_type', true) ?? null;
+		$department = $this->input->get('department', true) ?? null;
+		$session = $this->input->get('session', true) ?? null;
+		$from = $this->input->get('start_date', true) ?? null;
+		$to = $this->input->get('end_date', true) ?? null;
+		$q = $this->input->get('q', true) ?? null;
+		$export = $this->input->get('export', true) ?? null;
 
 		$limit = '';
 		if ($len) {
@@ -970,14 +1036,14 @@ class Transaction extends Crud
 		$skipCustom = false;
 
 		if ($paymentType) {
-			$paymentType = $this->db->escapeString($paymentType);
+			$paymentType = $this->db->escape_str($paymentType);
 			$where .= ($where ? ' and ' : ' where ') . " a.payment_id='{$paymentType}'";
 			$where2 .= ($where2 ? ' and ' : ' where ') . " ap.description='{$paymentType}'";
 			$where1 .= ($where1 ? ' and ' : ' where ') . " a.payment_id='{$paymentType}'";
 		}
 
 		if ($department) {
-			$department = $this->db->escapeString($department);
+			$department = $this->db->escape_str($department);
 			$skipCustom = true;
 			$where .= ($where ? ' and ' : ' where ') . " e.department_id='{$department}'";
 			$where2 .= ($where2 ? ' and ' : ' where ') . " e.department_id='{$department}'";
@@ -985,7 +1051,7 @@ class Transaction extends Crud
 		}
 
 		if ($session) {
-			$session = $this->db->escapeString($session);
+			$session = $this->db->escape_str($session);
 			$skipCustom = true;
 			$where .= ($where ? ' and ' : ' where ') . " a.session='{$session}'";
 			$where2 .= ($where2 ? ' and ' : ' where ') . " a.session='{$session}'";
@@ -993,13 +1059,13 @@ class Transaction extends Crud
 		}
 
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
 			$where .= ($where ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 			$where2 .= ($where2 ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 			$where1 .= ($where1 ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
+			$from = ($this->db->escape_str($from));
 			$where .= ($where ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 			$where2 .= ($where2 ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 			$where1 .= ($where1 ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
@@ -1042,7 +1108,7 @@ class Transaction extends Crud
        		payment_status_description, payment_description as descrip,transaction_ref,rrr_code,payment_status,a.mainaccount_amount as ui_amount,
        		a.subaccount_amount as dlc_amount,(a.mainaccount_amount+a.subaccount_amount) as total_amount,a.amount_paid,a.total_amount as cum_amount,
 			timestamp(date_completed) as orderBy,f.name as department_name,a.service_charge as debit_note,b.reg_num,e.name as programme_name,
-			g.date as session_text,a.real_payment_id,a.date_performed from transaction a left join payment h on h.id = a.real_payment_id
+			g.date as session_text,a.real_payment_id,a.date_performed, 'student_trans' as trans_type from transaction a left join payment h on h.id = a.real_payment_id
 			join students b on b.id = a.student_id join academic_record d on d.student_id = b.id join programme e on e.id = d.programme_id
 			join department f on f.id = e.department_id join sessions g on g.id= a.session {$where}
 			UNION
@@ -1050,7 +1116,7 @@ class Transaction extends Crud
 		 	     payment_description as descrip,transaction_ref,rrr_code,payment_status,a.mainaccount_amount as ui_amount,a.subaccount_amount as dlc_amount,
 		 	     (a.mainaccount_amount+a.subaccount_amount) as total_amount,a.amount_paid,a.total_amount as cum_amount,
 		 	     timestamp(date_completed) as orderBy,f.name as department_name,a.service_charge as debit_note,b.applicant_id as reg_num,
-		 	     e.name as programme_name,g.date as session_text,a.payment_id as real_payment_id,a.date_performed from applicant_transaction a
+		 	     e.name as programme_name,g.date as session_text,a.payment_id as real_payment_id,a.date_performed, 'admission_trans' as trans_type from applicant_transaction a
 		 	    join applicants b on b.id = a.applicant_id join programme e on e.id = b.programme_id join department f on f.id = e.department_id
 		 	    join sessions g on g.id= a.session {$where} ) ";
 
@@ -1061,7 +1127,7 @@ class Transaction extends Crud
 				transaction_ref,rrr_code,payment_status,a.mainaccount_amount as ui_amount,a.subaccount_amount as dlc_amount,
 				(a.mainaccount_amount+a.subaccount_amount) as total_amount,a.amount_paid,a.total_amount as cum_amount,
 				timestamp(date_completed) as orderBy,'' as department_name,a.service_charge as debit_note,b.email as reg_num,'' as programme_name,
-				'' as session_text,'' as real_payment_id,a.date_performed from transaction_custom a join users_custom b on b.id = a.custom_users_id
+				'' as session_text,'' as real_payment_id,a.date_performed, 'custom_trans' as trans_type from transaction_custom a join users_custom b on b.id = a.custom_users_id
 				{$where} )";
 			}
 		} else if ($export == 'journal') {
@@ -1189,6 +1255,8 @@ class Transaction extends Crud
 	{
 		if ($channel == 'remita') {
 			$this->load->model('remita');
+			loadClass($this->load, 'fee_description');
+
 			$transactionRef = $this->transaction_ref ?: null;
 			if (!$transactionRef) {
 				return ['status' => false, 'message' => 'Invalid transaction reference'];
@@ -1219,11 +1287,13 @@ class Transaction extends Crud
 					$payment_id = $this->payment_id;
 					$studentID = $this->student_id;
 
-					if (($payment_id == PaymentFeeDescription::SCH_FEE_FIRST || $payment_id == PaymentFeeDescription::PART_FIRST_SCH_FEE) && $this->level == '1') {
+					if (($payment_id == PaymentFeeDescription::SCH_FEE_FIRST ||
+							$payment_id == PaymentFeeDescription::PART_FIRST_SCH_FEE) &&
+						$this->level == '1') {
 						$this->updatePutmeAcademicRecord($studentID);
 					}
 
-					if($payment_id == PaymentFeeDescription::LAGOS_CENTRE_FIRST_ONLY_SEM){
+					if ($this->fee_description->getFeeDescriptionByCode($payment_id, FeeDescriptionCode::LAGOS_CENTER_CODE)) {
 						$this->updatePutmeAcademicRecord($studentID, 'exam_centre');
 					}
 
@@ -1271,7 +1341,8 @@ class Transaction extends Crud
 			);
 		}
 
-		if($academicRecord && $task == 'exam_centre'){
+
+		if ($academicRecord && $task == 'exam_centre') {
 			update_record($this, 'academic_record', 'id', $academicRecord['id'],
 				['exam_center' => 'Lagos']
 			);
@@ -1286,26 +1357,28 @@ class Transaction extends Crud
 	 */
 	public function mapTopupToSchFee($paymentId)
 	{
+		$paymentFeeDescription = [
+			PaymentFeeDescription::TOPUP_FEE_22,
+			PaymentFeeDescription::TOPUP_FEE_21,
+			PaymentFeeDescription::TOPUP_FEE_BAL,
+		];
+
 		if ($paymentId == PaymentFeeDescription::OUTSTANDING_22) {
 			return PaymentFeeDescription::SCH_FEE_SECOND;
 		}
 
-		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_22) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
-		}
-
-		if ($paymentId == PaymentFeeDescription::TOPUP_FEE_21) {
+		if (in_array($paymentId, $paymentFeeDescription)) {
 			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
 		}
 
 		// this is for first semester part payment
 		if ($paymentId == PaymentFeeDescription::PART_FIRST_SCH_FEE) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
+			return PaymentFeeDescription::SCH_FEE_FIRST;
 		}
 
 		// this is for second semester part payment
-		if ($paymentId == PaymentFeeDescription::PART_SECOND_SCH_FEE) {
-			return (get_setting('active_semester') == 1) ? PaymentFeeDescription::SCH_FEE_FIRST : PaymentFeeDescription::SCH_FEE_SECOND;
+		if ($paymentId == PaymentFeeDescription::PART_SECOND_SCH_FEE || $paymentId == PaymentFeeDescription::PART_SECOND_QUARTER_SCH_FEE) {
+			return PaymentFeeDescription::SCH_FEE_SECOND;
 		}
 
 		return null;
@@ -1330,13 +1403,18 @@ class Transaction extends Crud
 	 * @param mixed $dateTo
 	 * @return bool|<missing>
 	 */
-	public function getAllPendingTransaction($table, $dateFrom, $dateTo)
+	public function getAllPendingTransaction($table, $dateFrom, $dateTo, $archive = false)
 	{
 		$query = "SELECT * from $table where (payment_status not in ('00','01') or payment_status = '') and 
-            date_performed >= ? and date_performed <= ? order by date_performed asc";
+            date_performed >= ? and date_performed <= ? ";
 		$dateFrom .= ' 00:00:00.000000';
 		$dateTo .= ' 23:59:59.999999';
 
+		if ($archive) {
+			$query .= " and source_table = 'transaction' ";
+		}
+
+		$query .= " order by date_performed asc ";
 		$result = $this->db->query($query, [$dateFrom, $dateTo]);
 		if ($result->num_rows() <= 0) {
 			return null;
@@ -1460,6 +1538,35 @@ class Transaction extends Crud
 			return $result;
 		}
 		return $query->result_array();
+	}
+
+	public function getPendingTransactionForArchive()
+	{
+		$param = [
+			PaymentFeeDescription::SCH_FEE_FIRST,
+			PaymentFeeDescription::SCH_FEE_SECOND,
+			PaymentFeeDescription::PART_FIRST_SCH_FEE,
+			PaymentFeeDescription::PART_SECOND_SCH_FEE,
+			PaymentFeeDescription::PART_SECOND_QUARTER_SCH_FEE,
+		];
+		$idList = implode(',', $param);
+		$query = "SELECT * from transaction where payment_status not in ('00', '01') and
+            real_payment_id <> '190' and payment_id in ({$idList}) and reserved_until is not null limit 500";
+		return $this->query($query);
+	}
+
+	public function restoreTransactionFromArchive(object $archive, object $currentUser, string $action = 'bulk_restore_transaction'): bool
+	{
+		if ($archive) {
+			if ($this->transaction->restoreTransactionToArchive($archive->id, $archive->source_table, $archive)) {
+				$id = $archive->id;
+				if ($archive->delete($id)) {
+					logAction($this, $action, $currentUser->user_login);
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

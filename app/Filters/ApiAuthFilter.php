@@ -226,7 +226,7 @@ class ApiAuthFilter implements FilterInterface
         $uri = $request->getUri();
         $uri = $uri->getPath();
         $db = db_connect();
-        $builder = $db->table('external_service_logs');
+        $builder = $db->table('audit_logs');
         $time = Time::createFromTimestamp($request->getServer('REQUEST_TIME'));
         $time = $time->format('Y-m-d H:i:s');
 

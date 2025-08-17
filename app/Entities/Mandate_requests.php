@@ -34,7 +34,8 @@ class Mandate_requests extends Crud
 
     private function getUserRequestOnAssignee($requestID, $userID)
     {
-        $query = "SELECT a.* from user_requests a join user_request_assignee b on b.user_request_id = a.id where b.user_request_id = ? and assign_to = ?";
+        $query = "SELECT a.* from user_requests a join user_request_assignee b on b.user_request_id = a.id 
+           where b.user_request_id = ? and assign_to = ?";
         $result = $this->query($query, [$requestID, $userID]);
         return $result;
     }
@@ -49,7 +50,7 @@ class Mandate_requests extends Crud
      */
     public function APIList($filterList, $queryString, $start, $len, $orderBy = null, $type = null): array
     {
-        $q = request()->getGet('q') ?: null;
+        $q = request()->getGet('q') ?: false;
         if ($q) {
             $searchArr = ['a.admon_reference', 'a.rrr_code', 'a.destination_account_number', 'a.destination_account_name'];
             $queryString = buildCustomSearchString($searchArr, $q);

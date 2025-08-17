@@ -6,7 +6,10 @@ require_once APPPATH . 'constants/ClaimType.php';
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the courses table.
  */
-class Courses extends Crud {
+class Courses extends Crud
+{
+	use ResultManagerTrait;
+
 	protected static $tablename = 'Courses';
 	/* this array contains the field that can be null*/
 	static $nullArray = array('course_guide_url', 'date_created');
@@ -15,9 +18,11 @@ class Courses extends Crud {
 	/*this array contains the fields that are unique*/
 	static $uniqueArray = array('code');
 	/*this is an associative array containing the fieldname and the type of the field*/
-	static $typeArray = array('code' => 'varchar', 'title' => 'text', 'description' => 'text', 'course_guide_url' => 'text', 'active' => 'tinyint', 'date_created' => 'varchar');
+	static $typeArray = array('code' => 'varchar', 'title' => 'text', 'description' => 'text', 'course_guide_url' => 'text',
+		'active' => 'tinyint', 'date_created' => 'varchar', 'type' => 'varchar', 'department_id' => 'int');
 	/*this is a dictionary that map a field name with the label name that will be shown in a form*/
-	static $labelArray = array('id' => '', 'code' => '', 'title' => '', 'description' => '', 'course_guide_url' => '', 'active' => '', 'date_created' => '');
+	static $labelArray = array('id' => '', 'code' => '', 'title' => '', 'description' => '', 'course_guide_url' => '',
+		'active' => '', 'date_created' => '', 'type' => '', 'department_id' => '');
 	/*associative array of fields that have default value*/
 	static $defaultArray = array('date_created' => '');
 //populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
@@ -26,13 +31,15 @@ class Courses extends Crud {
 
 	static $relation = array();
 	static $tableAction = array('delete' => 'delete/courses', 'edit' => 'edit/courses');
-	static $apiSelectClause = ['id', 'title', 'code'];
+	static $apiSelectClause = ['id', 'title', 'code', 'active', 'course_guide_url'];
 
-	function __construct($array = array()) {
+	function __construct($array = array())
+	{
 		parent::__construct($array);
 	}
 
-	function getCodeFormField($value = '') {
+	function getCodeFormField($value = '')
+	{
 
 		return "<div class='form-group'>
 	<label for='code' >Code</label>
@@ -41,7 +48,8 @@ class Courses extends Crud {
 
 	}
 
-	function getTitleFormField($value = '') {
+	function getTitleFormField($value = '')
+	{
 
 		return "<div class='form-group'>
 	<label for='title' >Title</label>
@@ -50,7 +58,8 @@ class Courses extends Crud {
 
 	}
 
-	function getDescriptionFormField($value = '') {
+	function getDescriptionFormField($value = '')
+	{
 
 		return "<div class='form-group'>
 	<label for='description' >Description</label>
@@ -59,7 +68,8 @@ class Courses extends Crud {
 
 	}
 
-	function getCourse_guide_urlFormField($value = '') {
+	function getCourse_guide_urlFormField($value = '')
+	{
 
 		return "<div class='form-group'>
 	<label for='course_guide_url' >Course Guide Url</label>
@@ -68,7 +78,8 @@ class Courses extends Crud {
 
 	}
 
-	function getActiveFormField($value = '') {
+	function getActiveFormField($value = '')
+	{
 
 		return "<div class='form-group'>
 	<label class='form-checkbox'>Active</label>
@@ -80,7 +91,8 @@ class Courses extends Crud {
 
 	}
 
-	function getDate_createdFormField($value = '') {
+	function getDate_createdFormField($value = '')
+	{
 
 		return "<div class='form-group'>
 	<label for='date_created' >Date Created</label>
@@ -90,7 +102,8 @@ class Courses extends Crud {
 	}
 
 // center for custom functions
-	public function getDetails($id) {
+	public function getDetails($id)
+	{
 		$query = "SELECT distinct courses.id as main_course_id, courses.*, course_enrollment.course_unit, course_enrollment.course_status,
 		course_manager.course_lecturer_id, staffs.firstname, staffs.othernames, staffs.lastname from courses left join course_enrollment on
 		courses.id = course_enrollment.course_id left join course_manager on course_manager.course_id = courses.id left join users_new on
@@ -100,7 +113,8 @@ class Courses extends Crud {
 		return $courses[0];
 	}
 
-	public function getCourseById($courseId, $courseArray = false, $programmeId = null, $entryMode = null, $semester = null) {
+	public function getCourseById($courseId, $courseArray = false, $programmeId = null, $entryMode = null, $semester = null)
+	{
 		$query = "SELECT courses.id as course_id, courses.*, course_mapping.id as course_mapping_id, course_mapping.* from courses left join course_mapping on course_mapping.course_id = courses.id where courses.id = ?";
 		if ($entryMode) {
 			$query .= " and course_mapping.mode_of_entry = '$entryMode'";
@@ -132,7 +146,8 @@ class Courses extends Crud {
 		}
 	}
 
-	public function getCourseCodeById($course) {
+	public function getCourseCodeById($course)
+	{
 		$query = "SELECT * FROM courses where id = ?";
 		$courses = $this->query($query, [$course]);
 		if ($courses) {
@@ -140,30 +155,101 @@ class Courses extends Crud {
 		}
 	}
 
-	public function APIList($filterList, $queryString, $start, $len, $orderBy) {
-		$selectData = static::$apiSelectClause;
-		$temp = $this->apiQueryListFiltered($selectData, $filterList, $queryString, $start, $len, $orderBy);
-		$res = $this->processList($temp[0]);
-		return [$res, $temp[1]];
+	public function delete($id = null, &$dbObject = null, $type = null): bool
+	{
+		permissionAccess($this, 'course_delete', 'delete');
+		$currentUser = $this->webSessionManager->currentAPIUser();
+		$db = $dbObject ?? $this->db;
+		if (parent::delete($id, $db)) {
+			logAction($this, 'course_delete', $currentUser->user_login);
+			return true;
+		}
+		return false;
 	}
 
-	private function processList($items) {
+	public function APIList($filterList, $queryString, $start, $len, $orderBy)
+	{
+		$generalCourse = $this->input->get('general_course', true) ?: null;
+		// this is used to filter out existing courses in course_manager table
+		if (isset($_GET['cm_filter'])) {
+			return $this->loadUnassignCourses();
+		}
+
+		if (isset($_GET['cmc_filter'])) {
+			return $this->loadOutsideDepartmentalCourses();
+		}
+
+		if (!isset($_GET['sortBy'])) {
+			$_GET['sortBy'] = true;
+			$orderBy = " a.code asc ";
+		} 
+
+		$selectData = static::$apiSelectClause;
+		list($data, $total) = $this->apiQueryListFiltered($selectData, $filterList, $queryString, $start, $len, $orderBy);
+
+		if (!$generalCourse) {
+			$data = $this->processList($data);
+		}
+
+		return [$data, $total];
+	}
+
+	private function processList(array $items): array
+	{
 		for ($i = 0; $i < count($items); $i++) {
 			$items[$i] = $this->loadExtras($items[$i]);
 		}
 		return $items;
 	}
 
-	private function loadExtras($item) {
-		$payload = [
+	private function loadExtras($item): array
+	{
+		return [
 			'id' => $item['id'],
-			'code' => $item['title'] . " [" . $item['code'] . "]",
+			'code' => $item['code'] . " - " . $item['title'],
 		];
-
-		return $payload;
 	}
 
-	public function deleteCourseRegistration($student_id, $course_id, $session_id, $level) {
+	private function loadOutsideDepartmentalCourses()
+	{
+		$department = isset($_GET['dashboard_department']) ? $_GET['dashboard_department'] : null;
+		$departmentQuery = $department ? " a.department_id <> '$department' " : "";
+
+		$query = "SELECT SQL_CALC_FOUND_ROWS a.id, a.title, a.code FROM courses a WHERE 
+			{$departmentQuery} ORDER BY a.code ASC";
+
+		$query2 = "SELECT FOUND_ROWS() as totalCount";
+		$res = $this->db->query($query);
+		$res = $res->result_array();
+		$res2 = $this->db->query($query2);
+		$res2 = $res2->result_array();
+		$res = $this->processList($res);
+		return [$res, $res2];
+	}
+
+	private function loadUnassignCourses()
+	{
+		$session = $_GET['cm_filter'];
+		$department = isset($_GET['dashboard_department']) ? $_GET['dashboard_department'] : null;
+		$departmentQuery = $department ? " a.department_id = '$department' and " : "";
+
+		$query = "SELECT SQL_CALC_FOUND_ROWS a.id, a.title, a.code FROM courses a WHERE 
+			{$departmentQuery} NOT EXISTS (
+    		SELECT 1 FROM course_manager cm 
+    		WHERE cm.course_id = a.id and cm.session_id = '$session'
+    		) ORDER BY a.code ASC";
+
+		$query2 = "SELECT FOUND_ROWS() as totalCount";
+		$res = $this->db->query($query);
+		$res = $res->result_array();
+		$res2 = $this->db->query($query2);
+		$res2 = $res2->result_array();
+		$res = $this->processList($res);
+		return [$res, $res2];
+	}
+
+	public function deleteCourseRegistration($student_id, $course_id, $session_id, $level)
+	{
 		// create a transaction making sure that the data is backup before being delete
 		$this->db->trans_start();
 		$param = array($student_id, $course_id, $session_id, $level);
@@ -175,25 +261,29 @@ class Courses extends Crud {
 		return $this->db->trans_status();
 	}
 
-	public function getCourseByIdOnly($course) {
+	public function getCourseByIdOnly($course)
+	{
 		$query = "SELECT * FROM courses where id = ?";
 		$courses = $this->query($query, [$course]);
 		if ($courses) {
 			return $courses[0];
 		}
+		return null;
 	}
 
-	public function getCourseIdByCode($course) {
+	public function getCourseIdByCode($course, $all = false)
+	{
 		$course = strtoupper($course);
 		$query = "SELECT * FROM courses where code = ?";
 		$courses = $this->query($query, [$course]);
 		if ($courses) {
-			return $courses[0]['id'];
+			return $all ? $courses[0] : $courses[0]['id'];
 		}
 		return '';
 	}
 
-	public function getAllCoursesList($programme_id, $level, $semester = ''): array {
+	public function getAllCoursesList($programme_id, $level, $semester = ''): array
+	{
 		$semester = strtolower($semester);
 		$semester = ($semester != '' && $semester == 'first') ? 1 : 2;
 		$query = "SELECT a.id as main_course_id, a.code, a.title, a.description, a.course_guide_url, a.active,
@@ -213,10 +303,10 @@ class Courses extends Crud {
 						'course_id' => hashids_encrypt($course['main_course_id']),
 						'code' => $course['code'],
 						'title' => $course['title'],
-						'semester' => (int) $course['semester'],
-						'unit' => (int) $course['course_unit'],
+						'semester' => (int)$course['semester'],
+						'unit' => (int)$course['course_unit'],
 						'status' => $course['course_status'],
-						'pre_select' => (int) $course['pre_select'],
+						'pre_select' => (int)$course['pre_select'],
 					);
 					$result[] = $courseData;
 				}
@@ -227,31 +317,41 @@ class Courses extends Crud {
 		return uniqueMultidimensionalArray($result, 'course_id');
 	}
 
-	private function getDistinctCourseList($session, $semester, $limit = null) {
-		$query = "SELECT a.course_id,ANY_VALUE(c.code) as code, ANY_VALUE(type) as course_type, GROUP_CONCAT(DISTINCT CONCAT(a.course_status, ':', status_count) ORDER BY a.course_status SEPARATOR ', ') as course_status,
+	private function getDistinctCourseList($session, $semester, $limit = null)
+	{
+		$query = "SELECT a.course_id,ANY_VALUE(c.code) as code,
+			c.title as course_title,
+       		ANY_VALUE(type) as course_type, 
+       		GROUP_CONCAT(DISTINCT CONCAT(a.course_status, ':', status_count) 
+       		ORDER BY a.course_status SEPARATOR ', ') as course_status,
     		SUM(status_count) as total FROM
     		(
     			SELECT course_id,course_status, COUNT(student_id) as status_count
     			FROM `course_enrollment` WHERE session_id = ? AND semester = ? GROUP BY course_id, course_status
-    		) a JOIN courses c ON c.id = a.course_id GROUP BY a.course_id ORDER BY total DESC";
+    		) a JOIN courses c ON c.id = a.course_id 
+    		GROUP BY a.course_id, c.title ORDER BY total DESC";
 		if ($limit) {
 			$query .= " limit {$limit}";
 		}
-		$result = $this->query($query, [$session, $semester]);
-		return $result;
+		return $this->query($query, [$session, $semester]);
 	}
 
-	private function getDistinctCourseScore($course, $session, $semester) {
-		$query = "SELECT code, b.date as session, count(DISTINCT student_id) as total FROM `course_enrollment` a join sessions b on b.id = a.session_id join courses c on c.id = a.course_id where a.course_id = ? and a.session_id = ? and a.semester = ? and total_score is not null";
+	private function getDistinctCourseScore($course, $session, $semester)
+	{
+		$query = "SELECT code, b.date as session, count(DISTINCT student_id) as total FROM `course_enrollment` a 
+			join sessions b on b.id = a.session_id 
+			join courses c on c.id = a.course_id where a.course_id = ? and a.session_id = ? and a.semester = ? 
+			and total_score is not null";
 		$result = $this->query($query, [$course, $session, $semester]);
 		return ($result) ? $result[0] : null;
 	}
 
-	public function getListCourseEnrolled() {
-		$session = $_GET['session'] ?? $this->currentTransactionSession();
+	public function getListCourseEnrolledOld()
+	{
+		$session = $_GET['session'] ?? get_setting('active_session_student_portal');
 		$semester = $_GET['semester'] ?? 1;
 		$nth = $_GET['page_size'] ?? null;
-		$download = request()->getGet('download') ?? null;
+		$download = $this->input->get('download', true) ?? null;
 		$date = date('Y-m-d H:i:s');
 		$result = $this->getDistinctCourseList($session, $semester, $nth);
 		if (!$result) {
@@ -260,23 +360,64 @@ class Courses extends Crud {
 
 		$contents = [];
 		loadClass($this->load, 'sessions');
+		loadClass($this->load, 'examination_courses');
 		$result = useGenerators($result);
 		$sumEstimate = $sumActual = 0;
+		$sumNewEstimate = $sumNewActual = 0;
+		$sumProposedEstimate = $sumProposedActual = 0;
 		foreach ($result as $res) {
 			$course = $this->getDistinctCourseScore($res['course_id'], $session, $semester);
 			if ($course) {
 				$isPaper = strtolower($res['course_type']) === ClaimType::EXAM_PAPER;
-				$inferEstimate = ResultManagerTrait::calcTutorAmount($res['total'], $isPaper);
-				$inferActual = ResultManagerTrait::calcTutorAmount($course['total'], $isPaper);
+				$inferEstimate = self::calcTutorAmount($res['total'], $isPaper);
+				$inferActual = self::calcTutorAmount($course['total'], $isPaper);
+				$physicalOldInteractive = self::calcInteractionOld()['sumTotal'];
+				$totalOldActualAmount = $inferActual['sumTotal'];
+				$totalOldEstimateAmount = $inferEstimate['sumTotal'] + $physicalOldInteractive;
+
+				// this handles the new regime
+				$inferEstimateNew = self::inferPaymentAmount($res['code'], $res['total'], $isPaper, CommonSlug::PROF_RANK);
+				$physicalAmount = self::calcFacilitation(CommonSlug::PROF_RANK)['sumTotal'];
+				$dataAmount = self::calcDataAllowance()['sumTotal'];
+				$excessAmount = self::calcWebinarWorkLoadAllowance($res['total'])['sumTotal'];
+				$excessAmountFormer = self::calcWebinarWorkLoadAllowance($res['total'], 200)['sumTotal'];
+				$cbtAmount = self::calcExamType(ClaimType::EXAM_CBT)['sumTotal'];
+				$totalEstimateAmount = $inferEstimateNew['sumTotal'] + $physicalAmount + $dataAmount +
+					$excessAmount + $cbtAmount;
+
+				$inferActualNew = self::inferPaymentAmount($res['code'], $course['total'], $isPaper, CommonSlug::PROF_RANK);
+				$physicalAmount = self::calcFacilitation(CommonSlug::PROF_RANK)['sumTotal'];
+				$dataAmount = self::calcDataAllowance()['sumTotal'];
+				$excessAmountInfer = self::calcWebinarWorkLoadAllowance($course['total'])['sumTotal'];
+				$excessAmountInferFormer = self::calcWebinarWorkLoadAllowance($course['total'], 200)['sumTotal'];
+				$cbtAmount = self::calcExamType(ClaimType::EXAM_CBT)['sumTotal'];
+				$totalActualAmount = $inferActualNew['sumTotal'] + $physicalAmount + $dataAmount +
+					$excessAmountInfer + $cbtAmount;
+
+				// this handles the proposed
+				$inferProposedEstimate = self::calcProposedTutorAmount($res['total'], $isPaper);
+				$physicalProposedInteractive = self::calcInteractionProposed()['sumTotal'];
+				$totalProposedEstimateAmount = $inferProposedEstimate['sumTotal'];
+
+				$lecturerName = $this->examination_courses->getCourseLecturerName($res['course_id'], $session);
+				$lecturerName = $lecturerName ? $lecturerName['lecturers_name'] : '';
 
 				$item = [
-					'course_code' => $res['code'],
+					'course_code' => $res['code'] . ' - ' . $res['course_title'],
 					'course_status' => $res['course_status'],
 					'enrolled' => $res['total'],
 					'scored' => $course['total'],
-					'estimate' => $inferEstimate['sumTotal'],
-					'actual' => $inferActual['sumTotal'],
 					'exam_type' => strtoupper($res['course_type']),
+					'estimate' => $totalOldEstimateAmount,
+					'actual' => $totalOldActualAmount,
+					'new_regime_estimate' => $totalEstimateAmount,
+					'new_regime_actual' => $totalActualAmount,
+					'proposed_estimate' => $totalProposedEstimateAmount,
+					'lecturer_name' => $lecturerName,
+					'new_regime_estimate_webinar_workload_per_100' => $excessAmount,
+					'new_regime_estimate_webinar_workload_per_200' => $excessAmountFormer,
+					'new_regime_actual_webinar_workload_per_100' => $excessAmountInfer,
+					'new_regime_actual_webinar_workload_per_200' => $excessAmountInferFormer,
 				];
 
 				if ($download == 'yes') {
@@ -284,31 +425,187 @@ class Courses extends Crud {
 					$item['course_status'] = str_replace(',', ' -', $item['course_status']);
 				}
 
-				$sumEstimate += $inferEstimate['sumTotal'];
+				$sumEstimate += $totalOldEstimateAmount;
 				$sumActual += $inferActual['sumTotal'];
+
+				$sumNewEstimate += $totalEstimateAmount;
+				$sumNewActual += $totalActualAmount;
+
+				$sumProposedEstimate += $totalProposedEstimateAmount;
+
 				$contents[] = $item;
 			}
 		}
 
-		usort($contents, function ($a, $b) {
-			return intval($b['enrolled']) - intval($a['enrolled']);
-		});
+		if (!empty($contents)) {
+			usort($contents, function ($a, $b) {
+				return intval($b['enrolled']) - intval($a['enrolled']);
+			});
 
-		$contents = array_slice($contents, 0, $nth);
-		if ($download == 'yes') {
-			$contents = array2csv($contents);
-			$filename = "Courses_predictive_analysis_" . date('Y-m-d') . "_download.csv";
-			$header = 'text/csv';
-			return sendDownload($contents, $header, $filename);
+			$contents = array_slice($contents, 0, $nth);
+			if ($download == 'yes') {
+				$contents = array2csv($contents);
+				$filename = "Courses_predictive_analysis_" . date('Y-m-d') . "_download.csv";
+				$header = 'text/csv';
+				return sendDownload($contents, $header, $filename);
+			}
 		}
 
-		$payload = [
+		return [
 			'data' => $contents,
 			'datetime' => $date,
 			'sumEstimate' => $sumEstimate,
 			'sumActual' => $sumActual,
+			'sumNewEstimate' => $sumNewEstimate,
+			'sumNewActual' => $sumNewActual,
+			'sumProposedEstimate' => $sumProposedEstimate
 		];
-		return $payload;
+	}
+
+	public function getListCourseEnrolled()
+	{
+		$session = $_GET['session'] ?? get_setting('active_session_student_portal');
+		$semester = $_GET['semester'] ?? 1;
+		$nth = $_GET['page_size'] ?? null;
+		$download = $this->input->get('download', true) ?? null;
+		$date = date('Y-m-d H:i:s');
+		$result = $this->getDistinctCourseList($session, $semester, $nth);
+		if (!$result) {
+			return [];
+		}
+
+		$contents = [];
+		loadClass($this->load, 'sessions');
+		loadClass($this->load, 'examination_courses');
+		$result = useGenerators($result);
+		$sumEstimate = 0;
+		$sumNewEstimate = 0;
+		$sumProposedEstimate = 0;
+		foreach ($result as $res) {
+			$course = $this->getDistinctCourseScore($res['course_id'], $session, $semester);
+			if ($course) {
+				$isPaper = strtolower($res['course_type']) === ClaimType::EXAM_PAPER;
+				$excessAmount = self::calcWebinarWorkLoadAllowance($res['total'], 100)['sumTotal'];
+				$excessAmountPer200 = self::calcWebinarWorkLoadAllowance($res['total'], 200)['sumTotal'];
+
+				// this handles the old regime
+				if (isGESCourse($res['code'])) {
+					$totalOldEstimateAmount = self::totalAmountPayload(600000)['sumTotal'];
+				} else {
+					$inferEstimate = self::calcTutorAmount($res['total'], $isPaper)['sumTotal'];
+					$physicalOldInteractive = self::calcInteractionOld()['sumTotal'];
+					$examTypeAmount = self::calcExamType(ClaimType::EXAM_CBT, true)['sumTotal'];
+					$totalOldEstimateAmount = $inferEstimate + $physicalOldInteractive + $examTypeAmount;
+				}
+
+				// this handles the new regime
+				if (isGESCourse($res['code'])) {
+					$totalEstimateAmount = self::totalAmountPayload(600000)['sumTotal'];
+				} else {
+					$inferEstimateNew = self::inferPaymentAmount($res['code'], $res['total'], $isPaper, CommonSlug::PROF_RANK)['sumTotal'];
+					$physicalAmount = self::calcFacilitation(CommonSlug::PROF_RANK)['sumTotal'];
+					$dataAmount = self::calcDataAllowance(15000)['sumTotal'];
+					$excessAmountFormer = self::calcWebinarWorkLoadAllowance($res['total'], 200)['sumTotal'];
+					$examTypeAmount = self::calcExamType($res['course_type'])['sumTotal'];
+					$totalEstimateAmount = $inferEstimateNew + $physicalAmount + $dataAmount +
+						$excessAmountFormer + $examTypeAmount;
+				}
+
+				// this handles the newly intended regime
+				if (isGESCourse($res['code'])) {
+					$totalProposedEstimateAmount = self::totalAmountPayload(600000)['sumTotal'];
+				} else {
+					$inferProposedEstimate = self::calcProposedTutorAmount($res['total'])['sumTotal'];
+					$physicalAmount = self::calcFacilitation(CommonSlug::PROF_RANK)['sumTotal'];
+					$dataAmount = self::calcDataAllowance()['sumTotal'];
+					$excessAmountFormer = self::calcWebinarWorkLoadAllowance($res['total'], 100)['sumTotal'];
+					$examTypeAmount = self::calcExamType(ClaimType::EXAM_CBT)['sumTotal'];
+					$totalProposedEstimateAmount = $inferProposedEstimate + $physicalAmount + $dataAmount +
+						$excessAmountFormer + $examTypeAmount;
+				}
+
+				$lecturerName = $this->examination_courses->getCourseLecturerName($res['course_id'], $session);
+				$lecturerName = $lecturerName ? $lecturerName['lecturers_name'] : '';
+				$courseCode = $res['code'] . ' - ' . $res['course_title'];
+
+				$item = [
+					'course_code' => $courseCode,
+					'course_status' => $res['course_status'],
+					'enrolled' => $res['total'] ?? 0,
+					'scored' => $course['total'] ?? 0,
+					'exam_type' => strtoupper($res['course_type']),
+					'old_regime_estimate' => $totalOldEstimateAmount,
+					'revised_regime_estimate' => $totalEstimateAmount,
+					'new_intended_regime_estimate' => $totalProposedEstimateAmount,
+					'lecturer_name' => $lecturerName,
+				];
+
+				if ($download == 'yes') {
+					$item['course_code'] = str_replace(',', ';', $item['course_code']);
+					$item['session'] = $course['session'];
+					$item['course_status'] = str_replace(',', ' -', $item['course_status']);
+				}
+
+				$sumEstimate += $totalOldEstimateAmount;
+				$sumNewEstimate += $totalEstimateAmount;
+				$sumProposedEstimate += $totalProposedEstimateAmount;
+
+				$contents[] = $item;
+			}
+		}
+
+		if (!empty($contents)) {
+			usort($contents, function ($a, $b) {
+				return intval($b['enrolled']) - intval($a['enrolled']);
+			});
+
+			$contents = array_slice($contents, 0, $nth);
+			if ($download == 'yes') {
+				$contents = array2csv($contents);
+				$filename = "Courses_predictive_analysis_" . date('Y-m-d') . "_download.csv";
+				$header = 'text/csv';
+				return sendDownload($contents, $header, $filename);
+			}
+		}
+
+		return [
+			'data' => $contents,
+			'datetime' => $date,
+			'sumEstimate' => $sumEstimate,
+			'sumNewEstimate' => $sumNewEstimate,
+			'sumProposedEstimate' => $sumProposedEstimate
+		];
+	}
+
+	public function teachingPracticeEligibility($student_id, $observationLetter = false)
+	{
+		$currentSession = get_setting('active_session_student_portal');
+		$code1 = 'TEE305';
+		$code2 = 'TEE405';
+		$code3 = 'ASE205';
+		if ($observationLetter) {
+			$query = "SELECT a.id,b.code from course_enrollment a 
+			join courses b on b.id = a.course_id 
+         	where b.code in ('{$code3}') and session_id = ? 
+         	and a.student_id = ?";
+			$result = $this->db->query($query, [$currentSession, $student_id]);
+		} else {
+			$query = "SELECT a.id,b.code from course_enrollment a 
+			join courses b on b.id = a.course_id 
+         	where b.code in ('{$code1}', '{$code2}') and session_id = ? 
+         	and a.student_id = ?";
+			$result = $this->db->query($query, [$currentSession, $student_id]);
+		}
+		return $result->num_rows() > 0 ? $result->row() : false;
+	}
+
+	public function getCourseStats()
+	{
+		$query = " SELECT count(a.id) as total_course,
+		(select count(b.id) from courses b where b.active='1') as total_course_active,
+     	(select count(c.id) as total_courses_offerings from courses c where c.course_guide_url is not null) as total_course_manual
+     	 from courses a ";
+		return $this->query($query)[0];
 	}
 
 }

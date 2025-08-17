@@ -71,15 +71,14 @@ class Settings extends Crud
     public function registerSettings($settings)
     {
         foreach ($settings as $settingsKey => $settingsValue) {
-
             $insertValue = array('settings_name' => $settingsKey, 'settings_value' => $settingsValue);
 
             if ($this->getSetting($settingsKey)) {
-                $this->db->table('settings')
-                    ->where('settings_name', $settingsKey)
-                    ->update($insertValue);
+                $this->db->table('settings_name')
+                ->where('settings_name', $settingsKey)
+                ->update($insertValue);
             } else {
-                $this->db->table('settings')->insert($insertValue);
+                $this->db->table('settings_name')->insert($insertValue);
             }
         }
     }
@@ -92,9 +91,9 @@ class Settings extends Crud
 
         foreach ($query->getResultArray() as $row) {
             if ($row['settings_name'] == $check_field) {
-                return true;
+                return TRUE;
             } else {
-                return false;
+                return FALSE;
             }
         }
     }
@@ -118,10 +117,14 @@ class Settings extends Crud
     public function APIList($filterList, $queryString, $start, $len)
     {
         $temp = getFilterQueryFromDict($filterList);
-        $filterQuery = buildCustomWhereString($temp[0], $queryString);
+        $filterQuery = $temp[0];
         $filterValues = $temp[1];
+        if ($filterQuery || $queryString) {
+            $filterQuery .= ($filterQuery ? ' and ' : ' where ') . $queryString;
+        }
+        $filterQuery .= " order by id desc ";
 
-        if (isset($_GET['start']) && $len) {
+        if ($len && isset($_GET['start'])) {
             $start = $this->db->escapeString($start);
             $len = $this->db->escapeString($len);
             $filterQuery .= " limit $start, $len";
@@ -147,10 +150,7 @@ class Settings extends Crud
     {
         $result = [];
         for ($i = 0; $i < count($items); $i++) {
-            if ($items[$i]['settings_name'] == 'remita_merchant_id' ||
-                $items[$i]['settings_name'] == 'remita_api_key' ||
-                $items[$i]['settings_name'] == 'remita_public_key' ||
-                $items[$i]['settings_name'] == 'remita_secret_key') {
+            if ($items[$i]['settings_name'] == 'remita_merchant_id' || $items[$i]['settings_name'] == 'remita_api_key' || $items[$i]['settings_name'] == 'remita_public_key' || $items[$i]['settings_name'] == 'remita_secret_key') {
                 continue;
             }
             $result[] = $this->loadExtras($items[$i]);
@@ -177,7 +177,7 @@ class Settings extends Crud
         }
 
         if ($item['settings_name'] == 'institution_logo') {
-            $item['settings_value'] = (str_contains($item['settings_value'], 'localhost:8081')) ? base_url('assets/images/' . $item['settings_value']) : 'https://apex.ui.edu.ng/assets/images/' . $item['settings_value'];
+            $item['settings_value'] = (strpos($item['settings_value'], 'localhost:8081') !== false) ? base_url('assets/images/' . $item['settings_value']) : 'https://apex.ui.edu.ng/assets/images/' . $item['settings_value'];
         }
 
         return $item;

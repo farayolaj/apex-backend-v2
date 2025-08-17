@@ -1,13 +1,13 @@
 <?php
 namespace App\Entities;
 
-use App\Enums\OutflowStatusEnum as OutflowStatus;
-use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
-use App\Enums\ReportEnum as ReportSlug;
-use App\Enums\RequestTypeEnum as RequestTypeSlug;
-use App\Libraries\EntityLoader;
 use App\Models\Crud;
+use App\Libraries\EntityLoader;
 
+use App\Enums\ReportEnum as ReportSlug;
+use App\Enums\OutflowStatusEnum as OutflowStatus;
+use App\Enums\RequestTypeEnum as RequestTypeSlug;
+use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
 /**
  * This class queries those who have paid for both RuS and SuS
  */
@@ -19,11 +19,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
+			$from = ($this->db->escape_str($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
@@ -59,11 +59,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
+			$from = ($this->db->escape_str($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -81,11 +81,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
+			$from = ($this->db->escape_str($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -103,11 +103,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
+			$from = ($this->db->escape_str($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.created_at) = date('$from') ";
 		}
 
@@ -134,11 +134,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
+			$from = ($this->db->escape_str($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 
@@ -155,11 +155,11 @@ class Audit_report extends Crud
 	{
 		$whereString = '';
 		if ($from && $to) {
-			$from = ($this->db->escapeString($from));
-			$to = ($this->db->escapeString($to));
+			$from = ($this->db->escape_str($from));
+			$to = ($this->db->escape_str($to));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) between date('$from') and date('$to') ";
 		} else if ($from) {
-			$from = ($this->db->escapeString($from));
+			$from = ($this->db->escape_str($from));
 			$whereString .= ($whereString ? " and " : " where ") . " date(a.date_performed) = date('$from') ";
 		}
 

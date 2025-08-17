@@ -6,8 +6,6 @@ use App\Libraries\EntityLoader;
 use App\Libraries\RemitaResponse;
 use App\Models\Crud;
 use App\Traits\CommonTrait;
-use CodeIgniter\Config\Factories;
-use Exception;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -15,8 +13,6 @@ use Exception;
  */
 class Transaction_custom extends Crud
 {
-
-    use CommonTrait;
 
     /**
      * This is the entity name equivalent to the table name
@@ -345,7 +341,8 @@ class Transaction_custom extends Crud
         if (!$result) {
             return false;
         }
-        return new \App\Entities\Users_custom($result[0]);
+        EntityLoader::loadClass($this, 'Users_custom');
+        return new Users_custom($result[0]);
     }
 
     public function delete($id = NULL, &$dbObject = NULL, $type = null)
@@ -357,7 +354,7 @@ class Transaction_custom extends Crud
     public function verify_transaction($rrrCode, $channel, $student = null)
     {
         if ($channel == 'remita') {
-            $remita = Factories::libraries('Remita');
+            $remita = \CodeIgniter\Config\Factories::libraries('Remita');
             $transactionRef = $this->transaction_ref ? $this->transaction_ref : null;
             if (!$transactionRef) {
                 return ['status' => false, 'message' => 'Invalid transaction reference'];
@@ -368,7 +365,7 @@ class Transaction_custom extends Crud
             if (!$temp['curlStatus']) {
                 $extraData = $temp['extraData'];
                 $response = $remita->remitaTransactionDetails($extraData['url'], $temp['header']);
-                if (@$response[RemitaResponse::RRR] == $rrrCode && self::isPaymentValid($response['status'])) {
+                if (@$response[RemitaResponse::RRR] == $rrrCode && CommonTrait::isPaymentValid($response['status'])) {
                     $date_payment_communicated = date('Y-m-d H:i:s');
                     // update transaction data
                     $record = array(
@@ -387,15 +384,15 @@ class Transaction_custom extends Crud
                     $id = $this->id;
                     $this->setArray($record);
                     if (!$this->update($id)) {
-                        return ["status" => false, 'message' => "An error occurred while processing payment"];
+                        return ["status" => false, 'message' => "An error occured while processing payment"];
                     }
                     return ['status' => true, 'rrr_code' => $rrrCode];
                 } else {
                     $record = array(
-                        'payment_status' => $response['status'] ?? '100',
-                        'payment_status_description' => $response['message'] ?? 'pending',
+                        'payment_status' => (isset($response['status'])) ? $response['status'] : '100',
+                        'payment_status_description' => (isset($response['message'])) ? $response['message'] : 'pending',
                         'amount_paid' => $response['amount'],
-                        'date_completed' => $response['paymentDate'] ?? $response['transactiontime'],
+                        'date_completed' => (isset($response['paymentDate'])) ? $response['paymentDate'] : $response['transactiontime'],
                     );
                     if (isset($response[RemitaResponse::RRR]) && $response[RemitaResponse::RRR] != '') {
                         $record['rrr_code'] = $response[RemitaResponse::RRR];
@@ -403,13 +400,14 @@ class Transaction_custom extends Crud
                     $id = $this->id;
                     $this->setArray($record);
                     if (!$this->update($id)) {
-                        return ["status" => false, 'message' => "An error occurred while processing payment"];
+                        return ["status" => false, 'message' => "An error occured while processing payment"];
                     }
                     return ['status' => false, 'message' => (isset($response['message']) && $response['message'] != '') ? 'Transaction status: ' . strtolower($response['message']) : 'Transaction status does not exist or pending payment'];
                 }
+                return ["status" => false, 'message' => "An error occured while processing payment"];
             }
         }
-        return ["status" => false, 'message' => "An error occurred while processing payment"];
+        return ["status" => false, 'message' => "An error occured while processing payment"];
     }
 
     public function APIList($filterList, $queryString, $start, $len, $orderBy)
@@ -478,6 +476,10 @@ class Transaction_custom extends Crud
     {
         if (isset($item['phone_number'])) {
             $item['phone_number'] = decryptData($item['phone_number']);
+        }
+
+        if (isset($item['email'])) {
+            $item['email'] = maskEmail($item['email']);
         }
 
         return $item;

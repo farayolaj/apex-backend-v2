@@ -22,9 +22,9 @@ require_once __DIR__ . '/Routes/export.php';
 require_once __DIR__ . '/Routes/import.php';
 require_once  __DIR__ . '/Routes/admin_api.php';
 
-require_once __DIR__ . '/Routes/admin.php'; // this handle the web version
-require_once __DIR__ . '/Routes/finance.php'; // this handle the payment[finance] outflow
-require_once __DIR__ . '/Routes/api.php'; // this handle the student portal
+require_once __DIR__ . '/Routes/admin.php'; // this handles the web version
+require_once __DIR__ . '/Routes/finance.php'; // this handles the payment[finance] outflow
+require_once __DIR__ . '/Routes/api.php'; // this handles the student portal
 
 //require_once __DIR__ . '/Routes/web.php';
 

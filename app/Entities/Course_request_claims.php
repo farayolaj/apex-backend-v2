@@ -4,16 +4,15 @@ namespace App\Entities;
 use App\Models\Crud;
 use App\Libraries\EntityLoader;
 
-use App\Models\WebSessionManager;
 use App\Traits\ResultManagerTrait;
-
+use App\Enums\ClaimEnum as ClaimType;
 /**
  * This class is automatically generated based on the structure of the table.
  * And it represent the model of the course_request_claims table
  */
 class Course_request_claims extends Crud
 {
-    use ResultManagerTrait;
+
 	/**
 	 * This is the entity name equivalent to the table name
 	 * @var string
@@ -306,7 +305,8 @@ class Course_request_claims extends Crud
 		if (!$result) {
 			return false;
 		}
-		return new \App\Entities\Courses($result[0]);
+		include_once 'Courses.php';
+		return new Courses($result[0]);
 	}
 
 	protected function getSession()
@@ -320,7 +320,8 @@ class Course_request_claims extends Crud
 		if (!$result) {
 			return false;
 		}
-		return new \App\Entities\Sessions($result[0]);
+		include_once 'Sessions.php';
+		return new Sessions($result[0]);
 	}
 
 	protected function getCourse_manager()
@@ -334,7 +335,8 @@ class Course_request_claims extends Crud
 		if (!$result) {
 			return false;
 		}
-		return new \App\Entities\Course_manager($result[0]);
+		include_once 'Course_manager.php';
+		return new Course_manager($result[0]);
 	}
 
 	protected function getUser_request()
@@ -348,7 +350,8 @@ class Course_request_claims extends Crud
 		if (!$result) {
 			return false;
 		}
-		return new \App\Entities\User_requests($result[0]);
+		include_once 'User_requests.php';
+		return new User_requests($result[0]);
 	}
 
 	public function getOldestCourseClaims($course, $session)
@@ -428,7 +431,7 @@ class Course_request_claims extends Crud
 		if (!$filterValues) {
 			$filterValues = [];
 		}
-		$query = "SELECT SQL_CALC_FOUND_ROWS a.id,a.request_no,a.title,a.amount,a.description,a.beneficiaries,a.request_status,
+		$query = "SELECT SQL_CALC_FOUND_ROWS a.id,a.request_no,a.title,a.amount,a.description,a.request_status,
        		created_at,a.user_id from user_requests a $filterQuery";
 
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
@@ -449,28 +452,62 @@ class Course_request_claims extends Crud
 		return $items;
 	}
 
-	public function loadExtras(array $item): array
+	public function loadExtras(array $item, $isDetail = false): array
 	{
-		if (isset($item['beneficiaries'])) {
-			$item['beneficiaries'] = ($item['beneficiaries'] != '') ? json_decode($item['beneficiaries'], true) : [];
+		if ($isDetail) {
+			if (isset($item['beneficiaries'])) {
+				$item['beneficiaries'] = ($item['beneficiaries'] != '') ? json_decode($item['beneficiaries'], true) : [];
+			}
+
+			if (isset($item['action_timeline'])) {
+				$actionLine = ($item['action_timeline'] != '') ? json_decode($item['action_timeline'], true) : [];
+				if (is_null($item['stage'])) {
+					$item['stage'] = 'director';
+					EntityLoader::loadClass($this, 'user_requests');
+					$currentUser = WebSessionManager::currentAPIUser();
+					$tempAction = User_requests::actionTimelineData($currentUser, null, null, true);
+					$actionLine = array_map(function ($item) {
+						return [
+							'stage' => $item['stage'] ?? 'director',
+							'state' => '',
+							'action' => '',
+							'date_performed' => '',
+						];
+					}, json_decode($tempAction, true));
+				}
+				$item['action_timeline'] = $this->removeRedundantTimeline($actionLine);
+			}
+
+			if (isset($item['id'])) {
+				$courses = $this->getCoursesClaims($item['id']);
+				$item['course_breakdown'] = $courses ?: [];
+			}
 		}
 
 		if (isset($item['id'])) {
-			$courses = $this->getCoursesClaims($item['id']);
-			$item['course_breakdown'] = $courses ?: [];
+			$requestSession = $this->getCourseClaimsSession($item['id']);
+			$item['session'] = @$requestSession[0]['session'] ?: '';
 
 			$url = 'web/claims_request_html/' . hashids_encrypt($item['id']) . '/' . hashids_encrypt($item['user_id']);
-			$url = self::generateReportLink('claims_request.html', $url);
+			$url = ResultManagerTrait::generateReportLink('claims_request.html', $url);
 			$item['print_url'] = $url;
 		}
 
 		return $item;
 	}
 
+	private function removeRedundantTimeline(array $data): ?array
+	{
+		$fieldsToRemove = ['firstname', 'lastname', 'othernames', 'assignee_to', 'user_id'];
+
+		return removeRedundantArrayKey($data, $fieldsToRemove);
+	}
+
 	public function getCoursesClaims($userRequest)
 	{
-		$query = "SELECT a.*,c.date as session,b.title,b.code from course_request_claims a left join courses b on b.id = a.course_id
-				join sessions c on c.id = a.session_id where a.user_request_id = ? ";
+		$query = "SELECT a.*,c.date as session,b.title,b.code from course_request_claims a 
+            left join courses b on b.id = a.course_id
+			join sessions c on c.id = a.session_id where a.user_request_id = ? ";
 		$result = $this->query($query, [$userRequest]);
 		if (!$result) {
 			return [];
@@ -478,6 +515,15 @@ class Course_request_claims extends Crud
 		$payload = [];
 		foreach ($result as $item) {
 			$temp = $item;
+			if ($item['exam_type'] === claimType::DEPARTMENTAL_RUN_COST) {
+				$temp['is_department_running_cost'] = true;
+			}
+			if ($item['exam_type'] === claimType::COURSE_AUTHOR_COMMITTEE) {
+				$temp['is_course_committee'] = true;
+			}
+			if ($item['exam_type'] === claimType::LOGISTICS_ALLOWANCE) {
+				$temp['is_logistic_allowance'] = true;
+			}
 			$temp['claim_item_list'] = $this->getCourseClaimItems($item['id']) ?: [];
 			$payload[] = $temp;
 		}
@@ -493,9 +539,42 @@ class Course_request_claims extends Crud
 
 	public function getCourseClaimsSession($userRequest)
 	{
-		$query = "SELECT c.date as session from course_request_claims a join sessions c on c.id = a.session_id
-                where a.user_request_id = ? group by a.user_request_id, c.date";
+		$query = "SELECT c.date as session, a.created_at from course_request_claims a join sessions c on c.id = a.session_id
+                where a.user_request_id = ? group by a.user_request_id, c.date, a.created_at";
 		return $this->query($query, [$userRequest]);
+	}
+
+	public function getAllCourseClaimItems($courseClaim)
+	{
+		$query = "SELECT * from course_request_claim_items where course_request_claim_id in ($courseClaim) ";
+		return $this->query($query, [$courseClaim]);
+	}
+
+	public function deleteClaimRequestItem($requestNo)
+	{
+		$query = "DELETE FROM course_request_claim_items WHERE course_request_claim_id IN ( 
+			SELECT id FROM course_request_claims WHERE claim_no = ? )";
+		if (!$this->query($query, [$requestNo])) {
+			return false;
+		}
+
+		$query1 = "DELETE FROM course_request_claims WHERE claim_no = ?";
+		if (!$this->query($query1, [$requestNo])) {
+			return false;
+		}
+
+		$query2 = "DELETE FROM user_requests WHERE request_no = ?";
+		if (!$this->query($query2, [$requestNo])) {
+			return false;
+		}
+		return true;
+	}
+
+	public function getCourseClaimManager($course, $session)
+	{
+		$query = "SELECT id, essential_inline_waiver as waiver, exam_type from course_manager where course_id = ? and session_id = ? 
+                order by date_created desc limit 1";
+		return $this->query($query, [$course, $session]);
 	}
 
 }

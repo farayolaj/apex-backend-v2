@@ -77,9 +77,7 @@ class Fee_description extends Crud
 
 	function getDate_createdFormField($value = '')
 	{
-
 		return " ";
-
 	}
 
 	public function getPaymentDescription($payment, $all = false)
@@ -94,7 +92,8 @@ class Fee_description extends Crud
 
 	public function getPaymentFeeDescriptionByCode($code, $payment = null)
 	{
-		$query = "SELECT a.*,b.id as payment_id,b.amount,b.subaccount_amount,b.service_charge,b.discount_amount from 
+		$query = "SELECT a.*,b.id as payment_id,b.amount,b.subaccount_amount,b.service_charge,
+			b.discount_amount,b.service_type_id from 
             fee_description a left join payment b on b.description = a.id where code = ? and a.active = '1'";
 		if ($payment) {
 			$query .= " and b.id = '$payment' ";
@@ -131,7 +130,11 @@ class Fee_description extends Crud
 		return $item;
 	}
 
+	public function getFeeDescriptionByCode($id, $code){
+		$query = "SELECT * from fee_description where id = ? and code = ?";
+		return $this->query($query, [$id, $code]);
+	}
+
 
 }
 
-?>

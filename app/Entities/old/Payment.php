@@ -1,6 +1,7 @@
 <?php
 require_once 'application/models/Crud.php';
 require_once APPPATH . 'traits/CommonTrait.php';
+require_once APPPATH . 'constants/FeeDescriptionCode.php';
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the payment table.
@@ -15,9 +16,20 @@ class Payment extends Crud
 	/*this array contains the fields that are unique*/
 	static $uniqueArray = array('payment_code');
 	/*this is an associative array containing the fieldname and the type of the field*/
-	static $typeArray = array('amount' => 'varchar', 'description' => 'varchar', 'options' => 'tinyint', 'fee_category' => 'tinyint', 'programme' => 'text', 'session' => 'int', 'level' => 'text', 'prerequisite_fee' => 'int', 'preselected_fee' => 'int', 'entry_mode' => 'text', 'level_to_include' => 'text', 'entry_mode_to_include' => 'text', 'date_due' => 'varchar', 'service_type_id' => 'varchar', 'penalty_fee' => 'int', 'service_charge' => 'int', 'status' => 'tinyint', 'is_visible' => 'tinyint', 'date_created' => 'datetime', 'fee_breakdown' => 'text', 'discount_amount' => 'varchar', 'payment_code' => 'text');
+	static $typeArray = array('amount' => 'varchar', 'description' => 'varchar', 'options' => 'tinyint',
+		'fee_category' => 'tinyint', 'programme' => 'text', 'session' => 'int', 'level' => 'text',
+		'prerequisite_fee' => 'int', 'preselected_fee' => 'int', 'entry_mode' => 'text', 'level_to_include' => 'text',
+		'entry_mode_to_include' => 'text', 'date_due' => 'varchar', 'service_type_id' => 'varchar', 'penalty_fee' => 'int',
+		'service_charge' => 'int', 'status' => 'tinyint', 'is_visible' => 'tinyint', 'date_created' => 'datetime',
+		'fee_breakdown' => 'text', 'discount_amount' => 'varchar', 'payment_code' => 'text',
+		'payment_group' => 'text', 'is_payment_group' => 'tinyint');
+
 	/*this is a dictionary that map a field name with the label name that will be shown in a form*/
-	static $labelArray = array('id' => '', 'amount' => '', 'description' => '', 'options' => '', 'fee_category' => '', 'programme' => '', 'session' => '', 'level' => '', 'prerequisite_fee' => '', 'preselected_fee' => '', 'entry_mode' => '', 'level_to_include' => '', 'entry_mode_to_include' => '', 'date_due' => '', 'service_type_id' => '', 'penalty_fee' => '', 'service_charge' => '', 'status' => '', 'is_visible' => '', 'date_created' => '', 'fee_breakdown' => '', 'discount_amount' => '', 'payment_code' => '');
+	static $labelArray = array('id' => '', 'amount' => '', 'description' => '', 'options' => '', 'fee_category' => '',
+		'programme' => '', 'session' => '', 'level' => '', 'prerequisite_fee' => '', 'preselected_fee' => '', 'entry_mode' => '',
+		'level_to_include' => '', 'entry_mode_to_include' => '', 'date_due' => '', 'service_type_id' => '', 'penalty_fee' => '',
+		'service_charge' => '', 'status' => '', 'is_visible' => '', 'date_created' => '', 'fee_breakdown' => '',
+		'discount_amount' => '', 'payment_code' => '', 'payment_group' => '', 'is_payment_group' => '');
 	/*associative array of fields that have default value*/
 	static $defaultArray = array();
 //populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
@@ -410,7 +422,8 @@ class Payment extends Crud
 			$filterValues = [];
 		}
 
-		$query = "SELECT SQL_CALC_FOUND_ROWS payment.* from payment left join fee_description on fee_description.id = payment.description $filterQuery";
+		$query = "SELECT SQL_CALC_FOUND_ROWS payment.* from payment left join fee_description on 
+			fee_description.id = payment.description $filterQuery";
 		$query2 = "SELECT FOUND_ROWS() as totalCount";
 		$res = $this->db->query($query, $filterValues);
 		$res = $res->result_array();
@@ -456,6 +469,7 @@ class Payment extends Crud
 		if ($item['date_due']) {
 			$item['date_due'] = date('Y-m-d', strtotime(str_replace('/', '-', $item['date_due'])));
 		}
+		$item['payment_group'] = ($item['payment_group'] != '') ? json_decode($item['payment_group'], true) : [];
 		return $item;
 	}
 
@@ -555,7 +569,10 @@ class Payment extends Crud
 			return false;
 		}
 		loadClass($this->load, 'transaction');
-		return new Transaction($result[0]);
+		$sum = array_sum(array_column($result, 'total_amount'));
+		$result = $result[0];
+		$result['cumulative_total'] = $sum;
+		return new Transaction($result);
 	}
 
 	public function getTransactionByOption($student, $paymentOption, $session = null, $level = null)
@@ -603,6 +620,23 @@ class Payment extends Crud
 		}
 		loadClass($this->load, 'transaction');
 		return new Transaction($result[0]);
+	}
+
+	public function getTransactionByPaymentOption($student, $session = null, $code = null)
+	{
+		$query = "SELECT * from transaction where payment_status in ('00','01') and student_id = ?";
+		if ($session) {
+			$query .= " and session = '$session'";
+		}
+		if ($code) {
+			$query .= " and payment_option = '$code'";
+		}
+
+		$result = $this->query($query, [$student]);
+		if (!$result) {
+			return null;
+		}
+		return $result;
 	}
 
 	public function getPaymentTransaction($payment, $student, $session = null, $level = null, $code = null)
@@ -780,11 +814,11 @@ class Payment extends Crud
 		if ($olevel) {
 			$olevel = json_decode($olevel, true);
 			if (count($olevel) >= 2) {
-				$feeId = $this->fee_description->getPaymentFeeDescriptionByCode('VEF-Two');
+				$feeId = $this->fee_description->getPaymentFeeDescriptionByCode(FeeDescriptionCode::VERIFICATION_TWO);
 				if ($feeId['payment_id'] != $paymentId) {
 					return false; // using this to validate that the payment ID is not correct
 				}
-				if ($payment = $this->fee_description->getPaymentFeeDescriptionByCode('VEF-Two', $paymentId)) {
+				if ($payment = $this->fee_description->getPaymentFeeDescriptionByCode(FeeDescriptionCode::VERIFICATION_TWO, $paymentId)) {
 					$amount = $payment['amount'];
 					$serviceCharge = $payment['service_charge'] ?? 0;
 					$subAccount = $payment['subaccount_amount'] ?? 0;
@@ -795,11 +829,11 @@ class Payment extends Crud
 					return $totalAmount;
 				}
 			} else {
-				$feeId = $this->fee_description->getPaymentFeeDescriptionByCode('VEF-One');
+				$feeId = $this->fee_description->getPaymentFeeDescriptionByCode(FeeDescriptionCode::VERIFICATION_ONE);
 				if ($feeId['payment_id'] != $paymentId) {
 					return false;
 				}
-				if ($payment = $this->fee_description->getPaymentFeeDescriptionByCode('VEF-One', $paymentId)) {
+				if ($payment = $this->fee_description->getPaymentFeeDescriptionByCode(FeeDescriptionCode::VERIFICATION_ONE, $paymentId)) {
 					$amount = $payment['amount'];
 					$serviceCharge = $payment['service_charge'] ?? 0;
 					$subAccount = $payment['subaccount_amount'] ?? 0;
@@ -855,8 +889,7 @@ class Payment extends Crud
 	{
 		if ($channel == 'remita') {
 			$this->load->model('remita');
-			$trans = $this->remita->getcustomRemitaDetails($users, $transaction);
-			return $trans;
+			return $this->remita->getcustomRemitaDetails($users, $transaction);
 		}
 	}
 
@@ -865,6 +898,15 @@ class Payment extends Crud
 		if ($channel == 'remita') {
 			$this->load->model('remita');
 			$trans = $this->remita->customInitPayment($users, $param, $transaction);
+			return $trans;
+		}
+	}
+
+	public function studentCustomInitPayment(string $channel, array $param, $transaction = null)
+	{
+		if ($channel == 'remita') {
+			$this->load->model('remita');
+			$trans = $this->remita->studentCustomInitPayment($param, $transaction);
 			return $trans;
 		}
 	}
@@ -888,8 +930,9 @@ class Payment extends Crud
 
 	public function getPaymentByDescriptionCode($description, $session = null)
 	{
-		$query = "SELECT a.id as real_payment_id,a.payment_code,a.options,a.description as payment_id,b.description,service_type_id 
-			from payment a join fee_description b on b.id = a.description where b.code = ?";
+		$query = "SELECT a.id as real_payment_id,a.payment_code,a.options,a.description as payment_id,
+       		b.description, service_type_id, a.subaccount_amount, a.service_charge, a.amount from payment a 
+       		join fee_description b on b.id = a.description where b.code = ?";
 		$data = [$description];
 		if ($session && $session != 0) {
 			$query .= " and a.session = ?";
@@ -1000,6 +1043,46 @@ class Payment extends Crud
 			if (CommonTrait::isPaymentValid($item['payment_status'])) {
 				return $item;
 			}
+		}
+		return $result[0];
+	}
+
+	public function getPartCompleteTransaction($student, $payment_id, $session = null)
+	{
+		$query = "SELECT * from transaction where student_id = ? and payment_id=? and payment_status in ('00','01') ";
+		if ($payment_id == '1') {
+			$query .= "and payment_option in ('1A', '1B')";
+		} else {
+			$query .= "and payment_option in ('2A', '2B')";
+		}
+		$param = [$student, $payment_id];
+		if ($session) {
+			$query .= " and session = ? ";
+			$param[] = $session;
+		}
+
+		$result = $this->query($query, $param);
+		if (!$result) {
+			return null;
+		}
+		loadClass($this->load, 'transaction');
+		return new Transaction($result[0]);
+	}
+
+	public function getPaymentServiceType(string $type)
+	{
+		$amount = $type == 'main' ? 3030 : 505;
+		if ($type == 'main') {
+			$query = "SELECT id, description, service_type_id, service_charge from payment where service_charge >= ? 
+                and description = '1' and status = '1' and is_visible = '1' ";
+		} else {
+			$query = "SELECT id, description, service_type_id, service_charge from payment where service_charge <= ? 
+                and status = '1' and is_visible = '1' ";
+		}
+		$query .= " order by date_modified desc limit 1";
+		$result = $this->query($query, [$amount]);
+		if (!$result) {
+			return null;
 		}
 		return $result[0];
 	}

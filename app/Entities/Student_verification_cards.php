@@ -213,11 +213,7 @@ class Student_verification_cards extends Crud
 
         $tablename = $this->getTableName();
         $query = "SELECT SQL_CALC_FOUND_ROWS concat(students.firstname,' ',students.lastname,' ',students.othernames) as fullname,
-    academic_record.application_number,student_verification_cards.usage_status,
-    verification_cards.serial_number,verification_cards.pin_number,student_verification_cards.date_created as assign_date 
-    from student_verification_cards join students on students.id = student_verification_cards.student_id 
-    join verification_cards on verification_cards.id = student_verification_cards.verification_cards_id 
-    join academic_record on academic_record.student_id = students.id $filterQuery";
+            academic_record.application_number,student_verification_cards.usage_status,verification_cards.serial_number,verification_cards.pin_number,student_verification_cards.date_created as assign_date from student_verification_cards join students on students.id = student_verification_cards.student_id join verification_cards on verification_cards.id = student_verification_cards.verification_cards_id join academic_record on academic_record.student_id = students.id $filterQuery";
 
         $res = $this->apiQueryListCustomFiltered($query, $filterValues);
         return [$res[0], $res[1]];

@@ -72,12 +72,9 @@ class Roles_permission extends Crud
 		if (!$role) {
 			return [];
 		}
+		$role = array_column($role, 'role_id');
 
-		if ($type == 'apex') {
-			$query = "SELECT * from roles_permission where permission like 'apex_mobile_%'";
-		} else {
-			$query = "SELECT * from roles_permission where permission not like 'apex_mobile_%' or permission like 'apex_mobile_%'";
-		}
+		$query = "SELECT * from roles_permission";
 		$query = $this->db->query($query);
 		if ($query->num_rows() <= 0) {
 			return [];
@@ -86,9 +83,9 @@ class Roles_permission extends Crud
 		$result = [];
 		foreach ($temp as $res) {
 			$roles = json_decode($res['role_id'], true);
-			if (in_array($role, $roles)) {
+			if (array_intersect($role, $roles)) {
 				$content = [
-					'name' => str_replace('apex_mobile_', '', $res['permission']),
+					'name' => $res['permission'],
 					'value' => 'r'
 				];
 				$result[] = $content;
@@ -116,8 +113,7 @@ class Roles_permission extends Crud
 	{
 		$query = $this->db->get_where('roles_user', array('user_id' => $userID));
 		if ($query->num_rows() > 0) {
-			$user = $query->row();
-			return $user->role_id;
+			return $query->result_array();
 		}
 		return false;
 	}
