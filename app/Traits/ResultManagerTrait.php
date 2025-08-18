@@ -7,6 +7,9 @@ use Mpdf\MpdfException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\Html;
 use Config\Services;
+use App\Enums\CommonEnum as CommonSlug;
+use App\Enums\ClaimEnum as ClaimType;
+use App\Enums\CourseManagerStatusEnum as CourseManagerStatus;
 
 trait ResultManagerTrait
 {
@@ -222,7 +225,7 @@ trait ResultManagerTrait
 
     private static function financeNewFormula(?string $type): array
     {
-        if ($type === CommonSlug::PROF_RANK) {
+        if ($type === CommonSlug::PROF_RANK->value) {
             return [
                 [1, 25, 80000],
                 [26, 50, 90000],
@@ -384,7 +387,7 @@ trait ResultManagerTrait
 
     private static function calcFacilitationNew(?string $type): array
     {
-        if ($type === CommonSlug::PROF_RANK) {
+        if ($type === CommonSlug::PROF_RANK->value) {
             return self::totalAmountPayload(30000);
         }
         return self::totalAmountPayload(30000);
@@ -402,7 +405,7 @@ trait ResultManagerTrait
 
     public static function calcInteractionNew(?string $type): array
     {
-        if ($type === CommonSlug::PROF_RANK) {
+        if ($type === CommonSlug::PROF_RANK->value) {
             return self::totalAmountPayload(10000);
         }
         return self::totalAmountPayload(10000);
@@ -440,7 +443,7 @@ trait ResultManagerTrait
             return self::totalAmountPayload(10000);
         }
 
-        if ($type === ClaimType::EXAM_CBT) {
+        if ($type === ClaimType::EXAM_CBT->value) {
             return self::totalAmountPayload(12500);
         }
         return self::totalAmountPayload(12500);
@@ -515,12 +518,12 @@ trait ResultManagerTrait
             $per = $val['value'] * 100;
             $isWaiver = false;
             $label = '(---)';
-            if (isset($essentialData[$val['id']]) && $essentialData[$val['id']] == CourseManagerStatus::WAIVER) {
+            if (isset($essentialData[$val['id']]) && $essentialData[$val['id']] == CourseManagerStatus::WAIVER->value) {
                 $isWaiver = true;
                 $label = '(waiver)';
-            } else if (isset($essentialData[$val['id']]) && $essentialData[$val['id']] == CourseManagerStatus::UNQUALIFIED) {
+            } else if (isset($essentialData[$val['id']]) && $essentialData[$val['id']] == CourseManagerStatus::UNQUALIFIED->value) {
                 $isWaiver = true;
-            } else if (isset($essentialData[$val['id']]) && $essentialData[$val['id']] == CourseManagerStatus::APPROVED) {
+            } else if (isset($essentialData[$val['id']]) && $essentialData[$val['id']] == CourseManagerStatus::APPROVED->value) {
                 $label = '';
                 $isWaiver = true;
             }

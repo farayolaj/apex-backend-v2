@@ -1,6 +1,233 @@
 <?php
-
 use App\Enums\CommonEnum as CommonSlug;
+
+if(!function_exists('stripQuote')){
+    function stripQuote($string){
+        $parts = explode(',', $string);
+        $clean = array_map(function($item) {
+            return trim($item, " \t\n\r\0\x0B\"");  // Remove quotes and whitespace
+        }, $parts);
+
+        return count($clean) == 1 ? $clean[0] : $clean;
+    }
+}
+
+if (!function_exists('splitFullname')) {
+    function splitFullname(string $fullName): array
+    {
+        $fullName = trim($fullName);
+        $parts = explode(' ', $fullName);
+        $title = '';
+        $firstname = '';
+        $middlename = '';
+        $surname = '';
+
+        if (count($parts) > 0) {
+            $title = $parts[0];
+        }
+
+        if (count($parts) > 1) {
+            $surname = end($parts);
+        }
+
+        // The remaining parts are firstname and middlename
+        if (count($parts) > 2) {
+            $firstname = $parts[1]; // Second part is firstname
+            $middlename = implode(' ', array_slice($parts, 2, -1)); // Everything in between is middlename
+        } elseif (count($parts) == 2) {
+            $firstname = $parts[1]; // If only two parts, the second is firstname
+        }
+
+        return [
+            'title' => $title,
+            'firstname' => $firstname,
+            'othername' => $middlename,
+            'surname' => $surname,
+        ];
+    }
+}
+
+if (!function_exists('removeNonAlphanumeric')) {
+    function removeNonAlphanumeric($string)
+    {
+        // Remove all non-alphanumeric characters (except letters and numbers)
+        return preg_replace('/[^a-zA-Z0-9]/', '', $string);
+    }
+}
+
+if (!function_exists('parseFlexibleDate')) {
+    function parseFlexibleDate($dateString): ?string
+    {
+        $formats = ['d/m/Y', 'Y-m-d'];
+        foreach ($formats as $format) {
+            $date = DateTime::createFromFormat($format, $dateString);
+            $errors = DateTime::getLastErrors();
+
+            if ($date && $errors['warning_count'] === 0 && $errors['error_count'] === 0) {
+                return $date->format('Y-m-d');
+            }
+        }
+
+        return null;
+    }
+
+}
+
+if (!function_exists('normalizeTimeFormat')) {
+    function normalizeTimeFormat($timeString): ?string
+    {
+        $time = DateTime::createFromFormat('G:i', $timeString);
+        $errors = DateTime::getLastErrors();
+
+        if ($time && $errors['warning_count'] === 0 && $errors['error_count'] === 0) {
+            return $time->format('H:i');
+        }
+
+        return null;
+    }
+}
+
+if (!function_exists('maskEmail')) {
+    function maskEmail($email): string
+    {
+        list($local, $domain) = explode('@', $email);
+        $maskedLocal = substr($local, 0, 1) . str_repeat('*', strlen($local) - 1);
+
+        return $maskedLocal . '@' . $domain;
+    }
+}
+
+if (!function_exists('isValidStrict24HourTime')) {
+    function isValidStrict24HourTime($time)
+    {
+        return preg_match('/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/', $time);
+    }
+}
+
+if (!function_exists('isTimelineValid')) {
+    function isTimelineValid(string $reservedUntil): bool
+    {
+        $currentTime = new DateTime();
+        $reservedTime = new DateTime($reservedUntil);
+
+        return $currentTime->getTimestamp() <= $reservedTime->getTimestamp();
+    }
+}
+
+if (!function_exists('isGESCourse')) {
+    function isGESCourse(string $courseCode): bool
+    {
+        if (strpos(strtolower($courseCode), 'ges') !== false) {
+            return true;
+        }
+        return false;
+    }
+}
+
+if (!function_exists('isFinalistOrExtraYear')) {
+    function isFinalistOrExtraYear($academic): bool
+    {
+        if (isGraduate($academic->current_level, $academic->entry_mode) || isCarryOverGraduate($academic->current_level)) {
+            return true;
+        }
+        return false;
+    }
+}
+
+if (!function_exists('isDepartmentalCoordinator')) {
+    function isDepartmentalCoordinator(object $currentUser): bool
+    {
+        $currentUser = $currentUser->toArray();
+        if (!empty($currentUser['user_department'])) {
+            return true;
+        }
+        return false;
+    }
+}
+
+if (!function_exists('getWeekRange')) {
+    function getWeekRange(string $date): array
+    {
+        $dt = new DateTime($date);
+        $dayOfWeek = (int)$dt->format('w');
+        $startDate = (clone $dt)->modify('-' . $dayOfWeek . ' days');
+        $endDate = (clone $startDate)->modify('+6 days');
+
+        return [
+            'start' => $startDate->format('Y-m-d'),
+            'end' => $endDate->format('Y-m-d')
+        ];
+    }
+}
+
+if (!function_exists('getLastTableValue')) {
+    function getLastTableValue(object $object, string $table, string $column)
+    {
+        $query = "SELECT {$column} from {$table} order by created_at desc limit 1";
+        $result = $object->db->query($query)->getResultArray();
+        return (count($result) > 0) ? $result[0][$column] : null;
+    }
+}
+
+if (!function_exists('getFullPaymentOptionGroup')) {
+    function getFullPaymentOptionGroup(string $session): array
+    {
+        preg_match('/^(\d+)/', $session, $matches);
+        $base = $matches[1] ?? null;
+
+        if (!$base) {
+            return [];
+        }
+
+        // Define the session parts
+        return [$base, $base . 'A', $base . 'B'];
+    }
+}
+
+if (!function_exists('delete_record')) {
+    function delete_record(object $db, string $table_name, array $where_clause): bool
+    {
+        if (!$db->table($table_name)->delete($where_clause)) {
+            return false;
+        }
+        return true;
+    }
+}
+
+if (!function_exists('buildAdvancedSearchString')) {
+    function buildAdvancedSearchString(array $conditions, string $query): string
+    {
+        $CI = db_connect();
+        $escapedQuery = $CI->escapeLikeString($query);
+        $result = [];
+
+        foreach ($conditions as $condition) {
+            if (isset($condition['fields'])) {
+                $parts = [];
+                foreach ($condition['fields'] as $field) {
+                    $parts[] = "$field LIKE '%$escapedQuery%'";
+                }
+                $operator = $condition['operator'] ?? 'OR';
+                $clause = implode(" $operator ", $parts);
+
+                if (count($parts) > 1) {
+                    $clause = "($clause)";
+                }
+
+                if (isset($condition['condition'])) {
+                    $clause = "({$condition['condition']} AND $clause))";
+                }
+
+                $result[] = $clause;
+            } elseif (isset($condition['custom'])) {
+                $result[] = $condition['custom'];
+            }
+        }
+
+        $outerOperator = $conditions['_operator'] ?? 'OR';
+        return implode(" $outerOperator ", $result);
+    }
+}
 
 if (!function_exists('removeIntlOnPhoneNumber')) {
     function removeIntlOnPhoneNumber($phone): string
@@ -1763,21 +1990,6 @@ if (!function_exists('attrToSepString')) {
     }
 }
 
-if (!function_exists('rndEncode')) {
-    function rndEncode($data, $len = 16)
-    {
-        return urlencode(base64_encode(randStrGen($len) . $data));
-    }
-}
-
-if (!function_exists('rndDecode')) {
-    function rndDecode($data, $len = 16)
-    {
-        $hash = base64_decode(urldecode($data));
-        return substr($hash, $len);
-    }
-}
-
 if (!function_exists('getUserOption')) {
     function getUserOption($value = '')
     {
@@ -1857,7 +2069,7 @@ if (!function_exists('getUploadedFileContent')) {
 if (!function_exists('fetchSingleField')) {
     function fetchSingleField($db, $tablename, $WhereField, $value, $field = 'id')
     {
-        $query = "select $field from $tablename where $WhereField=?";
+        $query = "SELECT $field from $tablename where $WhereField=?";
         $result = $db->query($query, array($value));
         $result = $result->getResultArray();
         if (!$result) {
@@ -1885,7 +2097,7 @@ if (!function_exists('fetchSingle')) {
 }
 
 if (!function_exists('check_unique')) {
-    function check_unique(string $table_name, $value_field, string $db_field, bool $convert_to_lower = true)
+    function check_unique(string $table_name, $value_field, string $db_field, bool $convert_to_lower = true): bool
     {
         if (!$convert_to_lower) {
             $value_field = strtolower($value_field);
@@ -1903,7 +2115,7 @@ if (!function_exists('check_unique')) {
 }
 
 if (!function_exists('check_unique_multiple')) {
-    function check_unique_multiple(string $table_name, array $where)
+    function check_unique_multiple(string $table_name, array $where): bool
     {
         $db = db_connect();
         $query = $db->table($table_name)->getWhere($where);
@@ -1916,7 +2128,7 @@ if (!function_exists('check_unique_multiple')) {
 }
 
 if (!function_exists('get_single_record')) {
-    function get_single_record(string $table, $where)
+    function get_single_record(string $table, array $where)
     {
         $db = db_connect();
         $result = $db->table($table)->getWhere($where);
@@ -1942,7 +2154,18 @@ if (!function_exists('getSingleRecordExclude')) {
 }
 
 if (!function_exists('update_record')) {
-    function update_record($db, $table_name, $where_field, $id, $data): bool
+    /**
+     * Update a table row with strict runtime validation.
+     *
+     * @param object      $db          Must be a CodeIgniter\Database\ConnectionInterface
+     * @param string      $table_name  Non-empty
+     * @param string      $where_field Non-empty
+     * @param string|int  $id          Scalar identifier (string or int)
+     * @param array       $data        Assoc array
+     *
+     * @return bool
+     */
+    function update_record(object $db, string $table_name, string $where_field, string|int $id, array $data): bool
     {
         $builder = $db->table($table_name)->where($where_field, $id);
         if ($builder->update($data)) {
@@ -1954,7 +2177,7 @@ if (!function_exists('update_record')) {
 }
 
 if (!function_exists('update_record_array')) {
-    function update_record_array($db, $table_name, $where_field, $data): bool
+    function update_record_array(object $db, string $table_name, array $where_field, array $data): bool
     {
         $db = $db->table($table_name)->where($where_field);
         if ($db->update($data)) {
@@ -1966,7 +2189,7 @@ if (!function_exists('update_record_array')) {
 }
 
 if (!function_exists('create_record')) {
-    function create_record($db, $table_name, $data)
+    function create_record(object $db, string $table_name, array $data)
     {
         if ($db->table($table_name)->insert($data)) {
             return $db->insertID();
@@ -1977,9 +2200,9 @@ if (!function_exists('create_record')) {
 }
 
 if (!function_exists('create_record_batch')) {
-    function create_record_batch($db, $table_name, $data): bool
+    function create_record_batch(object $db, string $table_name, array $data): bool
     {
-        if ($db->insert_batch($table_name, $data)) {
+        if ($db->table($table_name)->insertBatch($data)) {
             return true;
         } else {
             return false;

@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Enums\CommonEnum as CommonSlug;
 use Phinx\Migration\AbstractMigration;
+
+require_once 'application/constants/CommonSlug.php';
 
 final class UpdateApplicantPutmeOlevel extends AbstractMigration
 {
@@ -21,8 +22,8 @@ final class UpdateApplicantPutmeOlevel extends AbstractMigration
 	public function up(): void
 	{
 		// update applicant_post_utme entry_mode to applicant_putme_olevel
-		$olevel = CommonSlug::O_LEVEL->value;
-		$newLevel = CommonSlug::O_LEVEL_PUTME->value;
+		$olevel = CommonSlug::O_LEVEL;
+		$newLevel = CommonSlug::O_LEVEL_PUTME;
 		$this->execute("UPDATE applicant_post_utme SET entry_mode = \"$newLevel\" WHERE entry_mode = \"$olevel\" ");
 
 		// update those already admitted from applicant_post_utme into academic_record mapping them to the new entry_mode
@@ -33,8 +34,8 @@ final class UpdateApplicantPutmeOlevel extends AbstractMigration
 	public function down(): void
 	{
 		// update applicant_putme_olevel entry_mode to applicant_post_utme
-		$olevel = CommonSlug::O_LEVEL->value;
-		$newLevel = CommonSlug::O_LEVEL_PUTME->value;
+		$olevel = CommonSlug::O_LEVEL;
+		$newLevel = CommonSlug::O_LEVEL_PUTME;
 		$this->execute("UPDATE applicant_post_utme SET entry_mode = \"$olevel\" WHERE entry_mode = \"$newLevel\" ");
 
 		// update those already admitted from applicant_post_utme into academic_record mapping them to the new entry_mode

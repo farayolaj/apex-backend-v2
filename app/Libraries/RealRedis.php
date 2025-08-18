@@ -9,6 +9,7 @@ class RealRedis
 {
 
     protected \Redis       $client;
+
     protected RedisConfig  $config;
 
     public function __construct(RedisConfig $config)

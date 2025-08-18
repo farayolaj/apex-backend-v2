@@ -4,8 +4,10 @@ namespace App\Traits;
 
 use App\Enums\AuthEnum as AuthType;
 use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
 use App\Models\Remita;
 use App\Models\WebSessionManager;
+use CodeIgniter\Config\Factories;
 use Config\Services;
 
 trait AccountTrait
@@ -19,21 +21,23 @@ trait AccountTrait
 
         if ($request->getMethod() === 'GET') {
             $currentUser = WebSessionManager::currentAPIUser();
-            $userBankModel = loadClass('user_banks');
-            $staffModel = loadClass('staffs');
-            $rolesPermissionModel = loadClass('roles_permission');
+            EntityLoader::loadClass($this,'user_banks');
+            EntityLoader::loadClass($this,'staffs');
+            EntityLoader::loadClass($this,'roles_permission');
+
+
             $loginType = 'admin';
             $payload = $currentUser->toArray();
 
-            $banks = $userBankModel->getWhereNonObject(['users_id' => $currentUser->id], $c, 0, null, false);
-            $permissions = $rolesPermissionModel->permissionQuery($currentUser->id);
+            $banks = $this->user_banks->getWhereNonObject(['users_id' => $currentUser->id], $c, 0, null, false);
+            $permissions = $this->roles_permission->permissionQuery($currentUser->id);
 
             if (!empty($payload['user_department'])) {
                 $loginType = 'department';
             }
 
             if (!empty($payload['units_id'])) {
-                $payload['unit'] = $staffModel->getStaffDepartment($payload['units_id'])->name;
+                $payload['unit'] = $this->staffs->getStaffDepartment($payload['units_id'])->name;
             }
 
             if (!empty($payload['avatar'])) {
@@ -98,9 +102,9 @@ trait AccountTrait
      */
     public function accountActivityLogs()
     {
-        $usersNewModel = loadClass('users_new');
+        EntityLoader::loadClass($this,'users_new');
         $currentUser = WebSessionManager::currentAPIUser();
-        $logs = $usersNewModel->getUserLog($currentUser->user_login, true);
+        $logs = $this->users_new->getUserLog($currentUser->user_login, true);
         return ApiResponse::success('Success', $logs);
     }
 
@@ -110,9 +114,9 @@ trait AccountTrait
      */
     public function accountAuthLoginLogs()
     {
-        $usersNewModel = loadClass('users_new');
+        EntityLoader::loadClass($this,'users_new');
         $currentUser = WebSessionManager::currentAPIUser();
-        $logs = $usersNewModel->performed_action($currentUser->user_login, 'auth_user_login');
+        $logs = $this->users_new->performed_action($currentUser->user_login, 'auth_user_login');
         return ApiResponse::success('Success', $logs);
     }
 
@@ -122,9 +126,9 @@ trait AccountTrait
      */
     public function getBankDetails()
     {
-        $userBankModel = loadClass('user_banks');
+        EntityLoader::loadClass($this,'user_banks');
         $currentUser = WebSessionManager::currentAPIUser();
-        $banks = $userBankModel->getUserBankDetails($currentUser->id);
+        $banks = $this->user_banks->getUserBankDetails($currentUser->id);
         return ApiResponse::success("You've successfully fetched user bank details", $banks ?: []);
     }
 
@@ -151,18 +155,18 @@ trait AccountTrait
 
         $currentUser = WebSessionManager::currentAPIUser();
         $bankID = $request->getPost('user_bank_id');
-        $userBankModel = loadClass('user_banks');
+        EntityLoader::loadClass($this,'user_banks');
 
-        $banks = $userBankModel->getWhere(['id' => $bankID, 'users_id' => $currentUser->id], $c, 0, null, false);
+        $banks = $this->user_banks->getWhere(['id' => $bankID, 'users_id' => $currentUser->id], $c, 0, null, false);
         if (!$banks) {
             return ApiResponse::error('User bank details not found');
         }
 
-        $userBankModel->reverseBankPrimary($currentUser->id);
+        $this->user_banks->reverseBankPrimary($currentUser->id);
         $bank = $banks[0];
         $bank->is_primary = 1;
 
-        if (!$userBankModel->update()) {
+        if (!$banks->update()) {
             return ApiResponse::error('Unable to update bank as primary, please try again later');
         }
 
@@ -197,7 +201,7 @@ trait AccountTrait
             return ApiResponse::error(reset($errors));
         }
 
-        $remitaModel = new Remita;
+        $remitaModel = Factories::libraries('remita');
         $accounts = $remitaModel->getAccountNameEnquiry($accountNumber, $bankCode);
 
         if (isset($accounts['status']) && !$accounts['status']) {
@@ -236,8 +240,8 @@ trait AccountTrait
             return ApiResponse::error(reset($errors));
         }
 
-        $bankListModel = loadClass('bank_lists');
-        $names = $bankListModel->inferBankName($bankName);
+        EntityLoader::loadClass($this,'bank_lists');
+        $names = $this->bank_lists->inferBankName($bankName);
         $names = $names ?: [];
 
         return ApiResponse::success("You've successfully fetched bank code", $names);

@@ -703,3 +703,12 @@ if (!function_exists('useGenerators')) {
         }
     }
 }
+
+if (!function_exists('removeRedundantArrayKey')) {
+    function removeRedundantArrayKey(array $data, array $fieldsToRemove): ?array
+    {
+        return array_map(function ($item) use ($fieldsToRemove) {
+            return array_diff_key($item, array_flip($fieldsToRemove));
+        }, $data);
+    }
+}

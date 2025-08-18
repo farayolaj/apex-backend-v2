@@ -24,7 +24,7 @@ class Examination_courses extends Crud
 //			ANY_VALUE(a.student_level) as student_level,ANY_VALUE(a.is_approved) as is_approved,b.type as course_type from course_enrollment a join
 //			courses b on b.id = a.course_id where a.course_id = ? and a.session_id = ? group by a.course_id, a.session_id";
 
-        $sessionCondition = SettingSlug::SESSION_GRADED_START;
+        $sessionCondition = SettingSlug::SESSION_GRADED_START->value;
         $query = "SELECT b.id AS course_id, 
        		MAX(a.session_id) as session, b.code, b.title, 
 			COALESCE(MAX(a.course_unit), 'N/A') AS course_unit,
@@ -52,7 +52,7 @@ class Examination_courses extends Crud
 //		courses b on b.id = a.course_id join course_manager c on c.course_id = a.course_id where a.session_id = c.session_id and
 //		a.session_id = ? and (c.course_manager_id = ? or JSON_SEARCH(c.course_lecturer_id,'one',?) is not null) group by a.course_id, a.session_id";
 
-        $sessionCondition = SettingSlug::SESSION_GRADED_START;
+        $sessionCondition = SettingSlug::SESSION_GRADED_START->value;
         $query = "SELECT 
 			c.course_id, c.session_id as session, 
 			MAX(b.code) as code, 
@@ -115,7 +115,7 @@ class Examination_courses extends Crud
         if (!$filterValues) {
             $filterValues = [];
         }
-        $sessionCondition = SettingSlug::SESSION_GRADED_START;
+        $sessionCondition = SettingSlug::SESSION_GRADED_START->value;
         $query = "SELECT SQL_CALC_FOUND_ROWS a.course_id, a.session_id as session,
 			max(b.code) as code, 
 			max(b.title) as title,

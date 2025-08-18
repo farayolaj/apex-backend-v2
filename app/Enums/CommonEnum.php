@@ -8,6 +8,8 @@ enum CommonEnum: string
 
     case O_LEVEL_PUTME = 'O\' Level Putme';
 
+    case O_LEVEL_PUTME_TOP = 'O\' Level Putme Top';
+
     case DIRECT_ENTRY = 'Direct Entry';
 
     case FAST_TRACK = 'Fast Track';

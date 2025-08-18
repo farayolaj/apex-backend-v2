@@ -21,7 +21,7 @@ trait UploadTrait
         if ($filePath) {
             $res = move_uploaded_file($_FILES[$filename]['tmp_name'], $filePath);
             if (!$res) {
-                $message = "Error occured while performing file upload";
+                $message = "Error occurred while performing file upload";
             }
         }
         return $content;
@@ -43,6 +43,58 @@ trait UploadTrait
             return false;
         }
         return true;
+    }
+
+    public static function getUploadedFileContent($filename, $filePath = false, &$message = null, string $extension = 'csv'): bool|array
+    {
+        $content = self::loadUploadedFileContent($filename, $filePath, $message, $extension);
+        if ($content === false) {
+            return false;
+        }
+        $delimiter = $extension === 'csv' ? ',' : "\t";
+        $content = trim($content);
+        $array = stringToCsv($content, $delimiter);
+        $csv_headers = array_shift($array);
+        return [
+            'headers' => $csv_headers,
+            'data' => $array,
+        ];
+    }
+
+    public static function parseQuotedCSV($filename, $filePath=null, &$message = null, string $extension = 'csv'): ?array
+    {
+        $result = [
+            'headers' => [],
+            'data' => []
+        ];
+
+        $filename = $filename ?? 'bulk-upload';
+        $status = self::checkFile($filename, $message);
+        if (!$status) {
+            return null;
+        }
+
+        if(!$filePath){
+            if (!endsWith($_FILES[$filename]['name'], ".{$extension}")) {
+                $message = "Invalid file format";
+                return null;
+            }
+            $filePath = $_FILES[$filename]['tmp_name'];
+        }
+
+        if (($handle = fopen($filePath, 'r')) !== false) {
+            // Read and store headers
+            $headers = fgetcsv($handle, 1024, ',', '"');
+            $result['headers'] = $headers;
+
+            while (($row = fgetcsv($handle, 1024, ',', '"')) !== false) {
+                $result['data'][] = array_combine($headers, $row);
+            }
+
+            fclose($handle);
+        }
+
+        return $result;
     }
 
 }

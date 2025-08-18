@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Enums\CommonEnum as CommonSlug;
+use DateInterval;
+use DateTime;
 
 trait CommonTrait
 {
@@ -79,8 +81,21 @@ trait CommonTrait
 
     public static function extractApplicantEntity($uuid): array
     {
-        $entity = substr($uuid, -3);
-        $id = substr($uuid, 0, -4);
+        $parts = explode('-', $uuid);
+
+        if (count($parts) == 2) {
+            $id = $parts[0];
+            $entity = $parts[1];
+        } else {
+            $id = $uuid;
+            $entity = CommonSlug::APPLICANT->value;
+        }
+
+        if (!is_numeric($id)) {
+            $entity = CommonSlug::APPLICANT->value;
+            $id = $entity;
+        }
+
         $entity = $entity === CommonSlug::APPLICANT_PUTME->value ? 'applicant_post_utme' : 'applicants';
         return [$id, $entity];
     }
@@ -93,5 +108,12 @@ trait CommonTrait
             'f' => 'Female',
         ];
         return $content[$gender];
+    }
+
+    public static function getReservationExpiry(string $interval = '48'): string
+    {
+        return (new DateTime())
+            ->add(new DateInterval("PT{$interval}H"))
+            ->format('Y-m-d H:i:s');
     }
 }

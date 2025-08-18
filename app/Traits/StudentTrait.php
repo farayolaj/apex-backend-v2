@@ -2,13 +2,19 @@
 
 namespace App\Traits;
 
+use App\Libraries\EntityLoader;
+use App\Enums\PaymentFeeDescriptionEnum as PaymentFeeDescription;
+use App\Traits\CommonTrait;
+
 trait StudentTrait
 {
+    use CommonTrait;
+
     protected function processSinglePaymentPrerequisite(object $payment, object $academic_record, $session, $level, bool $isVisible = false, $acceptanceSession = null): ?array
     {
-        loadClass($this->load, 'sessions');
-        loadClass($this->load, 'fee_description');
-        loadClass($this->load, 'sessions');
+        Entityloader::loadClass($this, 'sessions');
+        Entityloader::loadClass($this, 'fee_description');
+        Entityloader::loadClass($this, 'sessions');
         $isVisiblePassed = true;
         $showPayment = true;
         $acceptanceSession = $acceptanceSession ?: get_setting('session_semester_payment_start');
@@ -22,7 +28,7 @@ trait StudentTrait
             $newSession = $payment->session != 0 ? $payment->session : $session;
             $preqDesc = $this->transformPrerequisiteDesc($payment->description, $newSession);
             // check globally if acceptance fee had been paid irrespective of the paid session
-            if (PaymentFeeDescription::ACCEPTANCE_FEE == $payment->description) {
+            if (PaymentFeeDescription::ACCEPTANCE_FEE->value == $payment->description) {
                 $session = null;
                 $level = null;
             }
@@ -42,7 +48,7 @@ trait StudentTrait
                 $paidTransactionID = $paidTransaction ? $checkPaymentTransaction->id : null;
             }
 
-            if ($payment->description == PaymentFeeDescription::ACCEPTANCE_FEE && $acceptanceSession > $academic_record->year_of_entry) {
+            if ($payment->description == PaymentFeeDescription::ACCEPTANCE_FEE->value && $acceptanceSession > $academic_record->year_of_entry) {
                 $showPayment = false;
             }
 
@@ -69,7 +75,7 @@ trait StudentTrait
      */
     public function transformPaymentPrerequisiteParam($academic_record, $prerequisite_fee, $session, $level = null, $isVisible = false): array
     {
-        loadClass($this->load, 'payment');
+        EntityLoader::loadClass($this, 'payment');
         $prerequisites = [];
         $acceptanceSession = get_setting('session_semester_payment_start');
 
@@ -98,7 +104,7 @@ trait StudentTrait
 
     protected function prepPaymentGroupParam($payments, $session, $amount = null): array
     {
-        loadClass($this->load, 'payment');
+        EntityLoader::loadClass($this, 'payment');
         $result = [];
         $c = 0;
 
@@ -135,11 +141,14 @@ trait StudentTrait
      * @param mixed $session
      * @param mixed $payment
      * @param mixed $isVisible
-     * @return array<string,mixed>
+     * @param string|null $transactionRef
+     * @param string|null $paymentDesc
+     * @return array|null
+     * @throws \Exception
      */
     public function transformDirectTransactionPaymentParam($prerequisite_fee, $session, array $payment, bool $isVisible = false, ?string $transactionRef = null, ?string $paymentDesc = null): ?array
     {
-        loadClass($this->load, 'sessions');
+        EntityLoader::loadClass($this, 'sessions');
         $preqDesc = $paymentDesc ?: $this->transformPrerequisiteDesc($prerequisite_fee, $session);
         $isVisiblePassed = true;
 
@@ -163,7 +172,7 @@ trait StudentTrait
 
     public function transformDirectPreqTransactionParam(array $transaction, $prerequisite_fee, $session): array
     {
-        loadClass($this->load, 'sessions');
+        EntityLoader::loadClass($this, 'sessions');
         $preqDesc = @$transaction['payment_description'] ?: $this->transformPrerequisiteDesc($prerequisite_fee, $session);
         $prerequisite_fee = hashids_encrypt($transaction['real_payment_id']);
 
@@ -185,7 +194,7 @@ trait StudentTrait
      */
     public function transformDirectPaymentParam($prerequisite_fee, $session, $transactionRef = null, $paymentDesc = null): array
     {
-        loadClass($this->load, 'sessions');
+        EntityLoader::loadClass($this, 'sessions');
         $preqDesc = null;
         if ($paymentDesc) {
             $preqDesc = $paymentDesc;
@@ -209,7 +218,7 @@ trait StudentTrait
     {
         $paidTransaction = false;
         $paymentTypeOption = paymentOptionsType($transaction ? $transaction['payment_option'] : $payment->options, true);
-        if ($transaction && CommonTrait::isPaymentValid($transaction['payment_status'])) {
+        if ($transaction && self::isPaymentValid($transaction['payment_status'])) {
             $paidTransaction = true;
         }
 
@@ -323,8 +332,7 @@ trait StudentTrait
         if (!empty($outstanding)) {
             foreach ($outstanding as $item) {
                 if (!$item['paid']) {
-                    $message = isset($item['description']) ? 'Action required [outstanding fee]: ' . $item['description'] : "Complete payment without any outstanding is required for this action";
-                    return $message;
+                    return isset($item['description']) ? 'Action required [outstanding fee]: ' . $item['description'] : "Complete payment without any outstanding is required for this action";
                 }
             }
         }

@@ -6,6 +6,21 @@ use CodeIgniter\Config\Factories;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
+if (!function_exists('rndEncode')) {
+    function rndEncode($data, $len = 16): string
+    {
+        return urlencode(base64_encode(randStrGen($len) . $data));
+    }
+}
+
+if (!function_exists('rndDecode')) {
+    function rndDecode($data, $len = 16): string
+    {
+        $hash = base64_decode(urldecode($data));
+        return substr($hash, $len);
+    }
+}
+
 if (!function_exists("encryptData")) {
     function encryptData($data): string
     {
@@ -114,6 +129,22 @@ if (!function_exists('decodeJwtToken')) {
     }
 }
 
+if (!function_exists('decode_sync_token')) {
+    function decode_sync_token($payload)
+    {
+        $key = env('apiSyncServer');
+        return JWT::decode($payload, new Key($key, 'HS256'));
+    }
+}
+
+if (!function_exists('decodeServicetoken')) {
+    function decodeServicetoken($payload)
+    {
+        $key = env('apiServiceExchange');
+        return JWT::decode($payload, new Key($key, 'HS256'));
+    }
+}
+
 if (!function_exists('getAuthorizationHeader')) {
     function getAuthorizationHeader()
     {
@@ -130,7 +161,6 @@ if (!function_exists('getAuthorizationHeader')) {
         return $headers;
     }
 }
-
 
 /**
  * @throws Exception

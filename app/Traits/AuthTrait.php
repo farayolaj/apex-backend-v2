@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Enums\AuthEnum as AuthType;
 use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
 use App\Libraries\RouteURI;
 use App\Models\WebSessionManager;
 use Config\Services;
@@ -69,7 +70,7 @@ trait AuthTrait
         }
 
         // Load the user model or entity
-        $userModel = loadClass($entity);; // Replace with your actual model
+        $userModel = EntityLoader::loadClass($this,$entity);
         $user = $userModel->getUserByID($id);
         if (!$user) {
             return ApiResponse::error('Invalid user account');

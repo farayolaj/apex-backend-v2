@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
 use Config\Services;
 
 trait ApiModelTrait
@@ -38,17 +39,17 @@ trait ApiModelTrait
             return ApiResponse::error(reset($errors));
         }
 
-        $studentModel = loadClass('students');
-        $studentModel->id = $studentID;
-        if (!$studentModel->load()) {
+        EntityLoader::loadClass($this,'students');
+        $this->students->id = $studentID;
+        if (!$this->students->load()) {
             return ApiResponse::error('Invalid student info');
         }
 
-        if (!$studentModel->getClosestSessionId()) {
+        if (!$this->students->getClosestSessionId()) {
             return ApiResponse::error('Student has no year of entry');
         }
 
-        $record = $studentModel->getStudentResults();
+        $record = $this->students->getStudentResults();
         return ApiResponse::success('Result fetched successfully', $record);
     }
 
@@ -83,19 +84,19 @@ trait ApiModelTrait
             return ApiResponse::error(reset($errors));
         }
 
-        $studentModel = loadClass('students');
-        $studentModel->id = $studentID;
-        if (!$studentModel->load()) {
+        EntityLoader::loadClass($this,'students');
+        $this->students->id = $studentID;
+        if (!$this->students->load()) {
             return ApiResponse::error('Invalid student info');
         }
 
-        if (!$studentModel->getClosestSessionId()) {
+        if (!$this->students->getClosestSessionId()) {
             return ApiResponse::error('Student has no year of entry');
         }
 
-        $record = $studentModel->getStudentViewRecord();
-        $result = $studentModel->getStudentResultStatement();
-        $record['passport'] = $studentModel->updatePassportPath();;
+        $record = $this->students->getStudentViewRecord();
+        $result = $this->students->getStudentResultStatement();
+        $record['passport'] = $this->students->updatePassportPath();;
         $payload = [
             'details' => $record,
             'result_record' => $result,

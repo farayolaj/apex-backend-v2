@@ -19,7 +19,10 @@
         "phpoffice/phpspreadsheet": "^4.1",
         "robmorgan/phinx": "^0.16.6",
         "ext-redis": "*",
-        "ext-openssl": "*"
+        "ext-openssl": "*",
+        "ext-zlib": "*",
+        "ext-rar": "*",
+        "ext-zip": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
