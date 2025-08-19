@@ -38,6 +38,7 @@ class Cors extends BaseConfig
             'http://127.0.0.1',
             'http://localhost:8080',
             'http://localhost:8083',
+            'http://localhost:8181',
             'https://apex.ui.edu.ng',
         ],
 
@@ -82,9 +83,12 @@ class Cors extends BaseConfig
             'Access-Control-Request-Method',
             'Authorization',
             'Content-length',
+            'Content-Disposition',
             'Referer',
             'Referrer',
             'User-Agent',
+            'ngrok-skip-browser-warning',
+            'skip_zrok_interstitial'
         ],
 
         /**

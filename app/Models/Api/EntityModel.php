@@ -298,9 +298,9 @@ class EntityModel
     }
 
     /**
-     * This is to get entity list
+     * This is to get an entity list
      * @param string $entity [description]
-     * @return array [type]         [description]
+     * @return array [type] [description]
      */
     private function listEntity(string $entity): array
     {

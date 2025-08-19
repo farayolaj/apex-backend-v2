@@ -2,12 +2,14 @@
 
 namespace App\Entities;
 
+use App\DTO\ApiListParams;
 use App\Enums\ClaimEnum as ClaimType;
 use App\Enums\CommonEnum as CommonSlug;
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
 use App\Models\WebSessionManager;
 use App\Traits\ResultManagerTrait;
+use CodeIgniter\HTTP\Request;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the courses table.
@@ -36,78 +38,18 @@ class Courses extends Crud
     static $documentField = array(); //array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
 
     static $relation = array();
+
     static $tableAction = array('delete' => 'delete/courses', 'edit' => 'edit/courses');
+
     static $apiSelectClause = ['id', 'title', 'code', 'active', 'course_guide_url'];
+    protected array  $searchable = ['a.title','a.code'];
+    protected array  $sortable   = ['code' => 'a.code', 'title' => 'a.title'];
 
     function __construct($array = array())
     {
         parent::__construct($array);
     }
 
-    function getCodeFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='code' >Code</label>
-		<input type='text' name='code' id='code' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getTitleFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='title' >Title</label>
-<textarea id='title' name='title' class='form-control' required>$value</textarea>
-</div> ";
-
-    }
-
-    function getDescriptionFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='description' >Description</label>
-<textarea id='description' name='description' class='form-control' required>$value</textarea>
-</div> ";
-
-    }
-
-    function getCourse_guide_urlFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='course_guide_url' >Course Guide Url</label>
-<textarea id='course_guide_url' name='course_guide_url' class='form-control' >$value</textarea>
-</div> ";
-
-    }
-
-    function getActiveFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Active</label>
-	<select class='form-control' id='active' name='active' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-
-    }
-
-    function getDate_createdFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='date_created' >Date Created</label>
-		<input type='text' name='date_created' id='date_created' value='$value' class='form-control'  />
-</div> ";
-
-    }
-
-// center for custom functions
     public function getDetails($id)
     {
         $query = "SELECT distinct courses.id as main_course_id, courses.*, course_enrollment.course_unit, course_enrollment.course_status,
@@ -174,7 +116,9 @@ class Courses extends Crud
         return false;
     }
 
-    public function APIList($filterList, $queryString, $start, $len, $orderBy)
+    protected function applyBaseFilters($b): void{}
+
+    public function APIList($request, $filterList)
     {
         $generalCourse = request()->getGet('general_course') ?: null;
         // this is used to filter out existing courses in course_manager table
@@ -186,19 +130,32 @@ class Courses extends Crud
             return $this->loadOutsideDepartmentalCourses();
         }
 
-        if (!isset($_GET['sortBy'])) {
-            $_GET['sortBy'] = true;
-            $orderBy = " a.code asc ";
-        }
-
-        $selectData = static::$apiSelectClause;
-        list($data, $total) = $this->apiQueryListFiltered($selectData, $filterList, $queryString, $start, $len, $orderBy);
+        $response = $this->APIListNew($request, $filterList);
+        $data = $response['table_data'];
+        $total = $response['paging'];
 
         if (!$generalCourse) {
             $data = $this->processList($data);
         }
 
-        return [$data, $total];
+        return [
+            'paging' => $total,
+            'table_data' => $data
+        ];
+    }
+
+    public function APIListNew($request, array $filterList){
+        $params = ApiListParams::fromArray($request, [
+            'perPage'    => 25,
+            'maxPerPage' => 100,
+            'sort'       => 'code',
+        ]);
+
+        $params->filters = $filterList;
+
+        return $this->listApi(static::$apiSelectClause,
+            $params
+        );
     }
 
     private function processList(array $items): array

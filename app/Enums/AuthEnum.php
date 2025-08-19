@@ -15,4 +15,6 @@ enum AuthEnum: string
     case APEX = 'apex';
 
     case APPLICANT = 'applicant';
+
+    case DEPARTMENT = 'department';
 }

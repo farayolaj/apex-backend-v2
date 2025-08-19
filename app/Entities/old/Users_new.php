@@ -284,7 +284,7 @@ class Users_new extends Crud
 
 		$q = $this->input->get('q', true) ?: null;
 		if ($q) {
-			$queryString = $this->buildWhereString('users_new', $q);
+			$queryString = $this->buildWhereSearchString('users_new', $q);
 			$query .= " and ({$queryString}) ";
 		}
 

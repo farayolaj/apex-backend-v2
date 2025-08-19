@@ -2,6 +2,9 @@
 
 namespace App\Traits;
 
+use App\DTO\ApiListParams;
+use App\Libraries\EntityLoader;
+use App\Models\Api\EntityModel;
 use App\Models\FormConfig;
 
 trait EntityListTrait
@@ -11,7 +14,7 @@ trait EntityListTrait
     /**
      * @return array<string,mixed>
      */
-    public function list(string $entity, array $extraFilter = []): array
+    public function list(string $entity): array
     {
         $totalLength = 0;
         $orderBy = 'ID desc';
@@ -20,9 +23,9 @@ trait EntityListTrait
         // get the parameter for paging
         $start = array_key_exists('start', $_GET) ? $param['start'] : 0;
         $len = array_key_exists('len', $_GET) ? $param['len'] : $this->defaultLength;
-        $q = array_key_exists('q', $param) ? $param['q'] : false;
-        $sortBy = array_key_exists('sortBy', $param) ? $param['sortBy'] : false;
-        $sortDirection = array_key_exists('sortDirection', $param) ? $param['sortDirection'] : false;
+        $q = array_key_exists('q', $param) ? $param['q'] : null;
+        $sortBy = array_key_exists('sortBy', $param) ? $param['sortBy'] : null;
+        $sortDirection = array_key_exists('sortDirection', $param) ? $param['sortDirection'] : null;
 
         $filterList = $param;
         unset($filterList['q']);
@@ -32,19 +35,12 @@ trait EntityListTrait
         unset($filterList['sortBy']);
         unset($filterList['sortDirection']);
 
-        if ($extraFilter !== []) {
-            $filterList = array_merge($filterList, $extraFilter);
-        }
-
-        // perform some form of validation here to know what needs to be include in the list
-        // and also how to perform
         $filterList = $this->validateEntityFilters($entity, $filterList);
-        $entityObject = loadClass($entity);
-        $queryString = false;
+        $entityObject = EntityLoader::loadClass($this, $entity);
+        $queryString = null;
 
         if ($q) {
-            // if there is a search query just build a query search to get the result with the other parameters
-            $queryString = $this->buildWhereString($entity, $q);
+            $queryString = $this->buildWhereSearchString($entity, $q);
         }
 
         if ($sortBy) {
@@ -54,9 +50,38 @@ trait EntityListTrait
 
         $tempR = method_exists($entityObject, 'APIList') ?
             $entityObject->APIList($filterList, $queryString, $start, $len, $orderBy) :
-            $entityObject->allListFiltered($filterList, $totalLength, $start, $len, true, " order by  {$orderBy}", $queryString);
+            $entityObject->allListFiltered($filterList, $totalLength, $start, $len, true, " order by {$orderBy}", $queryString);
 
         return $this->buildApiListResponse($tempR);
+    }
+
+    public function listApiEntity(string $entity){
+        $request = request()->getGet();
+        $filterList = $request;
+        unset($filterList['q']);
+        unset($filterList['start']);
+        unset($filterList['len']);
+        unset($filterList['sortBy']);
+        unset($filterList['sortDirection']);
+
+        $filterList = $this->validateEntityFilters($entity, $filterList);
+        $entityObject = EntityLoader::loadClass($this, $entity);
+
+        if(method_exists($entityObject, 'APIList')){
+            return $entityObject->APIList($request, $filterList);
+        }
+
+        $params = ApiListParams::fromArray($request, [
+            'perPage'    => 25,
+            'maxPerPage' => 100,
+            'sort'       => 'code',
+        ]);
+
+        $params->filters = $filterList;
+        return $entityObject->listApi($entityObject::$apiSelectClause,
+            $params
+        );
+
     }
 
     public function buildApiListResponse(array $data): array
@@ -92,9 +117,11 @@ trait EntityListTrait
     }
 
     /**
-     * @return string|<missing>
+     * @param string $entity
+     * @param string $query
+     * @return string
      */
-    public function buildWhereString(string $entity, string $query): string
+    public function buildWhereSearchString(string $entity, string $query): string
     {
         $formConfig = new FormConfig(true, true);
         $config = $formConfig->getInsertConfig($entity);
@@ -103,9 +130,8 @@ trait EntityListTrait
         }
         $list = array_key_exists('search', $config) ? $config['search'] : false;
         if (!$list) {
-            //use all the fields here then
-            $entity = loadClass($entity);
-            $list = array_keys($entity::$labelArray);
+            $entityModel = EntityLoader::loadClass($this, $entity);
+            $list = array_keys($entityModel::$labelArray);
         }
         return buildCustomSearchString($list, $query);
     }

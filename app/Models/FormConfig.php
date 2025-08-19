@@ -450,6 +450,13 @@ class FormConfig
                         'preload_query' => null,
                     ),
                 ),
+                'courses' => array(
+                    array(
+                        'filter_label' => 'a.department_id',
+                        'filter_display' => 'department',
+                        'preload_query' => null,
+                    ),
+                )
             );
         } else {
             $result = [];

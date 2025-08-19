@@ -6,10 +6,11 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
-$routes->post('web/authenticate', 'Auth::web', ['filter' => 'apiValidation:admin']);
-$routes->post('web/logout', 'Auth::logout', ['filter' => 'apiValidation:admin']);
-$routes->group('', ['filter' => 'cors'], static function (RouteCollection $routes): void {
-    $routes->options('web/(:any)', static function () {});
+$routes->group('web', ['filter' => 'apiValidation:admin'], static function (RouteCollection $routes): void {
+    $routes->post('authenticate', 'Auth::web');
+    $routes->post('logout', 'Auth::logout');
+
+    $routes->options('(:any)', static function () {});
 });
 
 $routes->group('web', ['filter' => ['apiValidation:admin']], function ($routes) {

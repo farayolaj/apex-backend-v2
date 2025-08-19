@@ -8,7 +8,7 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 # Install PHP extensions and system dependencies
 RUN apt-get update && apt-get install -y \
-   supervisor git unzip zip curl wget software-properties-common \
+   supervisor git unzip zip curl wget \
     libzip-dev libicu-dev libxml2-dev libcurl4-openssl-dev \
     libpng-dev libjpeg-dev libfreetype6-dev libgettextpo-dev \
     zlib1g-dev libwebp-dev libbz2-dev lsb-release apt-transport-https \
@@ -49,6 +49,6 @@ WORKDIR /var/www/html
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
-
 EXPOSE 8181
+
+ENTRYPOINT ["/entrypoint.sh"]

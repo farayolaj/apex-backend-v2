@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Models\AdminApiModel;
 use App\Models\Api\EntityModel;
 use App\Models\Api\WebApiModel;
 use App\Models\Api\ApiModel;

@@ -2,10 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Entities\Staffs;
 use App\Entities\Students;
+use App\Enums\AuthEnum;
 use App\Enums\AuthEnum as AuthType;
-use App\Models\Mailer;
+use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
 use App\Models\WebSessionManager;
 use Exception;
 
@@ -15,12 +16,10 @@ use Exception;
 class Auth extends BaseController
 {
     private WebSessionManager $webSessionManager;
-    private $mailer;
 
     public function __construct()
     {
         $this->webSessionManager = new WebSessionManager;
-        $this->mailer = new Mailer;
     }
 
     /**
@@ -71,7 +70,7 @@ class Auth extends BaseController
         }
 
         if (!decode_password($password, $user->$rpass)) {
-            return sendApiResponse(false, 'Invalid username or password');
+            return ApiResponse::error('Invalid username or password');
         }
         return $user;
     }
@@ -91,7 +90,7 @@ class Auth extends BaseController
         $payload = $user->toArray() ?? null;
         $payload['user_department'] = null;
         $userID = $user->id;
-        $loginType = 'admin';
+        $loginType = AuthEnum::ADMIN->value;
 
         if ($userDetails) {
             $payload = array_merge($payload, $userDetails->toArray());
@@ -102,7 +101,7 @@ class Auth extends BaseController
                         'id' => $department->id,
                         'name' => $department->name,
                     ];
-                    $loginType = 'department';
+                    $loginType = AuthEnum::DEPARTMENT->value;
                 }
             }
         }
@@ -116,7 +115,7 @@ class Auth extends BaseController
             'profile' => $payload,
             'login_type' => $loginType
         ];
-        return sendApiResponse(true, "You've successfully logged in", $arr);
+        return ApiResponse::success("You've successfully logged in", $arr);
     }
 
     private function getUserDepartment($user_department)
@@ -132,12 +131,12 @@ class Auth extends BaseController
     {
         $userLogin = $this->request->getPost('user_login');
         $query = "SELECT students.* from students where user_login=? and students.active = '1' or exists 
-		    (select * from academic_record where student_id=students.id and (matric_number=? or application_number = ?))";
+		    (SELECT * from academic_record where student_id=students.id and (matric_number=? or application_number = ?))";
         $result = $this->db->query($query, [$userLogin, $userLogin, $userLogin]);
         if ($result->getNumRows() <= 0) {
-            return sendApiResponse(false, 'No matching record found. Contact school administrator');
+            return ApiResponse::error('No matching record found. Contact school administrator');
         }
-        return sendApiResponse(true, 'Validate success');
+        return ApiResponse::success('Validate success');
     }
 
     /**
@@ -175,21 +174,8 @@ class Auth extends BaseController
 
     private function getUserDetails(object $user)
     {
-        $content = [
-            'staff' => 'staffs',
-            'contractor' => 'contractors',
-        ];
-        $entity = $user->user_type ?? 'staff';
-        $entity = strtolower($entity);
-        $entity = $content[$entity] ?? null;
-        if ($entity) {
-            $entityObj = loadClass($entity);
-            $entity = $entityObj->getWhere(['id' => $user->user_table_id], $c, 0, null, false);
-            if ($entity) {
-                $entity = $entity[0];
-            }
-        }
-        return $entity;
+        EntityLoader::loadClass($this, 'users_new');
+        return $this->users_new->getUserDetails($user);
     }
 
     /**
@@ -203,7 +189,7 @@ class Auth extends BaseController
         if (!$user) {
             return false;
         }
-        $userDetails = $this->getUserDetails($user, $user->user_type);
+        $userDetails = $this->getUserDetails($user);
         $payload = $user->toArray() ?? null;
         $userID = $user->id;
         $userRoleSlug = null;
@@ -213,8 +199,8 @@ class Auth extends BaseController
         }
 
         if (isset($payload['units_id']) && $payload['units_id'] != 0) {
-            $staffObj = new Staffs;
-            $payload['unit'] = $staffObj->getStaffDepartment($payload['units_id'])->name;
+            EntityLoader::loadClass($this, 'staffs');
+            $payload['unit'] = $this->staffs->getStaffDepartment($payload['units_id'])->name;
         }
 
         if (isset($payload['avatar'])) {
@@ -231,11 +217,11 @@ class Auth extends BaseController
             'token' => generateJwtToken($payload),
             'profile' => $payload,
         ];
-        return sendApiResponse(true , "You've successfully logged in", $payload);
+        return ApiResponse::success("You've successfully logged in", $payload);
     }
 
     /**
-     * @deprecated - There is tendency that this method will be removed, as no usage was found
+     * @deprecated - There is a tendency that this method will be removed, as no usage was found
      * THIS METHOD HANDLES CONTRACTOR AUTH LOGIN
      * @throws Exception
      */

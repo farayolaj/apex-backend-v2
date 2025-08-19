@@ -12,7 +12,7 @@ class ApiResponse
      * @param int $code
      * @return mixed
      */
-    public static function success(string $message = '', mixed $data = null, int $code = 200)
+    public static function success(string $message = 'success', mixed $data = null, int $code = 200)
     {
         return self::formatResponse(true, $message, $data, $code);
     }

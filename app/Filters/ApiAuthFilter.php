@@ -6,6 +6,7 @@ use App\Entities\Applicants;
 use App\Entities\Students;
 use App\Entities\Users_new;
 use App\Enums\AuthEnum;
+use App\Libraries\EntityLoader;
 use App\Models\WebSessionManager;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
@@ -56,20 +57,20 @@ class ApiAuthFilter implements FilterInterface
     }
 
     /**
-     * This is to validate request header
+     * This is to validate the request header
      * @param object $request [description]
-     * @return bool [type]          [description]
+     * @return bool [type] [description]
      */
     private function validateHeader(object $request, string $type): bool
     {
         $apiKey = null;
-        if ($type === 'admin') {
+        if ($type === AuthEnum::ADMIN->value) {
             $apiKey = env('xAppAdminKey');
-        }else if ($type === 'student') {
+        }else if ($type === AuthEnum::STUDENT->value) {
             $apiKey = env('xAppStudentKey');
-        }else if ($type === 'web-finance') {
+        }else if ($type === AuthEnum::FINANCE_OUTFLOW->value) {
             $apiKey = env('xAppFinanceKey');
-        }else if ($type === 'apex') {
+        }else if ($type === AuthEnum::APEX->value) {
             $apiKey = env('xAppApexKey');
         }
         return (array_key_exists('HTTP_X_APP_KEY', $_SERVER) && $request->getServer('HTTP_X_APP_KEY') == $apiKey ||
@@ -80,7 +81,7 @@ class ApiAuthFilter implements FilterInterface
      * This is to validate request
      * @param object $request [description]
      * @param array $args [description]
-     * @return bool [type]          [description]
+     * @return bool [type] [description]
      */
     private function canProceed(object $request, array $args, string $type, &$message=null): bool
     {
@@ -141,7 +142,7 @@ class ApiAuthFilter implements FilterInterface
             $excludeUsers = [AuthEnum::STUDENT->value, AuthEnum::APPLICANT->value];
             // coming from the auth server
             if ($user_id && !in_array($user_type, $excludeUsers)) {
-                $userNew = new Users_new();
+                $userNew = EntityLoader::loadClass($this, 'users_new');
                 $userNew->id = $user_id;
 
                 if (!$userNew->load()) {

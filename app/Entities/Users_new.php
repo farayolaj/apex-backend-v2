@@ -287,7 +287,7 @@ class Users_new extends Crud
 
         $q = request()->getGet('q') ?: null;
         if ($q) {
-            $queryString = $this->buildWhereString('users_new', $q);
+            $queryString = $this->buildWhereSearchString('users_new', $q);
             $query .= " and ({$queryString}) ";
         }
 
@@ -298,7 +298,7 @@ class Users_new extends Crud
         return $result;
     }
 
-    public function getUserDetails(object $object, object $user)
+    public function getUserDetails(object $user)
     {
         $content = [
             'staff' => 'staffs',

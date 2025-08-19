@@ -7,8 +7,11 @@ use App\Controllers\Admin\v1\EmailBuilderController;
  * @var RouteCollection $routes
  */
 
-$routes->group('web/v1/courses', ['filter' => ['cors', 'apiValidation:admin']], function ($routes) {
-    $routes->add('(:any)', '\App\Controllers\Admin\v1\Courses::index/$1');
+$routes->group('v1/web/', [
+    'filter' => ['apiValidation:admin'],
+    'namespace' => 'App\Controllers\Admin\v1'
+], function ($routes) {
+    $routes->get('courses', 'Courses::index');
 
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:any)', static function () {});
@@ -22,4 +25,5 @@ $routes->group('web/email_builder', ['filter' => ['apiValidation:admin']], funct
     $routes->post('students', [EmailBuilderController::class, 'storeStudent']);
 
     $routes->options('(:any)', static function () {});
+    $routes->options('(:any)/(:any)', static function () {});
 });

@@ -2,7 +2,15 @@
 
 namespace App\Controllers\Admin\v1;
 
-class Courses
-{
+use App\Controllers\BaseController;
+use App\Libraries\ApiResponse;
+use App\Traits\EntityListTrait;
 
+class Courses extends BaseController
+{
+    use EntityListTrait;
+    public function index(){
+        $payload = $this->listApiEntity('courses');
+        return ApiResponse::success(data: $payload);
+    }
 }

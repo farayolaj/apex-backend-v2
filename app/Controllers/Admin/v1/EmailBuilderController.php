@@ -337,7 +337,7 @@ class EmailBuilderController extends BaseController
             'email_ref' => $id,
         ];
         if ($q) {
-            $queryString = $this->buildWhereString('email_logs', $q);
+            $queryString = $this->buildWhereSearchString('email_logs', $q);
         }
         $result = $this->email_logs->APIListLog($filterList, $queryString, $start, $len);
         $result = $this->buildApiListResponse($result);

@@ -29,6 +29,10 @@ class Crud {
 
     private bool $getWhereResultAsObject = true;
 
+    protected array  $searchable = []; // e.g. ['a.title','a.code']
+
+    protected array  $sortable   = []; // e.g. ['code'=>'a.code','id'=>'a.id']
+
     /**
      * @throws Exception
      */
@@ -74,7 +78,7 @@ class Crud {
     /**
      * This is for getting the name of the table
      * @param string|null $external [description]
-     * @return string [type]                [description]
+     * @return string [type] [description]
      */
 	public function getTableName(string $external = null): string
     {
@@ -354,8 +358,19 @@ class Crud {
 		return "SQL_CALC_FOUND_ROWS " . $clause;
 	}
 
-	// added this for json request and response using framework like vue
-	// the where contains the list of fieldname and the value
+    /**
+     * Added this for json request and response using a framework like vue
+     * the where contains the list of fieldname and the value
+     * @param array $parameter
+     * @param int $totalRow
+     * @param int $start
+     * @param int|null $length
+     * @param bool $resolveForeign
+     * @param string $sort
+     * @param string|null $whereClause
+     * @param object|null $dbObject
+     * @return array
+     */
 	public function allListFiltered(array $parameter, int &$totalRow = -1,
 		int $start = 0, int $length = null, bool $resolveForeign = true,
 		string $sort = ' order by id desc ', string $whereClause = null,
@@ -542,7 +557,7 @@ class Crud {
      * This is to update the model
      * @param int|null $id [description]
      * @param object|null &$dbObject [description]
-     * @return bool [type]                 [description]
+     * @return bool [type] [description]
      * @throws Exception
      */
 	public function update(int $id = NULL, object &$dbObject = null) {
@@ -642,7 +657,7 @@ class Crud {
 
     /**
      * @param object|null &$dbObject
-     * @param string &$message
+     * @param string|null $message
      * @return bool
      * @throws Exception
      */
@@ -688,7 +703,7 @@ class Crud {
      * [delete description]
      * @param int|null $id [description]
      * @param object|null &$dbObject [description]
-     * @return array|array[]|bool|BaseResult|Query [type]                 [description]
+     * @return array|array[]|bool|BaseResult|Query [type] [description]
      * @throws Exception
      */
 	public function delete(int $id = null, object &$dbObject = null) {
@@ -776,10 +791,10 @@ class Crud {
 
     /**
      * Function to return the array need
-     * @param $id
-     * @param $value
-     * @param $dbObject
-     * @param $type
+     * @param $label
+     * @param $link
+     * @param $critical
+     * @param $ajax
      * @return array
      */
 	protected function buildActionArray($label, $link, $critical, $ajax): array
