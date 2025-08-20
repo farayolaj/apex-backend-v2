@@ -196,7 +196,7 @@ class WebSessionManager
      * @param int|string $userId [description]
      * @return object              [description]
      */
-    public function isCurrentUserType(string $userType, int $userId = null)
+    public function isCurrentUserType(string $userType, ?int $userId = null)
     {
         $temp = $userType == $this->getCurrentUserProp('user_type');
         if (!$temp) {
@@ -224,6 +224,4 @@ class WebSessionManager
     {
         return $this->session->get();
     }
-
 }
-

@@ -1,6 +1,6 @@
 <?php
 
-function curlRequest(string $url, string $type, array $headers, string $param = null, $return = false, &$output = null, &$errorMessage = '')
+function curlRequest(string $url, string $type, array $headers, ?string $param = null, $return = false, &$output = null, &$errorMessage = '')
 {
     $res = curl_init($url);
     curl_setopt($res, CURLOPT_ENCODING, "");
@@ -60,4 +60,3 @@ function formatHeader(array $header)
     }
     return $result;
 }
-

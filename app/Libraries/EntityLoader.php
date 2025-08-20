@@ -18,7 +18,7 @@ class EntityLoader
      * @throws InvalidArgumentException If the class name is invalid.
      * @throws RuntimeException If the class does not exist.
      */
-    public static function loadClass(object $context, string $classname, ?string $namespace = null): object
+    public static function loadClass(?object $context, string $classname, ?string $namespace = null): object
     {
         $modelName = is_null($namespace)
             ? "App\\Entities\\" . ucfirst($classname)
@@ -29,7 +29,8 @@ class EntityLoader
         }
         $modelName = Factories::entities($modelName);
 
-        $context->$classname = $modelName;
-        return $context->$classname;
+        if ($context) $context->$classname = $modelName;
+
+        return $modelName;
     }
 }
