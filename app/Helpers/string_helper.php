@@ -1,10 +1,12 @@
 <?php
+
 use App\Enums\CommonEnum as CommonSlug;
 
-if(!function_exists('stripQuote')){
-    function stripQuote($string){
+if (!function_exists('stripQuote')) {
+    function stripQuote($string)
+    {
         $parts = explode(',', $string);
-        $clean = array_map(function($item) {
+        $clean = array_map(function ($item) {
             return trim($item, " \t\n\r\0\x0B\"");  // Remove quotes and whitespace
         }, $parts);
 
@@ -70,7 +72,6 @@ if (!function_exists('parseFlexibleDate')) {
 
         return null;
     }
-
 }
 
 if (!function_exists('normalizeTimeFormat')) {
@@ -568,7 +569,7 @@ if (!function_exists('toUserAgent')) {
 }
 
 if (!function_exists('formatToUTC')) {
-    function formatToUTC(string $date = null, $timezone = null, bool $isTime = false)
+    function formatToUTC(?string $date = null, $timezone = null, bool $isTime = false)
     {
         $date = $date ?? "now";
         $date = new \CodeIgniter\I18n\Time($date, $timezone);
@@ -687,7 +688,7 @@ if (!function_exists('returnFormalDirectory')) {
 }
 
 if (!function_exists('userImagePath')) {
-    function userImagePath(string $passport, string $path = null): string
+    function userImagePath(string $passport, ?string $path = null): string
     {
         if ($passport) {
             $config = config('ImagePath');
@@ -1087,8 +1088,12 @@ if (!function_exists('isSundryPayment')) {
 if (!function_exists('paymentEntryModeType')) {
     function paymentEntryModeType($label): ?string
     {
-        $result = array('-' => 'none', 'O\' Level' => 'O\' Level', 'Direct Entry' => 'Direct Entry',
-            'Fast Track' => 'Fast Track', 'Diploma' => 'Diploma',
+        $result = array(
+            '-' => 'none',
+            'O\' Level' => 'O\' Level',
+            'Direct Entry' => 'Direct Entry',
+            'Fast Track' => 'Fast Track',
+            'Diploma' => 'Diploma',
             'Remedial Application Form' => 'Remedial Application Form',
             'Remedial Application Form (Special)' => 'Remedial Application Form (Special)',
             'PG Application Form' => 'PG Application Form',
@@ -1105,10 +1110,20 @@ if (!function_exists('levelModeType')) {
     function levelModeType($label): ?string
     {
         $result = array(
-            '0' => '0', '1' => '100', '2' => '200', '3' => '300',
-            '4' => '400', '401' => '401', '402' => '402', '5' => '500',
-            '501' => '501', '502' => '502', '6' => '600', '7' => '700',
-            '8' => '800', '9' => '900',
+            '0' => '0',
+            '1' => '100',
+            '2' => '200',
+            '3' => '300',
+            '4' => '400',
+            '401' => '401',
+            '402' => '402',
+            '5' => '500',
+            '501' => '501',
+            '502' => '502',
+            '6' => '600',
+            '7' => '700',
+            '8' => '800',
+            '9' => '900',
         );
         if (array_key_exists($label, $result) === false) {
             return null;
@@ -2263,7 +2278,7 @@ if (!function_exists('generateRandomRef')) {
 }
 
 if (!function_exists('getLastTableData')) {
-    function getLastTableData(object $db, string $table, string $column, string $queryClause = null)
+    function getLastTableData(object $db, string $table, string $column, ?string $queryClause = null)
     {
         $query = "SELECT {$column} from {$table} {$queryClause} order by date_created desc limit 1";
         $result = $db->query($query)->getRow();

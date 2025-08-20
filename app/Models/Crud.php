@@ -9,17 +9,18 @@ use CodeIgniter\Database\Query;
 use DateTime;
 use Exception;
 
-class Crud {
+class Crud
+{
 	use CrudTrait;
 
-    /**
-     * @var mixed|null
-     */
-    private static mixed $baseurl;
+	/**
+	 * @var mixed|null
+	 */
+	private static mixed $baseurl;
 
-    protected array $array = [];
+	protected array $array = [];
 
-    protected string $foreignKeyEnd = '_id';
+	protected string $foreignKeyEnd = '_id';
 
 	protected BaseConnection $db;
 
@@ -27,20 +28,21 @@ class Crud {
 
 	private bool $modelPaging = false;
 
-    private bool $getWhereResultAsObject = true;
+	private bool $getWhereResultAsObject = true;
 
-    protected array  $searchable = []; // e.g. ['a.title','a.code']
+	protected array  $searchable = []; // e.g. ['a.title','a.code']
 
-    protected array  $sortable   = []; // e.g. ['code'=>'a.code','id'=>'a.id']
+	protected array  $sortable   = []; // e.g. ['code'=>'a.code','id'=>'a.id']
 
-    protected string $cachePrefix = 'api';
+	protected string $cachePrefix = 'api';
 
-    protected int $defaultShowTtl = 3600; // in minutes
+	protected int $defaultShowTtl = 3600; // in minutes
 
-    /**
-     * @throws Exception
-     */
-    public function __construct($array = []) {
+	/**
+	 * @throws Exception
+	 */
+	public function __construct($array = [])
+	{
 		helper(['string', 'text', 'array']);
 		if (!is_array($array)) {
 			throw new Exception("Constructor argument must be an array");
@@ -49,16 +51,16 @@ class Crud {
 		$this->db = db_connect();
 	}
 
-    /**
-     * This function builds the select clause needed to retrieve feed of this table while substituting
-     * the foreign key id with the display name.
-     * @param bool $calfound determines if rows should be included in the generated query
-     * @param string $search
-     * @return string the sql select clause that will replace the foreign key id with the
-     * corresponding display name
-     */
+	/**
+	 * This function builds the select clause needed to retrieve feed of this table while substituting
+	 * the foreign key id with the display name.
+	 * @param bool $calfound determines if rows should be included in the generated query
+	 * @param string $search
+	 * @return string the sql select clause that will replace the foreign key id with the
+	 * corresponding display name
+	 */
 	private function buildSelectClause(bool $calfound = true, string $search = ''): string
-    {
+	{
 		if (isset(static::$selectQuery) && static::$selectQuery) {
 			return static::$selectQuery . $search;
 		}
@@ -76,17 +78,17 @@ class Crud {
 		$tableList = '(' . implode(',', $foreignTable) . ')';
 		// $joinStatement = empty($foreignTable)?'':"left join $tableList on ($onclause)";
 		$joinStatement = $onclause;
-        return "SELECT {$foundrowString} {$fieldList} from {$thisTable} {$joinStatement} {$search} ";
+		return "SELECT {$foundrowString} {$fieldList} from {$thisTable} {$joinStatement} {$search} ";
 	}
 
-    /**
-     * This is for getting the name of the table
-     * @param string|null $external [description]
-     * @return string [type] [description]
-     */
-	public function getTableName(string $external = null): string
-    {
-        if (!$external) {
+	/**
+	 * This is for getting the name of the table
+	 * @param string|null $external [description]
+	 * @return string [type] [description]
+	 */
+	public function getTableName(?string $external = null): string
+	{
+		if (!$external) {
 			$tableName = strtolower(static::$tablename);
 		} else {
 			$tableName = strtolower($external);
@@ -96,7 +98,7 @@ class Crud {
 	}
 
 	private function foreignKeyPresent($fields): bool
-    {
+	{
 		for ($i = 0; $i < count($fields); $i++) {
 			$field = $fields[$i];
 			if (endsWith($field, $this->foreignKeyEnd)) {
@@ -106,31 +108,31 @@ class Crud {
 		return false;
 	}
 
-    /**
-     * TODO: FIXING PRIMARY TABLE APPEARING AS A FOREIGN TABLE IN THE QUERY
-     * I think this had been fixed
-     * @param $thisTable
-     * @param $fields
-     * @param $onclause
-     * @param $foreignTable
-     * @return void [type] [description]
-     */
+	/**
+	 * TODO: FIXING PRIMARY TABLE APPEARING AS A FOREIGN TABLE IN THE QUERY
+	 * I think this had been fixed
+	 * @param $thisTable
+	 * @param $fields
+	 * @param $onclause
+	 * @param $foreignTable
+	 * @return void [type]                [description]
+	 */
 	public function buildTableJoinQuery($thisTable, &$fields, &$onclause, &$foreignTable): void
-    {
+	{
 		for ($i = 0; $i < count($fields); $i++) {
 			$field = $fields[$i];
-            $isValidModel = true;
+			$isValidModel = true;
 			if (endsWith($field, $this->foreignKeyEnd)) {
 				$tablename = substr($field, 0, strlen($field) - strlen($this->foreignKeyEnd));
 				$tablename = strtolower($tablename);
 				$oldTableName = $tablename;
 				if (!class_exists($tablename)) {
-                    try{
-                        $modelName = $this->entitiesNameSpace . ucfirst($tablename);
-                        $tablename = new $modelName;
-                    }catch (Exception $e){
-                        $isValidModel = false;
-                    }
+					try {
+						$modelName = $this->entitiesNameSpace . ucfirst($tablename);
+						$tablename = new $modelName;
+					} catch (Exception $e) {
+						$isValidModel = false;
+					}
 				}
 
 				if ($isValidModel && isset($tablename::$displayField)) {
@@ -150,7 +152,6 @@ class Crud {
 					$usse = isset($tablename::$joinField) ? $oldTableName . '.' . $tablename::$joinField : "$oldTableName.id";
 
 					$onclause .= " left join $oldTableName on $temp = $usse ";
-
 				} else {
 					$display = $thisTable . '.' . $field;
 				}
@@ -166,35 +167,37 @@ class Crud {
 	 * @param string 		$name  [description]
 	 * @param 	$value [description]
 	 */
-	public function __set(string $name, $value) {
+	public function __set(string $name, $value)
+	{
 		$this->array[$name] = $value;
 	}
 
-    /**
-     *  This is a getter magic method
-     * @param string $name [description]
-     * @return mixed|null [type]       [description]
-     */
-	public function __get(string $name) {
+	/**
+	 *  This is a getter magic method
+	 * @param string $name [description]
+	 * @return mixed|null [type]       [description]
+	 */
+	public function __get(string $name)
+	{
 		$methodName = "get" . ucfirst($name);
 		if (array_key_exists($name, $this->array)) {
 			return $this->array[$name];
 		} else if (method_exists($this, $methodName)) {
 			return $this->$methodName();
 		} else {
-            // this would mean that the property does not exist
-            // and this would trigger an error for any GET method call
+			// this would mean that the property does not exist
+			// and this would trigger an error for any GET method call
 			return null;
 		}
 	}
 
 	public function getModelPaging(): bool
-    {
+	{
 		return $this->modelPaging;
 	}
 
 	public function setModelPaging(bool $value): void
-    {
+	{
 		$this->modelPaging = $value;
 	}
 
@@ -202,7 +205,7 @@ class Crud {
 	 * @return array
 	 */
 	public function toArray(): array
-    {
+	{
 		return $this->array;
 	}
 
@@ -210,15 +213,16 @@ class Crud {
 	 * @param array $array
 	 */
 	public function setArray(array $array): void
-    {
+	{
 		$this->array = $array;
 	}
 
 	/*
 	 * This just save data, it updates if present else insert if not
 	 */
-	public function save() {
-        $db = $this->db;
+	public function save()
+	{
+		$db = $this->db;
 		$temp = $this->getWhere($this->array, $totalRow, 0, null, false, $db);
 		if ($temp) {
 			$this->id = $temp[0]->id;
@@ -229,7 +233,7 @@ class Crud {
 	}
 
 	protected function buildWhereString($id, &$data): string
-    {
+	{
 		$data = array();
 		if (is_array($id)) {
 			$keys = array_keys($id);
@@ -260,7 +264,8 @@ class Crud {
 	 * @param &$dbObject
 	 * @return object|array|false
 	 */
-	public function getWhere($parameter, &$totalRow = -1, $start = 0, $length = null, $resolveForeign = true, $sort = '', &$dbObject = null) {
+	public function getWhere($parameter, &$totalRow = -1, $start = 0, ?int $length = null, $resolveForeign = true, string $sort = '', ?object &$dbObject = null)
+	{
 		$tablename = $this->getTableName();
 		$limit = "";
 		$array = array();
@@ -275,10 +280,8 @@ class Crud {
 
 		if ($whereString) {
 			$query = $resolveForeign ? $this->buildSelectClause() . " where {$whereString} {$sort} {$limit} " : "SELECT SQL_CALC_FOUND_ROWS * from {$tablename} where {$whereString} {$sort} {$limit} ";
-
 		} else {
 			$query = $resolveForeign ? $this->buildSelectClause() . " {$sort} {$limit} " : "SELECT SQL_CALC_FOUND_ROWS * from {$tablename} {$sort} {$limit} ";
-
 		}
 		// $query.=' '.$sort;
 		$result = $this->query($query, $data, $dbObject);
@@ -302,42 +305,44 @@ class Crud {
 	 * @param &$dbObject
 	 * @return array|false
 	 */
-	public function getWhereNonObject($parameter, &$totalRow = -1, $start = 0, $length = null, $resolveForeign = true, $sort = '', &$dbObject = null)
-    {
+	public function getWhereNonObject($parameter, &$totalRow = -1, $start = 0, ?int $length = null, $resolveForeign = true, string $sort = '', ?object &$dbObject = null)
+	{
 		$this->getWhereResultAsObject = false;
-        return $this->getWhere($parameter, $totalRow, $start, $length, $resolveForeign, $sort, $dbObject);
+		return $this->getWhere($parameter, $totalRow, $start, $length, $resolveForeign, $sort, $dbObject);
 	}
 
-    /**
-     * This function build a crud object array from an array of array
-     * @param string $classname the name of the class
-     * @param array $result of array $result    The array needed to be converted to crud object.
-     * @return array The array of object built
-     */
+	/**
+	 * This function build a crud object array from an array of array
+	 * @param string $classname the name of the class
+	 * @param array $result of array $result    The array needed to be converted to crud object.
+	 * @return array The array of object built
+	 */
 	protected function buildObject(string $classname, array $result): array
-    {
-        $objectArray = [];
-        // Check if the class exists in the global namespace
-        if (!class_exists($classname)) {
-            $modelName = $this->entitiesNameSpace . ucfirst($classname);
-            if (!class_exists($modelName)) {
-                throw new \RuntimeException("Class '$classname' or '$modelName' does not exist.");
-            }
-            $classname = $modelName;
-        }
-        // Create objects from the result set
-        foreach ($result as $row) {
-            $objectArray[] = new $classname($row);
-        }
-        return $objectArray;
+	{
+		$objectArray = [];
+		// Check if the class exists in the global namespace
+		if (!class_exists($classname)) {
+			$modelName = $this->entitiesNameSpace . ucfirst($classname);
+			if (!class_exists($modelName)) {
+				throw new \RuntimeException("Class '$classname' or '$modelName' does not exist.");
+			}
+			$classname = $modelName;
+		}
+		// Create objects from the result set
+		foreach ($result as $row) {
+			$objectArray[] = new $classname($row);
+		}
+		return $objectArray;
 	}
 
-	public function allNonObject(&$totalRow = 0, $resolveForeign = true, $lower = 0, $length = NULL, $sort = '', $where = '') {
+	public function allNonObject(&$totalRow = 0, $resolveForeign = true, $lower = 0, ?int $length = null, string $sort = '', string $where = '')
+	{
 		$this->getWhereResultAsObject = false;
 		return $this->all($totalRow, $resolveForeign, $lower, $length, $sort, $where);
 	}
 
-	public function all(&$totalRow = 0, $resolveForeign = true, $lower = 0, $length = null, $sort = '', $where = '') {
+	public function all(&$totalRow = 0, $resolveForeign = true, $lower = 0, ?int $length = null, string $sort = '', string $where = '')
+	{
 		$tablename = $this->getTableName();
 		$limit = "";
 		$array = [];
@@ -354,7 +359,7 @@ class Crud {
 	}
 
 	private function buildOtherClause(): string
-    {
+	{
 		$clause = "*";
 		if (isset(static::$apiSelectClause) && static::$apiSelectClause) {
 			$clause = implode(',', static::$apiSelectClause);
@@ -362,23 +367,28 @@ class Crud {
 		return "SQL_CALC_FOUND_ROWS " . $clause;
 	}
 
-    /**
-     * Added this for json request and response using a framework like vue
-     * the where contains the list of fieldname and the value
-     * @param array $parameter
-     * @param int $totalRow
-     * @param int $start
-     * @param int|null $length
-     * @param bool $resolveForeign
-     * @param string $sort
-     * @param string|null $whereClause
-     * @param object|null $dbObject
-     * @return array
-     */
-	public function allListFiltered(array $parameter, int &$totalRow = -1,
-		int $start = 0, int $length = null, bool $resolveForeign = true,
-		string $sort = ' order by id desc ', string $whereClause = null,
-		object &$dbObject = null
+	/**
+	 * Added this for json request and response using a framework like vue
+	 * the where contains the list of fieldname and the value
+	 * @param array $parameter
+	 * @param int $totalRow
+	 * @param int $start
+	 * @param int|null $length
+	 * @param bool $resolveForeign
+	 * @param string $sort
+	 * @param string|null $whereClause
+	 * @param object|null $dbObject
+	 * @return array
+	 */
+	public function allListFiltered(
+		array $parameter,
+		int &$totalRow = -1,
+		int $start = 0,
+		?int $length = null,
+		bool $resolveForeign = true,
+		string $sort = ' order by id desc ',
+		?string $whereClause = null,
+		?object &$dbObject = null
 	) {
 
 		$tablename = $this->getTableName();
@@ -394,9 +404,9 @@ class Crud {
 			$limit = " LIMIT $start, $end";
 		}
 		$whereString = $this->buildWhereString($parameter, $data);
-        if (!empty($array)) {
-            $data = array_merge($data, $array);
-        }
+		if (!empty($array)) {
+			$data = array_merge($data, $array);
+		}
 		if ($whereString) {
 			if ($whereClause) {
 				$whereClause = " and ($whereClause) ";
@@ -417,46 +427,51 @@ class Crud {
 		return array($result, $totalRow);
 	}
 
-    public function apiQueryListFiltered(array $selectData, ?array $filterList, ?string $queryString,
-                                               $start, $len, ?string $orderBy = null): array
-    {
-        $orderByString = !isset($_GET['sortBy']);
-        $temp = getFilterQueryFromDict($filterList);
-        $filterQuery = buildCustomWhereString($temp[0], $queryString, $orderByString);
-        $filterValues = $temp[1];
+	public function apiQueryListFiltered(
+		array $selectData,
+		?array $filterList,
+		?string $queryString,
+		$start,
+		$len,
+		?string $orderBy = null
+	): array {
+		$orderByString = !isset($_GET['sortBy']);
+		$temp = getFilterQueryFromDict($filterList);
+		$filterQuery = buildCustomWhereString($temp[0], $queryString, $orderByString);
+		$filterValues = $temp[1];
 
-        if (isset($_GET['sortBy']) && $orderBy) {
-            $filterQuery .= " order by $orderBy ";
-        }
+		if (isset($_GET['sortBy']) && $orderBy) {
+			$filterQuery .= " order by $orderBy ";
+		}
 
-        if (isset($_GET['start']) && $len) {
-            $filterQuery .= " limit $start, $len";
-        }
-        if (!$filterValues) {
-            $filterValues = [];
-        }
-        $tablename = $this->getTableName();
-        $query = "SELECT " . buildApiClause($selectData, 'a') . " from $tablename a $filterQuery";
-        $query2 = "SELECT FOUND_ROWS() as totalCount";
-        $res = $this->db->query($query, $filterValues);
-        $res = $res->getResultArray();
-        $res2 = $this->db->query($query2);
-        $res2 = $res2->getResultArray();
-        return [$res, $res2];
-    }
+		if (isset($_GET['start']) && $len) {
+			$filterQuery .= " limit $start, $len";
+		}
+		if (!$filterValues) {
+			$filterValues = [];
+		}
+		$tablename = $this->getTableName();
+		$query = "SELECT " . buildApiClause($selectData, 'a') . " from $tablename a $filterQuery";
+		$query2 = "SELECT FOUND_ROWS() as totalCount";
+		$res = $this->db->query($query, $filterValues);
+		$res = $res->getResultArray();
+		$res2 = $this->db->query($query2);
+		$res2 = $res2->getResultArray();
+		return [$res, $res2];
+	}
 
-    public function apiQueryListCustomFiltered(string $query, ?array $queryData = []): array
-    {
-        $query2 = "SELECT FOUND_ROWS() as totalCount";
-        $res = $this->db->query($query, $queryData);
-        $res = $res->getResultArray();
-        $res2 = $this->db->query($query2);
-        $res2 = $res2->getResultArray();
-        return [$res, $res2];
-    }
+	public function apiQueryListCustomFiltered(string $query, ?array $queryData = []): array
+	{
+		$query2 = "SELECT FOUND_ROWS() as totalCount";
+		$res = $this->db->query($query, $queryData);
+		$res = $res->getResultArray();
+		$res2 = $this->db->query($query2);
+		$res2 = $res2->getResultArray();
+		return [$res, $res2];
+	}
 
 	public function allQuery($query): string
-    {
+	{
 		$tempQuery = $this->db->escapeString($query);
 		$fields = array_keys(static::$labelArray);
 		$isFirst = true;
@@ -470,10 +485,10 @@ class Crud {
 			$result .= " $field like '%$tempQuery%' ";
 		}
 		return $result;
-
 	}
 
-	public function search($q, &$totalRow = 0, $resolveForeign = true, $lower = 0, $length = null, $sort = '') {
+	public function search($q, &$totalRow = 0, $resolveForeign = true, $lower = 0, ?int $length = null, string $sort = '')
+	{
 		$tablename = $this->getTableName();
 		$limit = "";
 		$array = array();
@@ -489,14 +504,15 @@ class Crud {
 		return $result;
 	}
 
-    /**
-     * @param int|null $id
-     * @param object|null $dbObject
-     * @return false|mixed
-     * @throws Exception
-     * @throws Exception
-     */
-	public function view(int $id = null, object &$dbObject = null) {
+	/**
+	 * @param int|null $id
+	 * @param object|null $dbObject
+	 * @return false|mixed
+	 * @throws Exception
+	 * @throws Exception
+	 */
+	public function view(?int $id = null, ?object &$dbObject = null)
+	{
 		if (!$id) {
 			if (array_key_exists('id', $this->array)) {
 				$id = $this->array['id'];
@@ -515,13 +531,14 @@ class Crud {
 		return new $tablename($result);
 	}
 
-    /**
-     * @param int|null $id
-     * @param object|null $dbObject
-     * @return bool
-     * @throws Exception
-     */
-	public function load(int $id = null, object &$dbObject = null) {
+	/**
+	 * @param int|null $id
+	 * @param object|null $dbObject
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function load(?int $id = null, ?object &$dbObject = null)
+	{
 		$result = $this->view($id, $dbObject);
 		if ($result) {
 			$this->array = $result->toArray();
@@ -531,7 +548,8 @@ class Crud {
 		}
 	}
 
-	public function queryTable(string $query, array $data = array(), object &$dbObject = null) {
+	public function queryTable(string $query, array $data = array(), ?object &$dbObject = null)
+	{
 		$tablename = $this->getTableName();
 		$result = $this->query($query, $data, $dbObject);
 		$resultObjects = array();
@@ -542,10 +560,11 @@ class Crud {
 		return $resultObjects;
 	}
 
-    /*
+	/*
      * This is to query the database
      */
-	public function query(string $query, array $data = [], object &$dbObject = null) {
+	public function query(string $query, array $data = [], ?object &$dbObject = null)
+	{
 		$db = $this->db;
 		if ($dbObject) {
 			$db = $dbObject;
@@ -554,17 +573,18 @@ class Crud {
 		if (!is_object($result)) {
 			return $result;
 		}
-        return $result->getResultArray();
+		return $result->getResultArray();
 	}
 
-    /**
-     * This is to update the model
-     * @param int|null $id [description]
-     * @param object|null &$dbObject [description]
-     * @return bool [type] [description]
-     * @throws Exception
-     */
-	public function update(int $id = NULL, object &$dbObject = null) {
+	/**
+	 * This is to update the model
+	 * @param int|null $id [description]
+	 * @param object|null &$dbObject [description]
+	 * @return bool [type] [description]
+	 * @throws Exception
+	 */
+	public function update(?int $id = null, ?object &$dbObject = null)
+	{
 		if (empty($id) && !isset($this->array['id'])) {
 			throw new Exception("Entity Property id cannot be empty");
 		}
@@ -584,13 +604,13 @@ class Crud {
 		}
 	}
 
-    /**
-     * [buildUpdateQuery description]
-     * @param array|null $data [description]
-     * @return string        [description]
-     */
-	private function buildUpdateQuery(array &$data = null): string
-    {
+	/**
+	 * [buildUpdateQuery description]
+	 * @param array|null $data [description]
+	 * @return string        [description]
+	 */
+	private function buildUpdateQuery(?array &$data = null): string
+	{
 		$result = " ";
 		$data = array();
 		$keys = array_keys($this->array);
@@ -608,7 +628,7 @@ class Crud {
 	}
 
 	private function buildExistWhereString($id, &$data): string
-    {
+	{
 		if (empty($id)) {
 			return '';
 		}
@@ -628,8 +648,8 @@ class Crud {
 	 * @param array 	&$arrData
 	 * @return bool
 	 */
-	public function exists($id, &$dbObject = null, &$arrData = array()): bool
-    {
+	public function exists($id, ?object &$dbObject = null, &$arrData = array()): bool
+	{
 		$tablename = $this->getTableName();
 		$wherelist = $this->buildExistWhereString($id, $data);
 		$arrData = $data;
@@ -640,8 +660,9 @@ class Crud {
 
 	/**
 	 * @return array|bool
-     */
-	private function checkExist() {
+	 */
+	private function checkExist()
+	{
 		if (isset(static::$uniqueArray) && !empty(static::$uniqueArray)) {
 			$uniqueKeys = static::$uniqueArray;
 			foreach ($uniqueKeys as $value) {
@@ -654,22 +675,22 @@ class Crud {
 
 		if (isset(static::$compositePrimaryKey) && !empty(static::$compositePrimaryKey)) {
 			$uniqueKeys = static::$compositePrimaryKey;
-            return $this->exists($uniqueKeys);
+			return $this->exists($uniqueKeys);
 		}
 		return false;
 	}
 
-    /**
-     * @param object|null &$dbObject
-     * @param string|null $message
-     * @return bool
-     * @throws Exception
-     */
-	public function insert(?object &$dbObject = null, ?string &$message = ''): bool
-    {
+	/**
+	 * @param object|null &$dbObject
+	 * @param string|null $message
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function insert(?object &$dbObject = null, ?string &$message = ''): bool // already nullable
+	{
 		$tablename = $this->getTableName();
 		if (empty($this->array)) {
-            throw new Exception("No value to insert");
+			throw new Exception("No value to insert");
 		}
 
 		if ($checkMsg = $this->checkExist()) {
@@ -703,14 +724,15 @@ class Crud {
 		}
 	}
 
-    /**
-     * [delete description]
-     * @param int|null $id [description]
-     * @param object|null &$dbObject [description]
-     * @return array|array[]|bool|BaseResult|Query [type] [description]
-     * @throws Exception
-     */
-	public function delete(int $id = null, object &$dbObject = null) {
+	/**
+	 * [delete description]
+	 * @param int|null $id [description]
+	 * @param object|null &$dbObject [description]
+	 * @return array|array[]|bool|BaseResult|Query [type] [description]
+	 * @throws Exception
+	 */
+	public function delete(?int $id = null, ?object &$dbObject = null)
+	{
 		if (!$id && !isset($this->array['id'])) {
 			throw new Exception("Object does not have id");
 		}
@@ -721,129 +743,127 @@ class Crud {
 		$tablename = $this->getTableName();
 		$query = "DELETE from $tablename where id=?";
 		return $this->query($query, [$id], $dbObject);
-
 	}
 
-    /**
-     * @throws Exception
-     */
-    public function enable($id = null, &$dbObject = null): bool
-    {
-        if (!$id && !isset($this->array['id'])) {
-            throw new Exception("Object does not have id");
-        }
-        if (!$id) {
-            $id = $this->array["id"];
-        }
-        return $this->setEnabled($id, 1, $dbObject, 'enable');
-    }
+	/**
+	 * @throws Exception
+	 */
+	public function enable(?int $id = null, ?object &$dbObject = null): bool
+	{
+		if (!$id && !isset($this->array['id'])) {
+			throw new Exception("Object does not have id");
+		}
+		if (!$id) {
+			$id = $this->array["id"];
+		}
+		return $this->setEnabled($id, 1, $dbObject, 'enable');
+	}
 
-    /**
-     * @throws Exception
-     */
-    public function disable($id = null, &$dbObject = null): bool
-    {
-        if (!$id && !isset($this->array['id'])) {
-            throw new Exception("Object does not have id");
-        }
+	/**
+	 * @throws Exception
+	 */
+	public function disable(?int $id = null, ?object &$dbObject = null): bool
+	{
+		if (!$id && !isset($this->array['id'])) {
+			throw new Exception("Object does not have id");
+		}
 
-        if (!$id) {
-            $id = $this->array["id"];
-        }
-        return $this->setEnabled($id, 0, $dbObject, 'disable');
-    }
+		if (!$id) {
+			$id = $this->array["id"];
+		}
+		return $this->setEnabled($id, 0, $dbObject, 'disable');
+	}
 
-    /**
-     * This method is used to set the status of a record to either enable or disable
-     * @param $id
-     * @param $value
-     * @param $dbObject
-     * @param $type
-     * @return bool
-     */
-    protected function setEnabled($id, $value, &$dbObject, $type = null): bool
-    {
-        $tablename = $this->getTableName();
-        $dbField = 'status';
-        if (!$type) {
-            $type = $value == 0 ? 'disable' : 'enable';
-        }
-        $dbField = $this->getDbStatusField($type, $dbField);
-        $query = "UPDATE $tablename set {$dbField} = ? where id=?";
-        $result = $this->query($query, array($value, $id), $dbObject);
-        if ($result) {
-            $this->array[$dbField] = $value;
-            return true;
-        } else {
-            return false;
-        }
-    }
+	/**
+	 * This method is used to set the status of a record to either enable or disable
+	 * @param $id
+	 * @param $value
+	 * @param $dbObject
+	 * @param $type
+	 * @return bool
+	 */
+	protected function setEnabled($id, $value, &$dbObject, ?string $type = null): bool
+	{
+		$tablename = $this->getTableName();
+		$dbField = 'status';
+		if (!$type) {
+			$type = $value == 0 ? 'disable' : 'enable';
+		}
+		$dbField = $this->getDbStatusField($type, $dbField);
+		$query = "UPDATE $tablename set {$dbField} = ? where id=?";
+		$result = $this->query($query, array($value, $id), $dbObject);
+		if ($result) {
+			$this->array[$dbField] = $value;
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    /**
-     * @param $type
-     * @param $dbField
-     * @return mixed|string
-     */
-    private function getDbStatusField($type, $dbField)
-    {
-        if (isset(static::$modelActionStatus)) {
-            $temp = static::$modelActionStatus;
-            $dbField = $temp[$type] ?: 'status';
-        }
-        return $dbField;
-    }
+	/**
+	 * @param $type
+	 * @param $dbField
+	 * @return mixed|string
+	 */
+	private function getDbStatusField($type, $dbField)
+	{
+		if (isset(static::$modelActionStatus)) {
+			$temp = static::$modelActionStatus;
+			$dbField = $temp[$type] ?: 'status';
+		}
+		return $dbField;
+	}
 
-    /**
-     * Function to return the array need
-     * @param $label
-     * @param $link
-     * @param $critical
-     * @param $ajax
-     * @return array
-     */
+	/**
+	 * Function to return the array need
+	 * @param $label
+	 * @param $link
+	 * @param $critical
+	 * @param $ajax
+	 * @return array
+	 */
 	protected function buildActionArray($label, $link, $critical, $ajax): array
-    {
+	{
 		$result = array();
 		$result['label'] = $label;
 		$result['link'] = $link;
 		$result['isCritical'] = $critical;
 		$result['ajax'] = $ajax;
-        return $result;
+		return $result;
 	}
 
-    /**
-     * This method return  true if the method is validated or false. if false, the
-     * message is passed to the message variable displayed.
-     * @param string|null $message
-     * @param bool $validateType
-     * @return bool
-     */
+	/**
+	 * This method return  true if the method is validated or false. if false, the
+	 * message is passed to the message variable displayed.
+	 * @param string|null $message
+	 * @param bool $validateType
+	 * @return bool
+	 */
 	public function validateInsert(?string &$message, bool $validateType = false): bool
-    {
-        $result = 0;
-        $message = '';
-        $condition = empty(static::$nullArray);
-        foreach ($this->array as $key => $value) {
-            if (empty($value) && ($condition || !in_array($key, static::$nullArray))) {
-                if ($result !== 0) {
-                    $message .= ',';
-                }
-                $message .= empty(static::$labelArray[$key]) ? $this->generateFormlabel($key) : static::$labelArray[$key];
-                $result++;
-            }
+	{
+		$result = 0;
+		$message = '';
+		$condition = empty(static::$nullArray);
+		foreach ($this->array as $key => $value) {
+			if (empty($value) && ($condition || !in_array($key, static::$nullArray))) {
+				if ($result !== 0) {
+					$message .= ',';
+				}
+				$message .= empty(static::$labelArray[$key]) ? $this->generateFormlabel($key) : static::$labelArray[$key];
+				$result++;
+			}
+		}
 
-        }
-
-        if ($result) {
-            if ($result == 1) {
-                $message = $message . ' cannot be empty';
-            } else {
-                $message = 'The following fields cannot be empty ' . $message;
-            }
-            return false;
-        } else {
-            return true;
-        }
+		if ($result) {
+			if ($result == 1) {
+				$message = $message . ' cannot be empty';
+			} else {
+				$message = 'The following fields cannot be empty ' . $message;
+			}
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	/**
@@ -851,7 +871,7 @@ class Crud {
 	 * @return string
 	 */
 	private function generateFormLabel($fieldname): string
-    {
+	{
 		$result = '';
 		if (empty($fieldname)) {
 			return $result;
@@ -867,7 +887,7 @@ class Crud {
 
 	//the array must contain the table name and the display value field then it can load options
 	public function loadOption($array, $val = false, $prepend = '', $orderBy = '', $hidden = false): string
-    {
+	{
 		extract($array);
 		// the $hidden parameter means to use the display value has the hidden value for select option
 		if ($orderBy != '') {
@@ -887,20 +907,19 @@ class Crud {
 			$result = array_merge($prepend, $result);
 		}
 		return $this->buildSelectOption($result, $val, $hidden);
-
 	}
 
 	private function buildJoin($table, $display): string
-    {
+	{
 		$first = $table[0];
 		$second = $table[1];
 		$firstWithId = $first . '.id';
 		$secondWithId = $second . '.id';
-        return "SELECT $firstWithId as id, $display as value from $first left join $second on $firstWithId = $secondWithId";
+		return "SELECT $firstWithId as id, $display as value from $first left join $second on $firstWithId = $secondWithId";
 	}
 
 	public function loadValueOption($arrayValue, $value = false): string
-    {
+	{
 		$result = "<option value='' selected='selected'>..choose..</option>";
 		if ($value) {
 			$result = "<option value=''>..choose..</option>";
@@ -917,7 +936,7 @@ class Crud {
 	}
 
 	public function buildSelectOption($array, $val, $hidden = false): string
-    {
+	{
 
 		$result = "<option value='' selected='selected'>...choose option...</option>";
 		if ($val) {
@@ -945,7 +964,7 @@ class Crud {
 	}
 
 	public function buildSelectOptionNonAssoc($array, $val): string
-    {
+	{
 		$result = '';
 		for ($i = 0; $i < count($array); $i++) {
 			$current = $array[$i];
@@ -959,7 +978,8 @@ class Crud {
 	}
 
 	// a function to upload multiple row of data
-	public function upload($fields, $data, &$message = '', $dbObject = null, $translate = true) {
+	public function upload($fields, $data, &$message = '', ?object $dbObject = null, $translate = true)
+	{
 		$tables = $this->getTemplateTablesUpload();
 		if (is_array($tables)) {
 			return $this->uploadMultiples($tables, $fields, $data, $message, $dbObject, $translate);
@@ -967,7 +987,8 @@ class Crud {
 			return $this->uploadSingle($tables, $fields, $data, $message, $dbObject, $translate);
 		}
 	}
-	private function getTemplateTablesUpload() {
+	private function getTemplateTablesUpload()
+	{
 		$tablename = $this->getTableName();
 		if (isset(static::$uploadDependency) && static::$uploadDependency) {
 			$result = static::$uploadDependency;
@@ -977,25 +998,26 @@ class Crud {
 		return $tablename;
 	}
 	private function buildOnUpdateField($fields): string
-    {
+	{
 		$result = " on duplicate key update ";
 		foreach ($fields as $field) {
 			$result .= "$field=values($field) ,";
 		}
-        return rtrim($result, ',');
+		return rtrim($result, ',');
 	}
 
-    /**
-     * @param string $model
-     * @param $fields
-     * @param array $data
-     * @param string    &$message - Reference parameters to the invoker
-     * @param string $dbObject
-     * @param bool $translate
-     * @return array|bool
-     * @throws Exception
-     */
-	public function uploadSingle($model, $fields, $data, &$message = '', $dbObject = '', $translate = false) {
+	/**
+	 * @param string $model
+	 * @param $fields
+	 * @param array $data
+	 * @param string    &$message - Reference parameters to the invoker
+	 * @param string $dbObject
+	 * @param bool $translate
+	 * @return array|bool
+	 * @throws Exception
+	 */
+	public function uploadSingle($model, $fields, $data, &$message = '', $dbObject = '', $translate = false)
+	{
 		if (empty($data)) {
 			$message = "no data found in the template file uploaded";
 			return false;
@@ -1027,12 +1049,13 @@ class Crud {
 	 * @param array $header
 	 * @param string $model
 	 * @return bool
-     */
-	private function validateHeader(array $header, string $model) {
-        $modelHeader = $this->buildTemplate($model);
-        $common = array_intersect($header, $modelHeader);
-        $diff = array_diff($header, $common);
-        return empty($intersect);
+	 */
+	private function validateHeader(array $header, string $model)
+	{
+		$modelHeader = $this->buildTemplate($model);
+		$common = array_intersect($header, $modelHeader);
+		$diff = array_diff($header, $common);
+		return empty($intersect);
 		// return $header==$common;
 	}
 
@@ -1046,7 +1069,8 @@ class Crud {
 	 * @param bool $hashPassword
 	 * @return array
 	 */
-	private function transformData($model, $data, &$fields, $hashPassword = false) {
+	private function transformData($model, $data, &$fields, $hashPassword = false)
+	{
 		$temp = $this->buildTemplate($model, false);
 		$foreign = $this->extractFk($temp);
 		if (!empty($foreign)) {
@@ -1083,7 +1107,6 @@ class Crud {
 
 					$data[$i][$value] = $tp;
 				}
-
 			}
 			if ($hashPassword) {
 				$data[$i][$passwordIndex] = @crypt($data[$i][$usernameIndex]); //hash the password;
@@ -1105,7 +1128,7 @@ class Crud {
 	 * @return array
 	 */
 	private function replaceForeignField($fields, &$foreign): array
-    {
+	{
 		$dictionary = $this->buildFkDictionary($foreign);
 		$len = count($fields);
 		for ($i = 0; $i < $len; $i++) {
@@ -1127,7 +1150,7 @@ class Crud {
 	 * @return array
 	 */
 	private function buildFkDictionary(array $fk): array
-    {
+	{
 		$fk = array_keys($fk);
 		$result = array();
 		for ($i = 0; $i < count($fk); $i++) {
@@ -1146,7 +1169,7 @@ class Crud {
 	 * @return array 	$result
 	 */
 	private function extractFk(array $fields): array
-    {
+	{
 		$result = array();
 		for ($i = 0; $i < count($fields); $i++) {
 			if (endsWith($fields[$i], '_id')) {
@@ -1163,7 +1186,8 @@ class Crud {
 	 * @param string $tablename
 	 * @return int|bool
 	 */
-	private function getFieldID($fieldname, $fieldValue, $tablename) {
+	private function getFieldID($fieldname, $fieldValue, $tablename)
+	{
 		$fieldname = trim($fieldname);
 		$fieldValue = trim($fieldValue);
 		$query = "SELECT id from $tablename where $fieldname =?";
@@ -1180,7 +1204,7 @@ class Crud {
 	 * @return string
 	 */
 	private function buildInsertSection($field, $tablename): string
-    {
+	{
 		$fieldList = implode(',', $field);
 		$query = "INSERT into $tablename ($fieldList) values ";
 		return $query;
@@ -1193,7 +1217,7 @@ class Crud {
 	 * @return array
 	 */
 	private function buildmultipleInsertValue($data, $fields = false): string
-    {
+	{
 		$result = '';
 		for ($i = 0; $i < count($data); $i++) {
 			$current = $data[$i];
@@ -1207,7 +1231,8 @@ class Crud {
 		return $result;
 	}
 
-	private function sqlDateFormat($date) {
+	private function sqlDateFormat($date)
+	{
 		$d = Datetime::createFromFormat('d/m/Y', $date);
 		$result = $d->format('Y-m-d');
 		return $result;
@@ -1222,7 +1247,7 @@ class Crud {
 	 * @return array
 	 */
 	private function performValueCheck($values, $fields): array
-    {
+	{
 		for ($i = 0; $i < count($values); $i++) {
 			$value = $values[$i];
 			$values[$i] = trim($value);
@@ -1239,13 +1264,14 @@ class Crud {
 		return $values;
 	}
 
-    /**
-     * This could be implemented if necessary for full security
-     * @param string $query
-     * @param array $data
-     * @return array
-     */
-	private function isSqlSafeInput($value) {
+	/**
+	 * This could be implemented if necessary for full security
+	 * @param string $query
+	 * @param array $data
+	 * @return array
+	 */
+	private function isSqlSafeInput($value)
+	{
 		return true;
 	}
 
@@ -1253,7 +1279,8 @@ class Crud {
 		|	this function will export data to .csv extension format.
 		|	@return the .csv data exported for download even if a where clause is stated as a condition
 	*/
-	public function export($condition = null) {
+	public function export($condition = null)
+	{
 		$data = $this->getExportData($condition);
 		if (!$data) {
 			exit("no data found to export.");
@@ -1269,23 +1296,25 @@ class Crud {
 		|	NOTE: it also accomomdate a conditional statement (i.e a where clause)
 		|	@return the necessary data from the db
 	*/
-	private function getExportData($condition = null) {
+	private function getExportData($condition = null)
+	{
 		$fields = $this->getModelTemplateHeader(true, true);
 		$fieldList = implode(',', $fields);
 		$joinString = $this->getExportJoinString(static::$tablename);
 		$data = array();
 		$conditionString = $condition == null ? '' : $this->buildWhereString($condition, $data);
 		$query = "SELECT $fieldList from $joinString $conditionString";
-        return $this->query($query, $data);
+		return $this->query($query, $data);
 	}
 	/*
 		|	this  function is use to resolve any foreign table in a model
 		|	@return a proper formal result for a join string statement to be use in query
 	*/
-    /**
-     * @throws Exception
-     */
-    private function getExportJoinString($mainTable) {
+	/**
+	 * @throws Exception
+	 */
+	private function getExportJoinString($mainTable)
+	{
 		$tables = $this->getModelTemplateHeader(false, false, $ending);
 		//reverse the array
 		$temp = $this->extractFk($tables);
@@ -1311,7 +1340,8 @@ class Crud {
 		return $result;
 	}
 
-	private function parentWithMinIndex($item, $array) {
+	private function parentWithMinIndex($item, $array)
+	{
 		foreach ($array as $key => $value) {
 			if ($value > $item) {
 				return $key;
@@ -1324,7 +1354,8 @@ class Crud {
 		|	@return lists of template header for the model,
 		|	resolving any foreign table or an array of tables (i.e multiple table if stated in the entity model)
 	*/
-	private function getModelTemplateHeader($resolve = true, $isSql = false, &$ending = '') {
+	private function getModelTemplateHeader($resolve = true, $isSql = false, &$ending = '')
+	{
 		$tables = $this->getTemplateTables();
 		if (is_array($tables)) {
 			return $this->combineFields($tables, $resolve, $isSql, $ending);
@@ -1340,11 +1371,11 @@ class Crud {
 		|	@return either a single table name or an array of table name for the template
 	*/
 	private function getTemplateTables(): array|string|null
-    {
+	{
 		$tablename = $this->getTableName();
 		if (isset(static::$uploadDependency)) {
 			$result = array($tablename);
-            return array_merge($result, static::$uploadDependency);
+			return array_merge($result, static::$uploadDependency);
 		}
 		return $tablename;
 	}
@@ -1353,7 +1384,7 @@ class Crud {
 		|	@return a list of array field since it involves an array of table
 	*/
 	private function combineFields($tables, $resolve = true, $isSql = false, &$ending = ''): array
-    {
+	{
 		$result = array();
 		$ending = array();
 		$previousCount = 0;
@@ -1367,12 +1398,13 @@ class Crud {
 	}
 
 	/**
-     * This function is to get the field needed for the template download
-     * static::$uploadFields contain the fields you want to include only in the template with
-     * the name of the fields to be included as the values for the array element
-     * @return array
-     */
-	private function getTemplates($table, $resolve = true, $isSql = false) {
+	 * This function is to get the field needed for the template download
+	 * static::$uploadFields contain the fields you want to include only in the template with
+	 * the name of the fields to be included as the values for the array element
+	 * @return array
+	 */
+	private function getTemplates($table, $resolve = true, $isSql = false)
+	{
 		$fields = '';
 		$table = loadClass($table);
 		if (isset($table::$uploadFields)) {
@@ -1388,7 +1420,8 @@ class Crud {
 	|	This function is dynamic in nature and not hard-coded.
 	|	@return .csv file extension is returned for download
 	 */
-	public function downloadTemplate($exception = null) {
+	public function downloadTemplate($exception = null)
+	{
 		$fields = $this->getModelTemplateHeader();
 		if ($exception != null) {
 			$fields = array_diff($fields, $exception);
@@ -1410,7 +1443,8 @@ class Crud {
 	 * @param bool $isSql
 	 * @return array
 	 */
-	private function buildTemplate($model = '', $resolve = true, $isSql = false) {
+	private function buildTemplate($model = '', $resolve = true, $isSql = false)
+	{
 		if (empty($model)) {
 			$model = $this->getTableName();
 		}
@@ -1437,7 +1471,6 @@ class Crud {
 					if ($isSql) {
 						$fields[$i] = $model . '.' . $fields[$i];
 					}
-
 				}
 				$fields[$i] = trim($fields[$i]);
 			}
@@ -1446,7 +1479,8 @@ class Crud {
 	}
 
 	//function that handles uploads that involves multiple tables
-	public function uploadMultiples($tables, $fields, $data, &$message = '', $dbObject = null, $translate = false) {
+	public function uploadMultiples($tables, $fields, $data, &$message = '', ?object $dbObject = null, $translate = false)
+	{
 		$tableFields = array(); // will have the same length as that of the real table
 		$tableData = array();
 		if (!$dbObject) {
@@ -1470,18 +1504,19 @@ class Crud {
 		return true;
 	}
 
-    /**
-     * This function need to extract the field needed by the model and the corresponding data
-     * needed by the  field for insertion. Note that upload single will perform data transformation
-     * when inserting the record
-     * @param $model
-     * @param $fields
-     * @param $data
-     * @param $tableData
-     * @param $message
-     * @return array
-     */
-	private function extractTableInfos($model, $fields, $data, &$tableData, &$message = '') {
+	/**
+	 * This function need to extract the field needed by the model and the corresponding data
+	 * needed by the  field for insertion. Note that upload single will perform data transformation
+	 * when inserting the record
+	 * @param $model
+	 * @param $fields
+	 * @param $data
+	 * @param $tableData
+	 * @param $message
+	 * @return array
+	 */
+	private function extractTableInfos($model, $fields, $data, &$tableData, &$message = '')
+	{
 		$result = array();
 		$indexes = array();
 		$defaultFields = $this->buildTemplate($model);
@@ -1497,31 +1532,34 @@ class Crud {
 		return $result;
 	}
 
-	public function getLastInsertId() {
+	public function getLastInsertId()
+	{
 		$query = "SELECT LAST_INSERT_ID() AS last"; //sud specify the table
 		$result = $this->db->query($query);
 		$result = $result->getResultArray();
 		return $result[0]['last'];
-
 	}
 
-    /**
-     * function to get all the total value of item present in  the database
-     *
-     * @param string|null $queryclause
-     * @return int|mixed
-     */
-	public static function totalCount(?string $queryclause = '') {
+	/**
+	 * function to get all the total value of item present in  the database
+	 *
+	 * @param string|null $queryclause
+	 * @return int|mixed
+	 */
+	public static function totalCount(?string $queryclause = '')
+	{
 		$crud = new Crud();
 		return $crud->totalEntityCount(static::$tablename, $queryclause);
 	}
 
-	public static function totalSum(string $column, string $queryclause = '') {
+	public static function totalSum(string $column, string $queryclause = '')
+	{
 		$crud = new Crud();
 		return $crud->totalEntitySum(static::$tablename, $column, $queryclause);
 	}
 
-	public function removeProp($property) {
+	public function removeProp($property)
+	{
 		unset($this->array[$property]);
 	}
 }
