@@ -7,9 +7,12 @@ use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Models\WebSessionManager;
 use BigBlueButton\BigBlueButton;
+use BigBlueButton\Enum\Role;
 use BigBlueButton\Parameters\CreateMeetingParameters;
 use BigBlueButton\Parameters\GetRecordingsParameters;
+use BigBlueButton\Parameters\JoinMeetingParameters;
 use CodeIgniter\HTTP\Files\UploadedFile;
+use CodeIgniter\HTTP\Request;
 use CodeIgniter\I18n\Time;
 use Exception;
 
@@ -132,7 +135,11 @@ class Webinars extends BaseController
         $createParams->setAllowModsToUnmuteUsers(true);
 
         if ($presentation) {
-            $createParams->addPresentation($presentation->getId(), null, $presentation->getName());
+            $createParams->addPresentation(
+                $this->request->getServer('HTTP_HOST') . '/v1/web/webinars/presentations/' . $presentation->getId(),
+                null,
+                $presentation->getName()
+            );
         }
 
         try {
@@ -216,15 +223,37 @@ class Webinars extends BaseController
         return $this->response->download($filePath, null);
     }
 
+    public function getJoinUrl(int $webinarId)
+    {
+        $webinar = $this->webinars->getDetails($webinarId);
+
+        if (!$webinar) {
+            return ApiResponse::error('Webinar not found', code: 404);
+        }
+
+        if (strtotime($webinar['scheduled_for']) > time()) {
+            return ApiResponse::error(message: 'Join url is not available until webinar starts', code: 404);
+        }
+
+        $currentUser = WebSessionManager::currentAPIUser();
+        $fullName = trim($currentUser->title . ' ' . $currentUser->firstname . ' ' . $currentUser->lastname);
+        $joinMeetingParams = new JoinMeetingParameters($webinar['room_id'], $fullName, Role::MODERATOR);
+        $joinMeetingParams->setRedirect(false);
+
+        $joinUrl = $this->bbb->getJoinMeetingURL($joinMeetingParams);
+
+        return ApiResponse::success(data: $joinUrl);
+    }
+
     /**
      * Check if the user can access a specific course
      */
     private function canAccessCourse(int $courseId): bool
     {
-        $current_session = get_setting('active_session_student_portal');
-        $current_user = WebSessionManager::currentAPIUser();
+        $currentSession = get_setting('active_session_student_portal');
+        $currentUser = WebSessionManager::currentAPIUser();
 
-        return !!$this->courseManager->isCourseManagerAssign($current_user->id, $courseId, $current_session);
+        return !!$this->courseManager->isCourseManagerAssign($currentUser->id, $courseId, $currentSession);
     }
 }
 
@@ -254,5 +283,13 @@ class Presentation
     public function getPath(): string
     {
         return $this->presentationPath;
+    }
+
+    public function __destruct()
+    {
+        // Clean up the file if needed
+        if (file_exists($this->getPath())) {
+            unlink($this->getPath());
+        }
     }
 }
