@@ -3,16 +3,15 @@
 namespace App\Controllers\Admin\v1;
 
 use App\Controllers\BaseController;
+use App\Enums\WebinarStatusEnum;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Libraries\WebinarUtil;
 use App\Models\WebSessionManager;
 use BigBlueButton\BigBlueButton;
-use BigBlueButton\Enum\Role;
 use BigBlueButton\Parameters\CreateMeetingParameters;
 use BigBlueButton\Parameters\GetRecordingsParameters;
-use BigBlueButton\Parameters\JoinMeetingParameters;
 use CodeIgniter\HTTP\Files\UploadedFile;
-use CodeIgniter\HTTP\Request;
 use CodeIgniter\I18n\Time;
 use Exception;
 
@@ -38,6 +37,17 @@ class Webinars extends BaseController
     public function index(int $courseId)
     {
         $payload = $this->webinars->list($courseId);
+        $currentUser = WebSessionManager::currentAPIUser();
+        $fullName = trim($currentUser->title . ' ' . $currentUser->firstname . ' ' . $currentUser->lastname);
+
+        $payload = array_map(function ($webinar) use ($fullName) {
+            $webinar['status'] = WebinarUtil::getStatus($this->bbb, $webinar);
+            $webinar['join_url'] = $webinar['status'] == WebinarStatusEnum::ENDED ?
+                null :
+                WebinarUtil::getJoinUrl($this->bbb, $webinar, $fullName);
+
+            return $webinar;
+        }, $payload);
 
         return ApiResponse::success(data: $payload);
     }
@@ -134,7 +144,7 @@ class Webinars extends BaseController
         $createParams->setAllowStartStopRecording(false);
         $createParams->setAllowModsToUnmuteUsers(true);
 
-        if ($presentation) {
+        if (isset($presentation)) {
             $createParams->addPresentation(
                 $this->request->getServer('HTTP_HOST') . '/v1/web/webinars/presentations/' . $presentation->getId(),
                 null,
@@ -221,28 +231,6 @@ class Webinars extends BaseController
         }
 
         return $this->response->download($filePath, null);
-    }
-
-    public function getJoinUrl(int $webinarId)
-    {
-        $webinar = $this->webinars->getDetails($webinarId);
-
-        if (!$webinar) {
-            return ApiResponse::error('Webinar not found', code: 404);
-        }
-
-        if (strtotime($webinar['scheduled_for']) > time()) {
-            return ApiResponse::error(message: 'Join url is not available until webinar starts', code: 404);
-        }
-
-        $currentUser = WebSessionManager::currentAPIUser();
-        $fullName = trim($currentUser->title . ' ' . $currentUser->firstname . ' ' . $currentUser->lastname);
-        $joinMeetingParams = new JoinMeetingParameters($webinar['room_id'], $fullName, Role::MODERATOR);
-        $joinMeetingParams->setRedirect(false);
-
-        $joinUrl = $this->bbb->getJoinMeetingURL($joinMeetingParams);
-
-        return ApiResponse::success(data: $joinUrl);
     }
 
     /**

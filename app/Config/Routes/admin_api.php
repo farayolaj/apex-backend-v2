@@ -19,7 +19,6 @@ $routes->group('v1/web/', [
     $routes->post('webinars', 'Webinars::create');
     $routes->patch('webinars/(:num)', 'Webinars::update/$1');
     $routes->delete('webinars/(:num)', 'Webinars::delete/$1');
-    $routes->get('webinars/(:num)/join_url', 'Webinars::getJoinUrl/$1');
 
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});
