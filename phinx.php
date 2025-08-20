@@ -1,5 +1,8 @@
 <?php
 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad();
+
 return
 	[
 		'paths' => [
@@ -22,10 +25,10 @@ return
 			'development' => [
 				'migration_table' => 'phinxlog',
 				'adapter' => 'mysql',
-                'host' => "127.0.0.1",
-                'name' => "edutech_live",
-                'user' => "root",
-                'pass' => "Since_feb_2015",
+				'host' => '%%PHINX_DBHOST%%',
+				'name' => '%%PHINX_DBNAME%%',
+				'user' => '%%PHINX_DBUSER%%',
+				'pass' => '%%PHINX_DBPASS%%',
 				'port' => '3306',
 				'charset' => 'utf8',
 			],
