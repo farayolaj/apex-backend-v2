@@ -10,6 +10,7 @@ use App\Support\Cache\ShowCacheSupport;
 use App\Support\DTO\ApiListParams;
 use App\Support\Entity\SelectSupport;
 use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Cache\CacheInterface;
 
 trait CrudTrait {
 
