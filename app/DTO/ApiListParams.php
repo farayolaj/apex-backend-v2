@@ -9,6 +9,9 @@ final class ApiListParams
     public int $perPage = 0;
     public string $sort = 'id';
     public string $dir = 'up';
+
+    public ?string $rawOrder = null;
+
     private bool $usePaging = false;
     /**
      * Your internal column=>value filters (e.g., ['a.code'=>'eco'])

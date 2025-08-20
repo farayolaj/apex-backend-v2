@@ -28,6 +28,22 @@ trait CrudTrait {
     }
 
     /**
+     * Override for joins/grouping specific to a resource
+     */
+    protected function baseBuilder(): BaseBuilder
+    {
+        return $this->db->table($this->getTableName() . ' a');
+    }
+
+    /**
+     * Array of columns OR a raw select string
+     */
+    protected function defaultSelect(): array
+    {
+        return ['a.*'];
+    }
+
+    /**
      * Override if you need permanent constraints (e.g., active=1)
      */
     protected function applyBaseFilters($b): void {}
@@ -38,6 +54,14 @@ trait CrudTrait {
     protected function applyCustomFilters($b, array $internalDict): void
     {
         DictFilters::apply($b, $internalDict, 'a');
+    }
+
+    /**
+     * Override for resource-specific default ordering (multi-column allowed)
+     */
+    protected function applyDefaultOrder(BaseBuilder $builder): void
+    {
+        $builder->orderBy('a.id', 'ASC');
     }
 
     /**
@@ -53,38 +77,159 @@ trait CrudTrait {
         $builder->groupEnd();
     }
 
-    protected function applySort(BaseBuilder $builder, string $sort, string $dir): void
+    protected function applySort(BaseBuilder $builder, ApiListParams $p): void
     {
-        $dir = ($dir == 'down') ? 'desc' : 'asc';
-        $col = $this->sortable[$sort] ?? null;
-
-        if (!$col) {
-            $col = reset($this->sortable) ?: 'a.id';
+        $dir = ($p->dir == 'down') ? 'DESC' : 'ASC';
+        if (!empty($p->rawOrder)) {
+            // Raw order string that YOU build server-side
+            $builder->orderBy($p->rawOrder, '', false);
+            return;
         }
-        $builder->orderBy($col, $dir === 'desc' ? 'DESC' : 'ASC');
+
+        $col = $this->sortable[$p->sort] ?? null;
+        if ($col) {
+            $builder->orderBy($col, $dir);
+        } else {
+            $this->applyDefaultOrder($builder);
+        }
     }
 
     /**
-     * @param array $columns e.g. ['a.id','a.title','a.code','a.active']
+     * Override if you need to post-process rows (like the former processList)
      */
-    public function listApi(array $columns, ApiListParams $p): array
+    protected function postProcess(array $rows): array
     {
-        $builder = $this->db->table($this->getTableName() . ' a');
+        return $rows;
+    }
+
+    /**
+     * @param $select
+     * @param ApiListParams $p
+     * @param bool $escape
+     * @return array
+     */
+    public function listApi($select, ApiListParams $p, bool $escape = true): array
+    {
+        $builder = $this->baseBuilder();
 
         $this->applyBaseFilters($builder);
         $this->applySearch($builder, $p->q);
         $this->applyCustomFilters($builder, $p->filters);
 
-        $countBuilder = clone $builder;
-        $total = (int) $countBuilder->countAllResults();
+        $total = (int) (clone $builder)->countAllResults();
 
-        $this->applySort($builder, $p->sort, $p->dir);
+        $this->applySort($builder, $p);
         if ($p->isPaging()) {
             $builder->limit($p->perPage, $p->offset());
         }
 
-        $builder->select(implode(',', $columns));
+        $select = $select ?? $this->defaultSelect();
+        if (is_array($select)) {
+            $builder->select(implode(',', $select), $escape);
+        } else {
+            $builder->select($select, $escape); // pass $escape=false for raw functions/aliases
+        }
         $rows = $builder->get()->getResultArray();
+        $rows = $this->postProcess($rows);
+
+        return [
+            'paging'      => $total,
+            'table_data'  => $rows,
+            'meta' => [
+                'page'        => $p->isPaging() ? $p->page    : null,
+                'per_page'    => $p->isPaging() ? $p->perPage : null,
+                'total_pages' => $p->isPaging() ? (int) ceil($total / $p->perPage) : 1,
+            ],
+        ];
+    }
+
+    public function listFromSubquery(
+        \Closure $makeSubquery,          // fn(BaseConnection $db): BaseBuilder
+        ApiListParams $p,
+        array $searchableCols,
+        array $sortableMap,
+        string $alias = 'x',
+        string $select = '*'             // what to project from the subquery in the outer query
+    ): array {
+        $sub = $makeSubquery($this->db);
+        if (! $sub instanceof BaseBuilder) {
+            throw new \InvalidArgumentException('Subquery factory must return a BaseBuilder');
+        }
+
+        $sql = $sub->getCompiledSelect();
+        $b   = $this->db->table("({$sql}) {$alias}", false);
+
+        if ($p->q !== '' && $searchableCols) {
+            $b->groupStart();
+            foreach ($searchableCols as $col) {
+                $qcol = (strpos($col, '.') === false) ? "{$alias}.{$col}" : $col;
+                $b->orLike($qcol, $p->q, 'both');
+            }
+            $b->groupEnd();
+        }
+
+        DictFilters::apply($b, $p->filters, $alias);
+        $total = (int) (clone $b)->countAllResults();
+
+        $dir = ($p->dir == 'down') ? 'DESC' : 'ASC';
+        $sortCol = $sortableMap[$p->sort] ?? reset($sortableMap) ?? "{$alias}.id";
+        $b->orderBy($sortCol, $dir);
+
+        if ($p->isPaging()) {
+            $b->limit($p->perPage, $p->offset());
+        }
+
+        $b->select($select, false);
+        $rows = $b->get()->getResultArray();
+
+        return [
+            'paging'      => $total,
+            'table_data'  => $rows,
+            'meta' => [
+                'page'        => $p->isPaging() ? $p->page    : null,
+                'per_page'    => $p->isPaging() ? $p->perPage : null,
+                'total_pages' => $p->isPaging() ? (int) ceil($total / $p->perPage) : 1,
+            ],
+        ];
+    }
+
+    /**
+     * Convenience: same as above, but when you already have a RAW SQL string.
+     * (E.g., UNION queries that are easier to write by hand.)
+     */
+    public function listFromSQL(
+        string $rawSQL,                  // must be a complete SELECT (no trailing semicolon)
+        ApiListParams $p,
+        array $searchableCols,
+        array $sortableMap,
+        string $alias = 'x',
+        string $select = '*'
+    ): array {
+        // Wrap the raw SQL as a subquery table
+        $b = $this->db->table("({$rawSQL}) {$alias}", false);
+
+        if ($p->q !== '' && $searchableCols) {
+            $b->groupStart();
+            foreach ($searchableCols as $col) {
+                $qcol = (strpos($col, '.') === false) ? "{$alias}.{$col}" : $col;
+                $b->orLike($qcol, $p->q, 'both');
+            }
+            $b->groupEnd();
+        }
+
+        DictFilters::apply($b, $p->filters, $alias);
+        $total = (int) (clone $b)->countAllResults();
+
+        $dir = ($p->dir == 'down') ? 'DESC' : 'ASC';
+        $sortCol = $sortableMap[$p->sort] ?? reset($sortableMap) ?? "{$alias}.id";
+        $b->orderBy($sortCol, $dir);
+
+        if ($p->isPaging()) {
+            $b->limit($p->perPage, $p->offset());
+        }
+
+        $b->select($select, false);
+        $rows = $b->get()->getResultArray();
 
         return [
             'paging'      => $total,
