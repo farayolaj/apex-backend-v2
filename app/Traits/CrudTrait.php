@@ -7,7 +7,10 @@ namespace App\Traits;
 
 use App\DTO\ApiListParams;
 use App\Libraries\DictFilters;
+use App\Support\Cache\ShowCacheSupport;
+use App\Support\Query\SelectSupport;
 use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Cache\CacheInterface;
 
 trait CrudTrait {
 
@@ -35,6 +38,11 @@ trait CrudTrait {
         return $this->db->table($this->getTableName() . ' a');
     }
 
+    protected function cacheNamespace(): string
+    {
+        return $this->getTableName();
+    }
+
     /**
      * Array of columns OR a raw select string
      */
@@ -50,7 +58,7 @@ trait CrudTrait {
 
     protected function applyIncludesForShow(BaseBuilder $b, array $include, string &$select): void
     {
-        // no-op by default
+        // no-op by default and can be overridden from the Entity Model
     }
 
     /**
@@ -269,46 +277,65 @@ trait CrudTrait {
         int $id,
         array $include = [],
         array|string|null $select = null,
-        bool $escape = false
+        bool $escape = false,
+        array $cacheOptions = []
     ): ?array {
         $b = $this->baseBuilder();
         $this->applyBaseFilters($b);
 
-        $selectStr = $this->normalizeSelect($select ?? $this->defaultShowSelect());
+        $selectStr = SelectSupport::normalizeSelect($select ?? $this->defaultShowSelect());
+        $include   = SelectSupport::normalizeInclude($include);
         $this->applyIncludesForShow($b, $include, $selectStr);
-        $selectStr = $this->ensureIdInSelect($selectStr);
+        $selectStr = SelectSupport::ensureIdInSelect($selectStr);
+
+        $cacheEnabled = (bool)($cacheOptions['enabled']   ?? true);
+        $cacheBypass  = (bool)($cacheOptions['bypass']    ?? false);
+        $cacheTtl     = (int) ($cacheOptions['ttl']       ?? $this->defaultShowTtl);
+        $cacheNs      =        $cacheOptions['namespace'] ?? $this->cacheNamespace();
+        $cacheExtra   = (string)($cacheOptions['extra']   ?? '');
+        $selectTag    = isset($cacheOptions['select_tag']) ? (string)$cacheOptions['select_tag'] : null;
+
+        $key = null;
+        if ($cacheEnabled && !$cacheBypass && $cacheTtl > 0) {
+            $key = ShowCacheSupport::buildShowKey(
+                $this->cachePrefix,
+                $cacheNs,
+                $id,
+                $include,
+                $selectStr,
+                $escape,
+                $cacheExtra,
+                $selectTag
+            );
+
+            $cached = ShowCacheSupport::cache()->get($key);
+            if ($cached !== null) return $cached ?: null;
+        }
 
         $b->select($selectStr, $escape)
             ->where('a.id', $id)
             ->limit(1);
 
         $row = $b->get()->getRowArray();
-        if (! $row) {
-            return null;
+        if (! $row) return null;
+
+        $row = $this->postProcessOne($row);
+
+        if ($key) {
+            ShowCacheSupport::cache()->save($key, $row, $cacheTtl);
         }
-        return $this->postProcessOne($row);
+
+        return $row;
     }
 
-    protected function normalizeSelect(array|string $select): string
+    public function invalidateById(int $id): void
     {
-        if (is_array($select)) {
-            $select = implode(',', array_filter(array_map('trim', $select), static fn($s) => $s !== ''));
-        }
-        return trim($select);
+        ShowCacheSupport::invalidateById($this->cacheNamespace(), $id);
     }
 
-    protected function ensureIdInSelect(string $select): string
+    public function invalidateAll(): void
     {
-        // if a.* is present, id is implied
-        if (preg_match('/\ba\.\*\b/i', $select)) {
-            return $select;
-        }
-        // if a.id already present
-        if (preg_match('/\ba\.id\b/i', $select)) {
-            return $select;
-        }
-
-        return 'a.id,' . $select;
+        ShowCacheSupport::invalidateAll($this->cacheNamespace());
     }
 
 
