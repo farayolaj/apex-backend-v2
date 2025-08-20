@@ -443,9 +443,7 @@ final class CourseRepository extends BaseListRepository
 <?php
 namespace App\Controllers\Api\V1;
 
-use App\DTO\ApiListParams;
-use App\Repositories\CourseRepository;
-use CodeIgniter\RESTful\ResourceController;
+use App\Repositories\CourseRepository;use App\Support\DTO\ApiListParams;use CodeIgniter\RESTful\ResourceController;
 
 final class Courses extends ResourceController
 {
@@ -548,9 +546,7 @@ final class CourseManagerRepository extends BaseListRepository
 <?php
 namespace App\Controllers\Api\V1;
 
-use App\DTO\ApiListParams;
-use App\Repositories\CourseManagerRepository;
-use CodeIgniter\RESTful\ResourceController;
+use App\Repositories\CourseManagerRepository;use App\Support\DTO\ApiListParams;use CodeIgniter\RESTful\ResourceController;
 
 final class CourseManager extends ResourceController
 {
@@ -585,8 +581,7 @@ Compute once with a subquery (GROUP BY / window funcs), then reuse pipeline:
 <?php
 namespace App\Repositories;
 
-use CodeIgniter\Database\BaseBuilder;
-use App\DTO\ApiListParams;
+use App\Support\DTO\ApiListParams;use CodeIgniter\Database\BaseBuilder;
 
 final class CourseAnalyticsRepository extends BaseListRepository
 {
@@ -644,9 +639,7 @@ Controller:
 <?php
 namespace App\Controllers\Api\V1;
 
-use App\DTO\ApiListParams;
-use App\Repositories\CourseAnalyticsRepository;
-use CodeIgniter\RESTful\ResourceController;
+use App\Repositories\CourseAnalyticsRepository;use App\Support\DTO\ApiListParams;use CodeIgniter\RESTful\ResourceController;
 
 final class CourseAnalytics extends ResourceController
 {
@@ -671,7 +664,7 @@ Combine different sources into one normalized stream, but still get search/sort/
 <?php
 namespace App\Repositories;
 
-use App\DTO\ApiListParams;
+use App\Support\DTO\ApiListParams;
 
 final class SearchRepository extends BaseListRepository
 {
@@ -743,3 +736,127 @@ final class CoursesListTest extends CIUnitTestCase
 ```
 
 ---
+
+## Example with Fetch
+# `findById` — Quick Usage Guide
+
+---
+
+## Endpoint shape
+
+```
+GET /api/v1/<resource>/:id
+```
+
+Returns a single JSON object or **404** if not found.
+
+---
+
+## Minimal controller usage
+
+```php
+// app/Controllers/Api/V1/Staffs.php (excerpt)
+public function show(int $id)
+    {
+        if ($id <= 0) return $this->failValidationErrors(['id'=>'Invalid id']);
+
+        $include = array_filter(explode(',', (string)$this->request->getGet('include')));
+        $view    = (string)$this->request->getGet('view'); // '', 'lean', 'profile'
+        $select  = null; $escape = false; $selectTag = null;
+
+        if ($view === 'lean') {
+            $select    = 'a.id, a.firstname, a.lastname, a.title';
+            $selectTag = 'lean';
+        } elseif ($view === 'profile') {
+            $select    = 'a.id, a.firstname, a.lastname, a.title, a.avatar, a.department_id';
+            $selectTag = 'profile';
+        } else {
+            // default 'a.*' → tag 'default' (optional)
+            $selectTag = 'default';
+        }
+
+        $noCache = (int)$this->request->getGet('no_cache') === 1;
+        $ttl     = is_numeric($this->request->getGet('ttl')) ? max(0,(int)$this->request->getGet('ttl')) : null;
+
+        $cacheOptions = array_filter([
+            'enabled'    => !$noCache,
+            'ttl'        => $ttl,
+            'namespace'  => 'staffs',
+            'extra'      => '',         // e.g. tenant/locale
+            'select_tag' => $selectTag, // <- avoids hashing
+        ], static fn($v) => $v !== null);
+
+        $repo = new StaffRepository();
+        $row  = $repo->findById($id, $include, $select, $escape, $cacheOptions);
+
+        return $row ? $this->respond($row) : $this->failNotFound('Staff not found');
+    }
+```
+
+---
+
+## What the repository guarantees
+
+* **Default select**: `'a.*'` if you pass `null`.
+* **Select overrides**: pass string/array; repo **always ensures `a.id`** is included.
+* **Includes**: implemented **in each child repo** and **append** their own selects (won’t break your override).
+* **Caching**: on by default; keyed by namespace, id, includes, select signature, and `extra`.
+
+---
+
+## Common recipes
+
+### 1) Default (no includes, default select)
+
+```
+GET /api/v1/staffs/42
+```
+
+Controller: `findById($id);`
+
+### 2) With includes
+
+```
+GET /api/v1/staffs/42?include=user,role
+```
+
+Controller: `findById($id, ['user','role']);`
+
+### 3) Compact view (override select)
+
+```php
+$select = 'a.id, a.firstname, a.lastname, a.title';
+$row = $repo->findById($id, [], $select, false);
+```
+
+### 4) Computed field (raw expression)
+
+```php
+$select = 'a.id, CONCAT(a.lastname, ", ", a.firstname) AS full_name';
+$row = $repo->findById($id, [], $select, false); // escape=false for raw
+```
+
+### 5) Cache controls (per-call)
+
+```php
+// disable cache
+$row = $repo->findById($id, [], null, false, ['enabled' => false]);
+
+// custom TTL + tenant-scoped key
+$row = $repo->findById($id, [], null, false, ['ttl' => 1800, 'extra' => 'tenant=school-42']);
+```
+
+### 6) Invalidate after writes
+
+```php
+$repo->invalidateById($id);  // after update/delete of that record
+$repo->invalidateAll();      // after bulk changes
+```
+
+---
+
+## Notes
+
+* Keep **includes** logic inside the **child repository** (e.g., joins for `user`, `role`, `department`).
+* `postProcessOne()` should handle missing fields gracefully if you ship lean selects.
+* Use a robust cache driver (Redis/Memcached) in production.

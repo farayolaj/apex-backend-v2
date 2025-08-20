@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTO;
+namespace App\Support\DTO;
 
 final class ApiListParams
 {

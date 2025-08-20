@@ -2,14 +2,13 @@
 
 namespace App\Entities;
 
-use App\DTO\ApiListParams;
 use App\Enums\ClaimEnum as ClaimType;
 use App\Enums\CommonEnum as CommonSlug;
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
 use App\Models\WebSessionManager;
+use App\Support\DTO\ApiListParams;
 use App\Traits\ResultManagerTrait;
-use CodeIgniter\HTTP\Request;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the courses table.

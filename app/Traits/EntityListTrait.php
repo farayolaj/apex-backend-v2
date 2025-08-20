@@ -2,10 +2,9 @@
 
 namespace App\Traits;
 
-use App\DTO\ApiListParams;
 use App\Libraries\EntityLoader;
-use App\Models\Api\EntityModel;
 use App\Models\FormConfig;
+use App\Support\DTO\ApiListParams;
 
 trait EntityListTrait
 {

@@ -33,6 +33,10 @@ class Crud {
 
     protected array  $sortable   = []; // e.g. ['code'=>'a.code','id'=>'a.id']
 
+    protected string $cachePrefix = 'api';
+
+    protected int $defaultShowTtl = 3600; // in minutes
+
     /**
      * @throws Exception
      */
@@ -109,7 +113,7 @@ class Crud {
      * @param $fields
      * @param $onclause
      * @param $foreignTable
-     * @return void [type]                [description]
+     * @return void [type] [description]
      */
 	public function buildTableJoinQuery($thisTable, &$fields, &$onclause, &$foreignTable): void
     {
