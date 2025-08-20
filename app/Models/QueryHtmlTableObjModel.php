@@ -24,35 +24,35 @@ class QueryHtmlTableObjModel extends Model {
 	private $classname;
 
 	/**
-	 * Query data export
+	 * Entity data export
 	 *
 	 * @var	bool
 	 */
 	public $export = false;
 
 	/**
-	 * Query statement from in the sql
+	 * Entity statement from in the sql
 	 *
 	 * @var	string
 	 */
 	protected $from = 'from';
 
 	/**
-	 * Query statement
+	 * Entity statement
 	 *
 	 * @var	string empty
 	 */
 	private $_query = '';
 
 	/**
-	 * Query data binding
+	 * Entity data binding
 	 *
 	 * @var	array empty
 	 */
 	private $_queryData = array();
 
 	/**
-	 * Query sql limit
+	 * Entity sql limit
 	 *
 	 * @var	string empty
 	 */

@@ -4,7 +4,7 @@ namespace App\Entities;
 
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
-use App\Traits\EntityListTrait;
+use App\Traits\Crud\EntityListTrait;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the users table.

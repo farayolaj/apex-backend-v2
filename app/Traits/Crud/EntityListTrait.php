@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits;
+namespace App\Traits\Crud;
 
 use App\Libraries\EntityLoader;
 use App\Models\FormConfig;

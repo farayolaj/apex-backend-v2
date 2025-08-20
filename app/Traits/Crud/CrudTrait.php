@@ -3,12 +3,12 @@
  * This is a trait helper class for crud, such that methods that are peculiar
  * to the class is turned into a trait helper
  */
-namespace App\Traits;
+namespace App\Traits\Crud;
 
 use App\Libraries\DictFilters;
 use App\Support\Cache\ShowCacheSupport;
 use App\Support\DTO\ApiListParams;
-use App\Support\Query\SelectSupport;
+use App\Support\Entity\SelectSupport;
 use CodeIgniter\Database\BaseBuilder;
 
 trait CrudTrait {

@@ -7,13 +7,9 @@ namespace App\Models\Api;
 
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
-use App\Models\Api\EntityCreator;
-use App\Traits\EntityListTrait;
+use App\Traits\Crud\EntityListTrait;
 use App\Traits\UploadTrait;
 use CodeIgniter\Database\BaseConnection;
-use CodeIgniter\Model;
-use App\Models\Api\EntityDetails;
-use App\Models\FormConfig;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 

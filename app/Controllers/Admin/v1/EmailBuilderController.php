@@ -3,11 +3,11 @@
 namespace App\Controllers\Admin\v1;
 
 use App\Controllers\BaseController;
+use App\Enums\CommonEnum as CommonSlug;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Models\WebSessionManager;
-use App\Traits\EntityListTrait;
-use App\Enums\CommonEnum as CommonSlug;
+use App\Traits\Crud\EntityListTrait;
 use Redis;
 
 class EmailBuilderController extends BaseController

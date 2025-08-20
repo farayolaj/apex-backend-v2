@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Traits\CrudTrait;
+use App\Traits\Crud\CrudTrait;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\BaseResult;
 use CodeIgniter\Database\Query;

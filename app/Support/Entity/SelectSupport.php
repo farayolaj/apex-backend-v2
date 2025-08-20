@@ -1,5 +1,5 @@
 <?php
-namespace App\Support\Query;
+namespace App\Support\Entity;
 
 final class SelectSupport
 {

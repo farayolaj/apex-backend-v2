@@ -4197,7 +4197,7 @@ class Students extends Crud
      */
     public function getDepartmentById($id, $get_code = false)
     {
-        //Query database to get template
+        //Entity database to get template
         $query = $this->db->table('department')->getWhere(['id' => $id, 'active' => 1, 'type' => 'academic']);
         if ($query->getNumRows() > 0) {
             $row = $query->getRow();
@@ -4214,7 +4214,7 @@ class Students extends Crud
      */
     public function getProgrammeById($id, $get_code = false)
     {
-        //Query database to get template
+        //Entity database to get template
         $query = $this->db->table('programme')->getWhere(['id' => $id, 'active' => 1]);
         if ($query->getNumRows() > 0) {
             $row = $query->getRow();

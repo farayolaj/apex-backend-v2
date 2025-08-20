@@ -46,7 +46,7 @@ class Messaging extends CI_Model
 	public function send_mail($template, $to, $variables = '', $custom_subject = '', $cc = '', $attachment = '')
 	{
 		return true;
-		//Query database to get template
+		//Entity database to get template
 		$query = $this->db->get_where('templates', array('slug' => $template, 'type' => 'email', 'active' => 1));
 		$this->load->library('parser');
 		$mailer = new PHPMailer(true);

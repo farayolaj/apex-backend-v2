@@ -4,7 +4,7 @@ namespace App\Controllers\Admin\v1;
 
 use App\Controllers\BaseController;
 use App\Libraries\ApiResponse;
-use App\Traits\EntityListTrait;
+use App\Traits\Crud\EntityListTrait;
 
 class Courses extends BaseController
 {

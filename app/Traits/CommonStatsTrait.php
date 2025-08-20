@@ -12,8 +12,4 @@ trait CommonStatsTrait
         ];
     }
 
-    public static function isPaymentValid($value): bool
-    {
-        return $value == '00' || $value == '01';
-    }
 }

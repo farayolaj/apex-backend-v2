@@ -143,7 +143,7 @@ class Cache extends BaseConfig
 
     /**
      * --------------------------------------------------------------------------
-     * Web Page Caching: Cache Include Query String
+     * Web Page Caching: Cache Include Entity String
      * --------------------------------------------------------------------------
      *
      * Whether to take the URL query string into consideration when generating
