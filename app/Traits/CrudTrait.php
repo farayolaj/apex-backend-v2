@@ -43,6 +43,16 @@ trait CrudTrait {
         return ['a.*'];
     }
 
+    protected function defaultShowSelect(): string
+    {
+        return 'a.*';
+    }
+
+    protected function applyIncludesForShow(BaseBuilder $b, array $include, string &$select): void
+    {
+        // no-op by default
+    }
+
     /**
      * Override if you need permanent constraints (e.g., active=1)
      */
@@ -100,6 +110,14 @@ trait CrudTrait {
     protected function postProcess(array $rows): array
     {
         return $rows;
+    }
+
+    /**
+     * Normalize single record for API
+     */
+    protected function postProcessOne(array $row): array
+    {
+        return $row;
     }
 
     /**
@@ -240,6 +258,57 @@ trait CrudTrait {
                 'total_pages' => $p->isPaging() ? (int) ceil($total / $p->perPage) : 1,
             ],
         ];
+    }
+
+    /**
+     * Fetch a single row by id.
+     * $select: null => use defaultShowSelect(); string or array allowed; raw expressions allowed.
+     * $escape: set false when $select contains raw expressions/aliases.
+     */
+    public function detail(
+        int $id,
+        array $include = [],
+        array|string|null $select = null,
+        bool $escape = false
+    ): ?array {
+        $b = $this->baseBuilder();
+        $this->applyBaseFilters($b);
+
+        $selectStr = $this->normalizeSelect($select ?? $this->defaultShowSelect());
+        $this->applyIncludesForShow($b, $include, $selectStr);
+        $selectStr = $this->ensureIdInSelect($selectStr);
+
+        $b->select($selectStr, $escape)
+            ->where('a.id', $id)
+            ->limit(1);
+
+        $row = $b->get()->getRowArray();
+        if (! $row) {
+            return null;
+        }
+        return $this->postProcessOne($row);
+    }
+
+    protected function normalizeSelect(array|string $select): string
+    {
+        if (is_array($select)) {
+            $select = implode(',', array_filter(array_map('trim', $select), static fn($s) => $s !== ''));
+        }
+        return trim($select);
+    }
+
+    protected function ensureIdInSelect(string $select): string
+    {
+        // if a.* is present, id is implied
+        if (preg_match('/\ba\.\*\b/i', $select)) {
+            return $select;
+        }
+        // if a.id already present
+        if (preg_match('/\ba\.id\b/i', $select)) {
+            return $select;
+        }
+
+        return 'a.id,' . $select;
     }
 
 

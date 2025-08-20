@@ -81,7 +81,17 @@ trait EntityListTrait
         return $entityObject->listApi($entityObject::$apiSelectClause,
             $params
         );
+    }
 
+    public function showListEntity(
+        string $entity,
+        int $id,
+        array $include = [],
+        array|string|null $select = null,
+        bool $escape = false): array
+    {
+        $entityObject = EntityLoader::loadClass($this, $entity);
+        return $entityObject->detail($id, $include, $select, $escape);
     }
 
     public function buildApiListResponse(array $data): array

@@ -12,9 +12,10 @@ $routes->group('v1/web/', [
     'namespace' => 'App\Controllers\Admin\v1'
 ], function ($routes) {
     $routes->get('courses', 'Courses::index');
+    $routes->get('courses/(:num)', 'Courses::show/$1');
 
     $routes->options('(:any)', static function () {});
-    $routes->options('(:any)/(:any)', static function () {});
+    $routes->options('(:any)/(:num)', static function () {});
     $routes->options('(:any)/(:any)/(:any)', static function () {});
 });
 

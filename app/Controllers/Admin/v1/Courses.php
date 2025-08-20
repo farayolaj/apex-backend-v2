@@ -9,8 +9,14 @@ use App\Traits\EntityListTrait;
 class Courses extends BaseController
 {
     use EntityListTrait;
+
     public function index(){
         $payload = $this->listApiEntity('courses');
+        return ApiResponse::success(data: $payload);
+    }
+
+    public function show(int $id){
+        $payload = $this->showListEntity('courses', $id);
         return ApiResponse::success(data: $payload);
     }
 }
