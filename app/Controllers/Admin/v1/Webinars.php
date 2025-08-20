@@ -87,14 +87,7 @@ class Webinars extends BaseController
             'title' => 'required|string|max_length[255]',
             'description' => 'string|permit_empty',
             'course_id' => 'required|integer',
-            'scheduled_for' => [
-                'label' => 'Scheduled For',
-                'rules' => 'required|valid_datetime',
-                'errors' => [
-                    'required' => 'The {field} field is required.',
-                    'valid_datetime' => 'Validation.valid_datetime'
-                ]
-            ],
+            'scheduled_for' => 'required|valid_datetime[scheduled_for]',
             'presentation' => [
                 'label' => 'Presentation file',
                 'rules' => [
@@ -170,9 +163,9 @@ class Webinars extends BaseController
     {
         $data = $this->request->getJSON(assoc: true);
         $rules = [
-            'title' => 'string|permit_empty|max_length[255]',
-            'description' => 'string|permit_empty',
-            'scheduled_for' => 'valid_datetime|permit_empty',
+            'title' => 'permit_empty|string|max_length[255]',
+            'description' => 'permit_empty|string',
+            'scheduled_for' => 'permit_empty|valid_datetime[scheduled_for]',
         ];
 
         if (!$this->validateData($data, $rules)) {

@@ -12,8 +12,11 @@ class CustomRules
      * @param string|null &$error
      * @return bool
      */
-    public function valid_datetime($value, ?string &$error = null): bool
+    public function valid_datetime($value, string $params, array $data, ?string &$error = null): bool
     {
+        $params = explode(',', $params);
+        $field = $params[0];
+
         // Accepts formats like 'Y-m-d H:i:s', 'Y-m-d\TH:i:s', etc.
         $formats = [
             'Y-m-d H:i:s',
@@ -33,8 +36,7 @@ class CustomRules
         if (strtotime($value) !== false) {
             return true;
         }
-        // Todo: fix field not being substituted
-        $error = 'The {field} field must contain a valid datetime.';
+        $error = "The {$field} field must contain a valid datetime.";
         return false;
     }
 }
