@@ -6,6 +6,14 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
+$routes->group('v1/api/', [
+    'filter' => ['apiValidation:student'],
+    'namespace' => 'App\Controllers\Student\v1'
+], function ($routes) {
+    $routes->get('courses/(:num)/webinars', 'Webinars::listWebinars/$1');
+    $routes->get('webinars/(:num)', 'Webinars::getWebinar/$1');
+});
+
 // this is the api for finance sync between server[UI Admission]
 //$routes->get('api/integrations/finance/v1/transaction', 'FinanceIntegration::getTransactionData');
 
@@ -17,7 +25,7 @@ $routes->group('', ['filter' => 'cors'], static function (RouteCollection $route
     $routes->options('api/(:any)', static function () {});
 });
 
-$routes->group('api', ['filter' => ['cors','apiValidation:student']], function ($routes) {
+$routes->group('api', ['filter' => ['cors', 'apiValidation:student']], function ($routes) {
     $routes->add('(:any)', 'Api::frontApi/$1');
     $routes->add('(:any)/(:any)', 'Api::frontApi/$1/$2');
     $routes->add('(:any)/(:any)/(:any)', 'Api::frontApi/$1/$2/$3');

@@ -34,8 +34,8 @@ class Students extends Crud
     static $labelArray = ['ID' => '', 'firstname' => '', 'othernames' => '', 'lastname' => '', 'gender' => '', 'DoB' => '', 'phone' => '', 'marital_status' => '', 'religion' => '', 'contact_address' => '', 'postal_address' => '', 'profession' => '', 'state_of_origin' => '', 'lga' => '', 'nationality' => '', 'reg_num' => '', 'passport' => '', 'full_image' => '', 'next_of_kin' => '', 'next_of_kin_phone' => '', 'next_of_kin_address' => '', 'referee' => '', 'alternative_email' => '', 'user_login' => '', 'user_pass' => '', 'session_key' => '', 'user_agent' => '', 'ip_address' => '', 'last_logged_in' => '', 'active' => '', 'is_verified' => '', 'verified_by' => '', 'verify_attempt' => '', 'date_verified' => '', 'date_created' => '', 'password' => '', 'document_verification' => '', 'verify_comments' => ''];
     /*associative array of fields that have default value*/
     static $defaultArray = ['date_created' => 'current_timestamp()'];
-//populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
-//the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
+    //populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
+    //the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
     static $documentField = []; //array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
 
     static $relation = [];
@@ -62,7 +62,6 @@ class Students extends Crud
 	<label for='firstname' >Firstname</label>
 		<input type='text' name='firstname' id='firstname' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -76,7 +75,6 @@ class Students extends Crud
 	<label for='othernames' >Othernames</label>
 		<input type='text' name='othernames' id='othernames' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -90,7 +88,6 @@ class Students extends Crud
 	<label for='lastname' >Lastname</label>
 		<input type='text' name='lastname' id='lastname' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -104,7 +101,6 @@ class Students extends Crud
 	<label for='gender' >Gender</label>
 		<input type='text' name='gender' id='gender' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -118,7 +114,6 @@ class Students extends Crud
 	<label for='DoB' >DoB</label>
 		<input type='text' name='DoB' id='DoB' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -132,7 +127,6 @@ class Students extends Crud
 	<label for='phone' >Phone</label>
 		<input type='text' name='phone' id='phone' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -146,7 +140,6 @@ class Students extends Crud
 	<label for='marital_status' >Marital Status</label>
 		<input type='text' name='marital_status' id='marital_status' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -160,7 +153,6 @@ class Students extends Crud
 	<label for='religion' >Religion</label>
 		<input type='text' name='religion' id='religion' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -174,7 +166,6 @@ class Students extends Crud
 	<label for='contact_address' >Contact Address</label>
 		<input type='text' name='contact_address' id='contact_address' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -188,7 +179,6 @@ class Students extends Crud
 	<label for='postal_address' >Postal Address</label>
 		<input type='text' name='postal_address' id='postal_address' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -202,7 +192,6 @@ class Students extends Crud
 	<label for='profession' >Profession</label>
 		<input type='text' name='profession' id='profession' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -216,7 +205,6 @@ class Students extends Crud
 	<label for='state_of_origin' >State Of Origin</label>
 		<input type='text' name='state_of_origin' id='state_of_origin' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -230,7 +218,6 @@ class Students extends Crud
 	<label for='lga' >Lga</label>
 		<input type='text' name='lga' id='lga' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -244,7 +231,6 @@ class Students extends Crud
 	<label for='nationality' >Nationality</label>
 		<input type='text' name='nationality' id='nationality' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -258,7 +244,6 @@ class Students extends Crud
 	<label for='passport' >Passport</label>
 		<input type='text' name='passport' id='passport' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -272,7 +257,6 @@ class Students extends Crud
 	<label for='full_image' >Full Image</label>
 		<input type='text' name='full_image' id='full_image' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -286,7 +270,6 @@ class Students extends Crud
 	<label for='next_of_kin' >Next Of Kin</label>
 		<input type='text' name='next_of_kin' id='next_of_kin' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -300,7 +283,6 @@ class Students extends Crud
 	<label for='next_of_kin_phone' >Next Of Kin Phone</label>
 		<input type='text' name='next_of_kin_phone' id='next_of_kin_phone' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -314,7 +296,6 @@ class Students extends Crud
 	<label for='next_of_kin_address' >Next Of Kin Address</label>
 		<input type='text' name='next_of_kin_address' id='next_of_kin_address' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -328,7 +309,6 @@ class Students extends Crud
 	<label for='referee' >Referee</label>
 <textarea id='referee' name='referee' class='form-control' >$value</textarea>
 </div> ";
-
     }
 
     /**
@@ -342,7 +322,6 @@ class Students extends Crud
 	<label for='alternative_email' >Alternative Email</label>
 	<input type='email' name='alternative_email' id='alternative_email' value='$value' class='form-control'  />
 </div> ";
-
     }
 
     /**
@@ -356,7 +335,6 @@ class Students extends Crud
 	<label for='user_login' >User Login</label>
 		<input type='text' name='user_login' id='user_login' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -370,7 +348,6 @@ class Students extends Crud
 	<label for='user_pass' >User Pass</label>
 		<input type='text' name='user_pass' id='user_pass' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -383,7 +360,6 @@ class Students extends Crud
         return "<div class='form-group'>
 	<label for='session_key' >Session Key</label>
 </div> ";
-
     }
 
     /**
@@ -397,7 +373,6 @@ class Students extends Crud
 	<label for='user_agent' >User Agent</label>
 <textarea id='user_agent' name='user_agent' class='form-control' required>$value</textarea>
 </div> ";
-
     }
 
     /**
@@ -411,7 +386,6 @@ class Students extends Crud
 	<label for='ip_address' >Ip Address</label>
 		<input type='text' name='ip_address' id='ip_address' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -425,7 +399,6 @@ class Students extends Crud
 	<label for='last_logged_in' >Last Logged In</label>
 		<input type='text' name='last_logged_in' id='last_logged_in' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     /**
@@ -442,7 +415,6 @@ class Students extends Crud
 		<option value='0' selected='selected'>No</option>
 	</select>
 	</div> ";
-
     }
 
     /**
@@ -459,7 +431,6 @@ class Students extends Crud
 		<option value='0' selected='selected'>No</option>
 	</select>
 	</div> ";
-
     }
 
     /**
@@ -473,7 +444,6 @@ class Students extends Crud
 	<label for='verified_by' >Verified By</label>
 <textarea id='verified_by' name='verified_by' class='form-control' >$value</textarea>
 </div> ";
-
     }
 
     /**
@@ -490,7 +460,6 @@ class Students extends Crud
 		<option value='0' selected='selected'>No</option>
 	</select>
 	</div> ";
-
     }
 
     /**
@@ -501,7 +470,6 @@ class Students extends Crud
     {
 
         return " ";
-
     }
 
     /**
@@ -518,7 +486,6 @@ class Students extends Crud
 		<option value='0' selected='selected'>No</option>
 	</select>
 	</div> ";
-
     }
 
     /**
@@ -532,7 +499,6 @@ class Students extends Crud
 	<label for='screened_by' >Screened By</label>
 <textarea id='screened_by' name='screened_by' class='form-control' >$value</textarea>
 </div> ";
-
     }
 
     /**
@@ -549,7 +515,6 @@ class Students extends Crud
 		<option value='0' selected='selected'>No</option>
 	</select>
 	</div> ";
-
     }
 
     /**
@@ -569,7 +534,6 @@ class Students extends Crud
     {
 
         return " ";
-
     }
 
     /**
@@ -1278,7 +1242,6 @@ class Students extends Crud
                         if ($pendingPayment['payment_id'] != $payment->description) {
                             $payload = $this->transformDirectPaymentParam($pendingPayment['payment_id'], $pendingPayment['session'], $pendingPayment['transaction_ref']);
                         }
-
                     } else {
                         $param = [
                             $session,
@@ -1430,7 +1393,8 @@ class Students extends Crud
                         PaymentFeeDescription::SCH_FEE_SECOND->value == $payment->description ||
                         PaymentFeeDescription::TOPUP_FEE_BAL->value == $payment->description ||
                         PaymentFeeDescription::TOPUP_FEE_22->value == $payment->description) &&
-                    PaymentFeeDescription::ACCEPTANCE_FEE->value != $payment->description) {
+                    PaymentFeeDescription::ACCEPTANCE_FEE->value != $payment->description
+                ) {
                     $specialPrerequisites = $this->validateStudentSpecialPrerequisites($academic_record);
                     $prerequisites = array_merge($prerequisites, $specialPrerequisites);
                 }
@@ -1471,7 +1435,6 @@ class Students extends Crud
                 $checkPaymentTransaction = $checkPaymentTransaction->toArray();
                 return $this->prepStudentPartPaymentParam($payment, $checkPaymentTransaction);
             }
-
         } else if ($transactionRef) {
             $tempTransaction = $payment->getSingleTransactionByRef($transactionRef, false);
             if ($tempTransaction) {
@@ -1720,9 +1683,9 @@ class Students extends Crud
         if (
             $payment->description == PaymentFeeDescription::OUTSTANDING_22->value ||
             ($descriptionCode && (
-                    $descriptionCode == FeeDescriptionCode::REACTIVATION_CODE->value ||
-                    $descriptionCode == FeeDescriptionCode::SUSPENSION_CODE->value
-                ))
+                $descriptionCode == FeeDescriptionCode::REACTIVATION_CODE->value ||
+                $descriptionCode == FeeDescriptionCode::SUSPENSION_CODE->value
+            ))
         ) {
             $prerequisites = [];
         }
@@ -2357,7 +2320,8 @@ class Students extends Crud
         if (($academic_record->entry_mode == CommonSlug::DIRECT_ENTRY->value && $academic_record->current_level == 2) ||
             ($academic_record->entry_mode == CommonSlug::O_LEVEL->value && $academic_record->current_level == 1) ||
             ($academic_record->entry_mode == CommonSlug::O_LEVEL_PUTME->value && $academic_record->current_level == 1) ||
-            ($academic_record->entry_mode == CommonSlug::FAST_TRACK->value && $academic_record->current_level == 2)) {
+            ($academic_record->entry_mode == CommonSlug::FAST_TRACK->value && $academic_record->current_level == 2)
+        ) {
             return true;
         }
         return false;
@@ -2400,7 +2364,6 @@ class Students extends Crud
         }
 
         return null;
-
     }
 
     private function pluckPrerequisiteParam(array $data): array
@@ -2428,14 +2391,17 @@ class Students extends Crud
             if ($tempPayment) {
                 $tempPayment = $tempPayment[0];
 
-                if ($academic_record->has_matric_number == 1 &&
-                    $currentStudentSession == $academic_record->current_session) {
+                if (
+                    $academic_record->has_matric_number == 1 &&
+                    $currentStudentSession == $academic_record->current_session
+                ) {
                     if ((PaymentFeeDescription::SCH_FEE_FIRST->value == $tempPayment->description ||
                             PaymentFeeDescription::SCH_FEE_SECOND->value == $tempPayment->description ||
                             PaymentFeeDescription::TOPUP_FEE_BAL->value == $tempPayment->description ||
                             PaymentFeeDescription::TOPUP_FEE_22->value == $tempPayment->description
                         ) &&
-                        PaymentFeeDescription::ACCEPTANCE_FEE->value != $tempPayment->description) {
+                        PaymentFeeDescription::ACCEPTANCE_FEE->value != $tempPayment->description
+                    ) {
                         $result = $this->validateStudentSpecialPrerequisites($academic_record);
                         if (!empty($result)) {
                             $outstandingResult = $result;
@@ -2702,10 +2668,10 @@ class Students extends Crud
 
             if (
                 ($isPartPayment && (
-                        isFinalistOrExtraYear($academic_record) ||
-                        $this->hasPaidSchFee($academic_record) ||
-                        $this->isNewlyAdmitted($academic_record)
-                    ))
+                    isFinalistOrExtraYear($academic_record) ||
+                    $this->hasPaidSchFee($academic_record) ||
+                    $this->isNewlyAdmitted($academic_record)
+                ))
             ) {
                 continue;
             }
@@ -2753,7 +2719,6 @@ class Students extends Crud
             if (!is_array($entryModes)) {
                 continue;
             }
-
         }
     }
 
@@ -3665,7 +3630,7 @@ class Students extends Crud
      * @param array<int,mixed> $data
      * @return string
      */
-    private function processFailedCourses(array $data = [], string $column = null)
+    private function processFailedCourses(array $data = [], ?string $column = null)
     {
         $result = "";
         if (!empty($data)) {
@@ -3684,7 +3649,7 @@ class Students extends Crud
      * @param array<int,mixed> $data
      * @return string
      */
-    private function processFailedCoursesStatus(array $data = [], string $column = null)
+    private function processFailedCoursesStatus(array $data = [], ?string $column = null)
     {
         $status = array_search('C', $data[$column]);
         if ($status != '' && $data['course_status'][$status] == 'C') {
@@ -3800,10 +3765,7 @@ class Students extends Crud
      * @param mixed $programme_id
      * @return void
      */
-    public function getOutstandingCourses($student_id, $session, $level, $programme_id)
-    {
-
-    }
+    public function getOutstandingCourses($student_id, $session, $level, $programme_id) {}
 
     /**
      * @return array|array<string,array<string,mixed>>
@@ -4299,7 +4261,6 @@ class Students extends Crud
         } else {
             return null;
         }
-
     }
 
     /**
@@ -4347,7 +4308,6 @@ class Students extends Crud
                 // $mailer->send_new_mail('matric-number-activation-notification', $student->email, $variables_matric_number);
 
                 return $matric_number;
-
             }
         }
 
@@ -4366,8 +4326,7 @@ class Students extends Crud
             GoogleService::createInstitutionEmail($student->lastname, $student->firstname, $institutionEmail);
             if (update_record($this->db, 'students', 'id', $studentID, [
                 'user_login' => $institutionEmail,
-            ])
-            ) {
+            ])) {
                 update_record($this->db, 'academic_record', 'id', $academicRecordID, [
                     'has_institution_email' => '1',
                 ]);
@@ -4529,5 +4488,4 @@ class Students extends Crud
         }
         return $result;
     }
-
 }

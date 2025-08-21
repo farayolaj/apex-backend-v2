@@ -40,7 +40,6 @@ class ApiAuthFilter implements FilterInterface
             $message = $message ?? 'Authorization denied';
             return $response->setStatusCode(401)->setJSON(['status' => false, 'message' => $message]);
         }
-
     }
 
     /**
@@ -66,13 +65,14 @@ class ApiAuthFilter implements FilterInterface
         $apiKey = null;
         if ($type === AuthEnum::ADMIN->value) {
             $apiKey = env('xAppAdminKey');
-        }else if ($type === AuthEnum::STUDENT->value) {
+        } else if ($type === AuthEnum::STUDENT->value) {
             $apiKey = env('xAppStudentKey');
-        }else if ($type === AuthEnum::FINANCE_OUTFLOW->value) {
+        } else if ($type === AuthEnum::FINANCE_OUTFLOW->value) {
             $apiKey = env('xAppFinanceKey');
-        }else if ($type === AuthEnum::APEX->value) {
+        } else if ($type === AuthEnum::APEX->value) {
             $apiKey = env('xAppApexKey');
         }
+
         return (array_key_exists('HTTP_X_APP_KEY', $_SERVER) && $request->getServer('HTTP_X_APP_KEY') == $apiKey ||
             array_key_exists('HTTP_ACESS_TOKEN', $_SERVER) && $request->getServer('HTTP_ACESS_TOKEN') == $apiKey);
     }
@@ -83,7 +83,7 @@ class ApiAuthFilter implements FilterInterface
      * @param array $args [description]
      * @return bool [type] [description]
      */
-    private function canProceed(object $request, array $args, string $type, &$message=null): bool
+    private function canProceed(object $request, array $args, string $type, &$message = null): bool
     {
         if ($this->isExempted($request, $args)) {
             return true;
@@ -209,7 +209,6 @@ class ApiAuthFilter implements FilterInterface
             // load current user and user type in the server global variable
             WebSessionManager::rememberUser($currentUser, $user_type);
             return true;
-
         } catch (Exception $e) {
             $message = "Unauthorized access";
             return false;
