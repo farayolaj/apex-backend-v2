@@ -14,7 +14,7 @@ $routes->group('v1/web/', [
     $routes->get('courses', 'Courses::index');
     $routes->get('courses/(:num)', 'Courses::show/$1');
 
-    $routes->get('courses/(:num)/webinars', 'Webinars::index/$1');
+    $routes->get('courses/(:num)/(:num)/webinars', 'Webinars::index/$1/$2');
     $routes->get('webinars/(:num)/recordings', 'Webinars::getRecordings/$1');
     $routes->post('webinars', 'Webinars::create');
     $routes->patch('webinars/(:num)', 'Webinars::update/$1');

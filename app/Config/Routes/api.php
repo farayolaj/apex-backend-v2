@@ -10,7 +10,7 @@ $routes->group('v1/api/', [
     'filter' => ['apiValidation:student'],
     'namespace' => 'App\Controllers\Student\v1'
 ], function ($routes) {
-    $routes->get('courses/(:num)/webinars', 'Webinars::listWebinars/$1');
+    $routes->get('courses/(:num)/(:num)/webinars', 'Webinars::listWebinars/$1/$2');
     $routes->get('webinars/(:num)', 'Webinars::getWebinar/$1');
 });
 

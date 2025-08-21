@@ -26,11 +26,12 @@ class Webinars extends BaseController
     /**
      * List webinars for a specific course
      *
+     * @param int $sessionId
      * @param int $courseId
      */
-    public function listWebinars(int $courseId)
+    public function listWebinars(int $sessionId, int $courseId)
     {
-        $payload = $this->webinars->list($courseId);
+        $payload = $this->webinars->list($sessionId, $courseId);
         $currentUser = WebSessionManager::currentAPIUser();
 
         $fullName = trim($currentUser->firstname . ' ' . $currentUser->lastname);
