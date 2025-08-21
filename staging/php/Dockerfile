@@ -46,7 +46,7 @@ RUN composer install
 COPY --chown=www-data:www-data . /var/www/html
 
 # Entrypoint script will run Supervisor (which in turn runs Apache)
-COPY docker/entrypoint.sh /entrypoint.sh
+COPY staging/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
