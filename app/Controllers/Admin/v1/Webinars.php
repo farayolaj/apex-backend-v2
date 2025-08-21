@@ -157,6 +157,12 @@ class Webinars extends BaseController
         }
 
         try {
+            $currentSession = get_setting('active_session_student_portal');
+            $currentSemester = get_setting('active_semester');
+
+            $data['session_id'] = $currentSession;
+            $data['semester'] = $currentSemester;
+
             $webinarId = $this->webinars->create($data);
             $createMeetingResponse = $this->bbb->createMeeting($createParams);
 
