@@ -19,4 +19,9 @@ class Courses extends BaseController
         $payload = $this->showListEntity('courses', $id);
         return ApiResponse::success(data: $payload);
     }
+
+    public function store(){
+        
+    }
+
 }

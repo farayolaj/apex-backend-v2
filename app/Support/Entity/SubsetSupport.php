@@ -3,53 +3,48 @@
 namespace App\Support\Entity;
 
 /**
- * Label-driven payload builder.
- * - Reads static $labelArray (allowed fields) and optional $typeArray (light casting).
- * - Excludes keys like 'id' by default.
- * - Can run in strict mode
+ * Label-driven payload builder (now returns BOTH persistable and extra inputs).
+ * - Persistable: keys defined in static $labelArray (minus $exclude).
+ * - Extra: keys present in input but not in $labelArray (kept for hooks/validation).
+ * - Optional light casting using static $typeArray.
  */
 final class SubsetSupport
 {
     /**
+     * Partition input into [persistable, extra].
+     *
      * @param string $modelClass FQCN with static $labelArray (and optional $typeArray)
-     * @param array $input incoming payload
-     * @param array $exclude keys to drop (e.g., ['id'])
-     * @param bool $strict if true, throw on unknown keys; if false, ignore unknown
-     * @param array|null $unknownOut (by-ref) unknown keys if any (for logging)
-     * @return array
+     * @param array  $input      raw payload
+     * @param array  $exclude    keys to drop from persistable (e.g., ['id'])
+     * @return array{0: array, 1: array} [$persist, $extra]
      */
-    public static function fromModelLabel(
+    public static function partitionByModelLabel(
         string $modelClass,
         array $input,
-        array $exclude = ['id'],
-        bool $strict = false,
-        ?array &$unknownOut = null
+        array $exclude = ['id']
     ): array {
         if (!class_exists($modelClass) || !property_exists($modelClass, 'labelArray')) {
-            return [];
+            return [[], $input]; // nothing known; everything considered extra
         }
 
         $allowed = array_values(array_diff(array_keys($modelClass::$labelArray), $exclude));
-        $allowedFlip = array_flip($allowed);
 
-        $unknown = array_diff(array_keys($input), $allowed);
-        if ($unknownOut !== null) $unknownOut = array_values($unknown);
-
-        if ($strict && !empty($unknown)) {
-            throw new \InvalidArgumentException('Unknown fields: ' . implode(', ', $unknown));
-        }
-
-        $out = [];
+        $persist = [];
         foreach ($allowed as $k) {
             if (array_key_exists($k, $input)) {
-                $out[$k] = $input[$k];
+                $persist[$k] = $input[$k];
             }
         }
 
+        // everything else is extra (unknown to labelArray)
+        $extra = array_diff_key($input, array_flip($allowed));
+
+        // light casting for persisted part only (optional can be skipped or removed entirely)
         if (property_exists($modelClass, 'typeArray')) {
-            $out = self::castTypes($out, $modelClass::$typeArray);
+            $persist = self::castTypes($persist, $modelClass::$typeArray);
         }
-        return $out;
+
+        return [$persist, $extra];
     }
 
     private static function castTypes(array $data, array $typeMap): array
@@ -61,7 +56,7 @@ final class SubsetSupport
             } elseif ($t === 'tinyint') {
                 $data[$k] = self::toTinyInt($v);
             } elseif ($t === 'varchar' || $t === 'text') {
-                $data[$k] = ($v === null) ? '' : trim((string) $v);
+                $data[$k] = ($v === null) ? '' : trim((string)$v);
             }
         }
         return $data;

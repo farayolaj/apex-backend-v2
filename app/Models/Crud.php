@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Crud\CrudTrait;
+use App\Traits\Crud\EntityCreatorTrait;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\BaseResult;
 use CodeIgniter\Database\Query;
@@ -11,7 +12,7 @@ use Exception;
 
 class Crud
 {
-	use CrudTrait;
+	use CrudTrait, EntityCreatorTrait;
 
 	/**
 	 * @var mixed|null

@@ -13,6 +13,7 @@ $routes->group('v1/web/', [
 ], function ($routes) {
     $routes->get('courses', 'Courses::index');
     $routes->get('courses/(:num)', 'Courses::show/$1');
+    $routes->post('courses', 'Courses::store');
 
     $routes->get('courses/(:num)/webinars', 'Webinars::index/$1');
     $routes->get('webinars/(:num)/recordings', 'Webinars::getRecordings/$1');

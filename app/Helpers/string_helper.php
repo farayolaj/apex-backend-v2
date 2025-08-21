@@ -2,6 +2,15 @@
 
 use App\Enums\CommonEnum as CommonSlug;
 
+if(!function_exists('studly')){
+    function studly(string $s): string
+    {
+        $s = str_replace(['-', '_'], ' ', strtolower($s));
+        $s = ucwords($s);
+        return str_replace(' ', '', $s);
+    }
+}
+
 if (!function_exists('stripQuote')) {
     function stripQuote($string)
     {
@@ -849,12 +858,15 @@ if (!function_exists('cleanCell')) {
     }
 }
 
-if (!function_exists('get_user_role_id')) {
-    function get_user_role_id($userID)
+if (!function_exists('getUserRoleID')) {
+    function getUserRoleID($userID, $returnMultiple = false)
     {
         $db = db_connect();
         $query = $db->table('roles_user')->getWhere(array('user_id' => $userID));
         if ($query->getNumRows() > 0) {
+            if ($returnMultiple) {
+                return $query->getResultArray();
+            }
             return $query->getRow()->role_id;
         } else {
             return null;

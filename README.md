@@ -860,3 +860,96 @@ $repo->invalidateAll();      // after bulk changes
 * Keep **includes** logic inside the **child repository** (e.g., joins for `user`, `role`, `department`).
 * `postProcessOne()` should handle missing fields gracefully if you ship lean selects.
 * Use a robust cache driver (Redis/Memcached) in production.
+
+--
+
+## Example with Insertion
+# `insert` — Quick Usage Guide
+```php
+// Auto-discovered validator: App\Validation\Courses\CreateRules
+protected ?string $validationEntity = 'courses';
+
+// Label-driven insert from static dictionaries
+protected bool $useLabelDrivenInsert = true;
+protected ?string $entityClass        = \App\Entities\Course::class;
+
+// Timestamps using 'date_created'
+protected bool   $useTimestamps = true;
+protected string $createdField  = 'date_created';
+protected string $updatedField  = 'updated_at'; // '' if unused
+
+/**
+ * Use EXTRA inputs that are NOT in $labelArray.
+ * Example: accept 'department_code' and map it to 'department_id' before insert.
+ * Also accept a custom 'audit_note' used only in afterInsert (not persisted).
+ */
+protected function beforeInsert(array &$data, array $extra): void
+{
+    // Normalize code (persistable)
+    if (isset($data['code'])) {
+        $data['code'] = strtoupper(trim((string)$data['code']));
+    }
+
+    // Derive department_id from department_code (EXTRA)
+    if (!isset($data['department_id']) && !empty($extra['department_code'])) {
+        $dept = $this->db->table('department')->select('id')
+            ->where('code', (string)$extra['department_code'])
+            ->get()->getRowArray();
+
+        if ($dept && isset($dept['id'])) {
+            $data['department_id'] = (int)$dept['id'];
+        }
+    }
+
+    // Default active = 1 if not provided
+    if (!isset($data['active'])) {
+        $data['active'] = 1;
+    }
+}
+
+/**
+ * Handle file uploads from EXTRA (e.g., 'course_guide' file) and persist path in $data.
+ */
+protected function handleUploads(array &$data, array $files, array $extra): void
+{
+    if (!isset($files['course_guide'])) return;
+    $file = $files['course_guide'];
+    if (!$file->isValid()) return;
+
+    $dir = WRITEPATH . 'uploads/course_guides';
+    if (!is_dir($dir)) @mkdir($dir, 0775, true);
+
+    $safe = preg_replace('/[^a-zA-Z0-9_\-]/', '_', strtolower($data['code'] ?? 'course'));
+    $ext  = $file->getExtension();
+    $name = $safe . '_' . time() . '.' . $ext;
+
+    $file->move($dir, $name, true);
+    $data['course_guide_url'] = 'uploads/course_guides/' . $name;
+    $data['__uploaded_course_guide'] = $data['course_guide_url']; // for cleanup on failure
+}
+
+/**
+ * Use EXTRA 'audit_note' for audit log (not persisted to courses table).
+ */
+protected function afterInsert(int $id, array &$data, array $extra): void
+{
+    $this->db->table('audit_log')->insert([
+        'entity'     => 'course',
+        'entity_id'  => $id,
+        'action'     => 'create',
+        'details'    => json_encode([
+            'code'       => $data['code'] ?? null,
+            'audit_note' => $extra['audit_note'] ?? null,
+        ], JSON_UNESCAPED_SLASHES),
+        'created_at' => date('Y-m-d H:i:s'),
+    ]);
+}
+
+protected function cleanupUploadsOnFailure(array $data, array $extra = []): void
+{
+    if (!empty($data['__uploaded_course_guide'])) {
+        @unlink(WRITEPATH . $data['__uploaded_course_guide']);
+    }
+}
+
+```

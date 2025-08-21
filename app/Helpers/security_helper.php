@@ -50,6 +50,14 @@ if (!function_exists('decryptData')) {
     }
 }
 
+if (!function_exists('permissionAuthorize')) {
+    function permissionAuthorize(string $permission): bool
+    {
+        $currentUser = WebSessionManager::currentAPIUser();
+        return checkPermission($permission, $currentUser->id);
+    }
+}
+
 if (!function_exists('permissionAccess')) {
     function permissionAccess(string $permission, ?string $message = null)
     {
@@ -72,16 +80,19 @@ if (!function_exists('permissionAccess')) {
 }
 
 if (!function_exists('checkPermission')) {
-    function checkPermission($permission, $userID): bool
+    function checkPermission(string $permission, ?int $userID = null): bool
     {
         $db = db_connect();
         $query = $db->table('roles_permission')->getWhere(array('permission' => $permission));
         if ($query->getNumRows() > 0) {
             $role = $query->getRow();
-            $user_role = get_user_role_id($userID);
             $roles_array = json_decode($role->role_id, true);
-            if (in_array($user_role, $roles_array)) {
+            $user_role = getUserRoleID($userID, true);
+            $user_role = array_column($user_role, 'role_id');
+            if (array_intersect($user_role, $roles_array)) {
                 return true;
+            } else {
+                return false;
             }
         }
         return false;
