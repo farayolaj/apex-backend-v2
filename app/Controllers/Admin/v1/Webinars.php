@@ -61,6 +61,10 @@ class Webinars extends BaseController
     {
         $webinar = $this->webinars->getDetails($webinarId);
 
+        if (!$webinar) {
+            return ApiResponse::error('Webinar not found', code: 404);
+        }
+
         $getRecordingsParameters = new GetRecordingsParameters();
         $getRecordingsParameters->setMeetingID($webinar['room_id']);
         $getRecordingsResponse = $this->bbb->getRecordings($getRecordingsParameters);
