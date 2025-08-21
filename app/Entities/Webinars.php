@@ -12,6 +12,7 @@ class Webinars extends Crud
     protected static $tablename = 'webinars';
 
     static $apiSelectClause = [
+        "id",
         "course_id",
         "room_id",
         "title",
