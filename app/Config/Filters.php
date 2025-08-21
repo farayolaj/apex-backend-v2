@@ -108,14 +108,14 @@ class Filters extends BaseFilters
     public array $filters = [
         'cors' => [
             'before' => [
-                'api/*',
-                'web/*',
-                'webtranx/*',
+                'v1/api/*',
+                'v1/web/*',
+                'v1/webtranx/*',
             ],
             'after'  => [
-                'api/*',
-                'web/*',
-                'webtranx/*',
+                'v1/api/*',
+                'v1/web/*',
+                'v1/webtranx/*',
             ],
         ]
     ];
