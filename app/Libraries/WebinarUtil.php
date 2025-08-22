@@ -7,12 +7,13 @@ use BigBlueButton\BigBlueButton;
 use BigBlueButton\Enum\Role;
 use BigBlueButton\Parameters\GetMeetingInfoParameters;
 use BigBlueButton\Parameters\JoinMeetingParameters;
+use CodeIgniter\I18n\Time;
 
 class WebinarUtil
 {
   public static function getJoinUrl(BigBlueButton $bbb, array $webinar, string $fullName)
   {
-    if (strtotime($webinar['scheduled_for']) > time()) {
+    if (Time::parse($webinar['scheduled_for'])->isBefore(Time::now())) {
       return null;
     }
 

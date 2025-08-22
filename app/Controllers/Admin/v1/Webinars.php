@@ -80,8 +80,8 @@ class Webinars extends BaseController
         foreach (
             $getRecordingsResponse->getRecords() as $record
         ) {
-            $startTime = Time::createFromTimestamp($record->getStartTime() / 1000, 'Africa/Lagos');
-            $endTime = Time::createFromTimestamp($record->getEndTime() / 1000, 'Africa/Lagos');
+            $startTime = Time::createFromTimestamp($record->getStartTime() / 1000,);
+            $endTime = Time::createFromTimestamp($record->getEndTime() / 1000,);
             $duration = (int) (($record->getEndTime() - $record->getStartTime()) / 1000); // in seconds
 
             $data[] = [
@@ -163,6 +163,7 @@ class Webinars extends BaseController
 
             $data['session_id'] = $currentSession;
             $data['semester'] = $currentSemester;
+            $data['scheduled_for'] = Time::parse($data['scheduled_for'])->toDateTimeString();
 
             $webinarId = $this->webinars->create($data);
             $createMeetingResponse = $this->bbb->createMeeting($createParams);

@@ -71,8 +71,7 @@ class Webinars extends BaseController
         foreach (
             $getRecordingsResponse->getRecords() as $record
         ) {
-            $startTime = Time::createFromTimestamp($record->getStartTime() / 1000, 'Africa/Lagos');
-            $endTime = Time::createFromTimestamp($record->getEndTime() / 1000, 'Africa/Lagos');
+            $startTime = Time::createFromTimestamp($record->getStartTime() / 1000);
             $duration = (int) (($record->getEndTime() - $record->getStartTime()) / 1000); // in seconds
 
             $recordings[] = [
