@@ -9,6 +9,7 @@ use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Models\BBBModel;
 use App\Models\WebSessionManager;
+use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 
@@ -204,7 +205,7 @@ class Webinars extends BaseController
         $filePath = Presentation::getFilePath($presentationId);
 
         if (!file_exists($filePath)) {
-            return ApiResponse::error('Presentation file not found', code: 404);
+            throw PageNotFoundException::forPageNotFound("Presentation file not found");
         }
 
         return $this->response->download($filePath, null);
