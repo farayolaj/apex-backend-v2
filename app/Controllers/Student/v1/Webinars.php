@@ -32,6 +32,7 @@ class Webinars extends BaseController
 
         unset($webinar['presentation_id']);
         unset($webinar['course_id']);
+        unset($webinar['room_id']);
 
         return $webinar;
     }
