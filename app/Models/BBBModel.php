@@ -26,11 +26,12 @@ class BBBModel
    *
    * @param string $meetingId
    * @param string $fullName
+   * @param bool $isStudent
    * @return string|null
    */
-  public function getJoinUrl(string $meetingId, string $fullName): string
+  public function getJoinUrl(string $meetingId, string $fullName, bool $isStudent = false): string
   {
-    $joinMeetingParams = new JoinMeetingParameters($meetingId, $fullName, Role::MODERATOR);
+    $joinMeetingParams = new JoinMeetingParameters($meetingId, $fullName, $isStudent ? Role::VIEWER : Role::MODERATOR);
     $joinMeetingParams->setRedirect(true);
 
     $joinUrl = $this->bbb->getJoinMeetingURL($joinMeetingParams);

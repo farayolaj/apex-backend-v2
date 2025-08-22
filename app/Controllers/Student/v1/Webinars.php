@@ -104,6 +104,6 @@ class Webinars extends BaseController
         $currentUser = WebSessionManager::currentAPIUser();
         $fullName = trim($currentUser->firstname . ' ' . $currentUser->lastname);
 
-        return ApiResponse::success(data: $this->bbbModel->getJoinUrl($webinar['room_id'], $fullName));
+        return ApiResponse::success(data: $this->bbbModel->getJoinUrl($webinar['room_id'], $fullName, true));
     }
 }
