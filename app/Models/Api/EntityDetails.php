@@ -49,7 +49,7 @@ class EntityDetails
         $result['academic_record'] = $result['admission_status'] == 'Admitted' ? $this->$entity->academicRecord : null;
         $result['applicant_type'] = $entity;
         $currentUser = WebSessionManager::currentAPIUser();
-        logAction($this->db,'view_applicant_detail', $currentUser->user_login);
+        logAction('view_applicant_detail', $currentUser->user_login);
         return $result;
     }
 
@@ -128,7 +128,7 @@ class EntityDetails
         $result['verification_documents'] = $this->students->getStudentVerificationDocuments();
         $result['passport'] = $passport;
         if (!$returnResult) {
-            logAction($this->db, 'view_student_detail', $currentUser->user_login, $id);
+            logAction( 'view_student_detail', $currentUser->user_login, $id);
         }
         return $result;
     }

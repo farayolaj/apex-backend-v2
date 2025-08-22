@@ -327,7 +327,7 @@ class Staffs extends Crud
         if (parent::delete($id, $db)) {
             $query = "DELETE from users_new where user_table_id=? and user_type='staff'";
             if ($this->query($query, array($id))) {
-                logAction($this->db, 'user_deletion', $currentUser->id, $id);
+                logAction( 'user_deletion', $currentUser->id, $id);
                 return true;
             }
         }

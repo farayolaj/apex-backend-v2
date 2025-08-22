@@ -94,7 +94,7 @@ class Roles extends Crud
         $currentUser = WebSessionManager::currentAPIUser();
         $db = $dbObject ?? $this->db;
         if (parent::delete($id, $db)) {
-            logAction($this->db, 'role_deletion', $currentUser->id, $id);
+            logAction( 'role_deletion', $currentUser->id, $id);
             return true;
         }
         return false;

@@ -6,7 +6,9 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
-$routes->group('web', ['filter' => 'apiValidation:admin'], static function (RouteCollection $routes): void {
+$routes->get('v1/boom', '\App\Controllers\Tester::boom');
+
+$routes->group('v1/web/', ['filter' => 'apiValidation:admin'], static function (RouteCollection $routes): void {
     $routes->post('authenticate', 'Auth::web');
     $routes->post('logout', 'Auth::logout');
 

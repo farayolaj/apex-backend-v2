@@ -39,7 +39,7 @@ class Cors extends BaseConfig
             'http://localhost:8080',
             'http://localhost:8083',
             'http://localhost:8181',
-            'https://apex.ui.edu.ng',
+            'https://apex.ui.edu.ng'
         ],
 
         /**

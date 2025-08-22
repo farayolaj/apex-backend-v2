@@ -35,8 +35,9 @@ final class ValidationResolver
             $validation = service('validation');
             $validation->setRules($rules, $messages);
             if (!$validation->run($data)) {
+                $errors = $validation->getErrors();
                 throw new ValidationFailedException(
-                    reset($validation->getErrors()) ?: 'Validation failed'
+                    reset($errors) ?: 'Validation failed'
                 );
             }
         }

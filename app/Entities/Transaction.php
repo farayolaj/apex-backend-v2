@@ -595,7 +595,7 @@ class Transaction extends Crud
                 return sendAPiResponse(false, "An error occured, Transaction cannot be deleted at the moment");
             }
 
-            logAction($this->db, 'delete_transaction', $currentUser->user_login);
+            logAction( 'delete_transaction', $currentUser->user_login);
             $this->db->transCommit();
             return sendAPiResponse(true, "Transaction deleted successfully");
 
@@ -624,7 +624,7 @@ class Transaction extends Crud
                 return sendAPiResponse(false, "An error occured, applicant transaction cannot be deleted at the moment");
             }
 
-            logAction($this->db, 'delete_applicant_transaction', $currentUser->user_login);
+            logAction( 'delete_applicant_transaction', $currentUser->user_login);
             $this->db->transCommit();
             return sendAPiResponse(true, "Applicant transaction deleted successfully");
         }
@@ -652,7 +652,7 @@ class Transaction extends Crud
                 return sendAPiResponse(false, "An error occured, non-student transaction cannot be deleted at the moment");
             }
 
-            logAction($this->db, 'delete_transaction_custom', $currentUser->user_login);
+            logAction( 'delete_transaction_custom', $currentUser->user_login);
             $this->db->transCommit();
             return sendAPiResponse(true, "Non-student transaction deleted successfully");
         }
@@ -1559,7 +1559,7 @@ class Transaction extends Crud
             if ($this->transaction->restoreTransactionToArchive($archive->id, $archive->source_table, $archive)) {
                 $id = $archive->id;
                 if ($archive->delete($id)) {
-                    logAction($this->db, $action, $currentUser->user_login);
+                    logAction( $action, $currentUser->user_login);
                     return true;
                 }
             }

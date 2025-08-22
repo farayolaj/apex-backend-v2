@@ -5,6 +5,7 @@ namespace App\Controllers\Admin\v1;
 use App\Controllers\BaseController;
 use App\Libraries\ApiResponse;
 use App\Traits\Crud\EntityListTrait;
+use PHPUnit\Exception;
 
 class Courses extends BaseController
 {
@@ -21,7 +22,22 @@ class Courses extends BaseController
     }
 
     public function store(){
-        
+        $course = new \App\Entities\Courses();
+
+        $payload = $this->request->getPost();
+
+        $row = $course->insertSingle(
+            $payload ?? [],
+            $this->request->getFiles() ?? [],
+            [
+                'dbTransaction' => true,
+            ]
+        );
+
+        if(!$row) return ApiResponse::error("Unable to create course");
+
+        return ApiResponse::success('Course inserted successfully', $payload);
+
     }
 
 }

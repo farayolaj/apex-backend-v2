@@ -25,7 +25,7 @@ class ApiResponse
      * @param int $code
      * @return mixed
      */
-    public static function error(string $message = '', mixed $data = null, int $code = 400)
+    public static function error(string $message = '', mixed $data = null, int $code = 401)
     {
         return self::formatResponse(false, $message, $data, $code);
     }

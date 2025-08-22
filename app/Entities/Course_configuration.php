@@ -202,7 +202,7 @@ class Course_configuration extends Crud
         $currentUser = WebSessionManager::currentAPIUser();
         $db = $dbObject ?? $this->db;
         if (parent::delete($id, $db)) {
-            logAction($this->db, 'course_config_delete', $currentUser->user_login);
+            logAction( 'course_config_delete', $currentUser->user_login);
             return true;
         }
         return false;

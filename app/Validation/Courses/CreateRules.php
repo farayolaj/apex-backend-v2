@@ -2,6 +2,7 @@
 
 namespace App\Validation\Courses;
 
+use App\Exceptions\ValidationFailedException;
 use App\Validation\Contracts\RulesProvider;
 
 /**
@@ -38,8 +39,8 @@ final class CreateRules implements RulesProvider
                 $code  = (string) $data['code'];
                 $id    = (int) $row['id'];
                 $title = (string) ($row['title'] ?? '');
-                throw new \InvalidArgumentException(
-                    "Course '{$code}' already exists (ID: {$id}, Title: '{$title}')."
+                throw new ValidationFailedException(
+                    "Course '{$code}' already exists."
                 );
             }
         }
@@ -48,7 +49,7 @@ final class CreateRules implements RulesProvider
     public static function rules(): array
     {
         return [
-            'code'             => 'required|min_length[2]|max_length[7]|is_unique[courses.code]',
+            'code'             => 'required|min_length[2]|max_length[7]',
             'title'            => 'required',
             'department_id'    => 'required|integer',
             'type'             => 'required|in_list[cbt,written]',

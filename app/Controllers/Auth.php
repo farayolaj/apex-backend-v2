@@ -66,7 +66,7 @@ class Auth extends BaseController
         if ($table === 'users_new') {
             $user->last_logged_in = date('Y-m-d H:i:s');
             $user->update();
-            logAction($this->db, 'auth_user_login', $user->user_login);
+            logAction('auth_user_login', $user->user_login);
         }
 
         if (!decode_password($password, $user->$rpass)) {

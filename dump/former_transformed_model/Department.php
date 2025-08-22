@@ -193,7 +193,7 @@ class Department extends Crud
 		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this->db, 'department_deletion', $currentUser->id, $id);
+			logAction( 'department_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;

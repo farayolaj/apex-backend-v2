@@ -2307,7 +2307,7 @@ if (!function_exists('isLive')) {
 }
 
 if (!function_exists('logAction')) {
-    function logAction($db, $action, $user = null, $student = null, $oldData = null, $newData = null, $description = null)
+    function logAction($action = null, $user = null, $student = null, $oldData = null, $newData = null, $description = null)
     {
         $data = array(
             'username' => $user ?? null,
@@ -2322,6 +2322,7 @@ if (!function_exists('logAction')) {
             'new_data' => $newData,
             'description' => $description,
         );
+        $db = db_connect();
         return create_record($db, 'users_log', $data);
     }
 }

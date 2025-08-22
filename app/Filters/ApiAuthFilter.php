@@ -35,11 +35,11 @@ class ApiAuthFilter implements FilterInterface
         if (!$this->validateHeader($request, $type)) {
             return $response->setStatusCode(405)->setJSON(['status' => false, 'message' => 'Authorization denied']);
         }
-
         if (!$this->canProceed($request, $request->getUri()->getSegments(), $type, $message)) {
             $message = $message ?? 'Authorization denied';
             return $response->setStatusCode(401)->setJSON(['status' => false, 'message' => $message]);
         }
+
     }
 
     /**
@@ -47,7 +47,7 @@ class ApiAuthFilter implements FilterInterface
      * @param RequestInterface $request [description]
      * @param ResponseInterface $response [description]
      * @param null $arguments
-     * @return void [type]                       [description]
+     * @return void [type] [description]
      */
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null): void
     {
@@ -88,7 +88,6 @@ class ApiAuthFilter implements FilterInterface
         if ($this->isExempted($request, $args)) {
             return true;
         }
-
         return $this->validateAPIRequest($type, $message);
     }
 
@@ -110,8 +109,9 @@ class ApiAuthFilter implements FilterInterface
             'POST::authenticate',
             'POST::validate_student',
         ];
-        $argument = $arguments[1];
-        $argPath = strtoupper($request->getMethod()) . '::' . $argument;
+        $uri = service('uri');
+        $lastSegment = $uri->getSegment($uri->getTotalSegments());
+        $argPath = strtoupper($request->getMethod()) . '::' . $lastSegment;
 
         return in_array($argPath, $exemptionList);
     }
@@ -142,7 +142,7 @@ class ApiAuthFilter implements FilterInterface
             $excludeUsers = [AuthEnum::STUDENT->value, AuthEnum::APPLICANT->value];
             // coming from the auth server
             if ($user_id && !in_array($user_type, $excludeUsers)) {
-                $userNew = EntityLoader::loadClass($this, 'users_new');
+                $userNew = EntityLoader::loadClass(null, 'users_new');
                 $userNew->id = $user_id;
 
                 if (!$userNew->load()) {

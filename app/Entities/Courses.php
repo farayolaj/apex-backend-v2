@@ -23,26 +23,33 @@ class Courses extends Crud
     static array $compositePrimaryKey = array();
     static array $uploadDependency = array();
     /*this array contains the fields that are unique*/
-    static $uniqueArray = array('code');
+    static array $uniqueArray = array('code');
     /*this is an associative array containing the fieldname and the type of the field*/
-    static $typeArray = array('code' => 'varchar', 'title' => 'text', 'description' => 'text', 'course_guide_url' => 'text',
+    static array $typeArray = array('code' => 'varchar', 'title' => 'text', 'description' => 'text', 'course_guide_url' => 'text',
         'active' => 'tinyint', 'date_created' => 'varchar', 'type' => 'varchar', 'department_id' => 'int');
     /*this is a dictionary that map a field name with the label name that will be shown in a form*/
-    static $labelArray = array('id' => '', 'code' => '', 'title' => '', 'description' => '', 'course_guide_url' => '',
+    static array $labelArray = array('id' => '', 'code' => '', 'title' => '', 'description' => '', 'course_guide_url' => '',
         'active' => '', 'date_created' => '', 'type' => '', 'department_id' => '');
     /*associative array of fields that have default value*/
-    static $defaultArray = array('date_created' => '');
-//populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
-//the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
-    static $documentField = array(); //array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
+    static array $defaultArray = array('date_created' => '');
+    // populate this array with fields that are meant to be displayed as document in the format
+    // array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
+    // the folder to save must represent a path from the basepath. it should be a relative path,
+    // preserve filename will be either true or false. when true,the file will be uploaded with its default
+    // filename else the system will pick the current user id in the session as the name of the file.
+    static array $documentField = array(); //array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
 
-    static $relation = array();
+    static array $relation = array();
 
-    static $tableAction = array('delete' => 'delete/courses', 'edit' => 'edit/courses');
+    static array $tableAction = array('delete' => 'delete/courses', 'edit' => 'edit/courses');
 
-    static $apiSelectClause = ['id', 'title', 'code', 'active', 'course_guide_url'];
+    static array $apiSelectClause = ['id', 'title', 'code', 'active', 'course_guide_url'];
     protected array  $searchable = ['a.title','a.code'];
     protected array  $sortable   = ['code' => 'a.code', 'title' => 'a.title'];
+
+    protected bool $externalObserversFirst = true;
+
+    protected string $updatedField = 'updated_at';
 
     function __construct($array = array())
     {
@@ -109,7 +116,7 @@ class Courses extends Crud
         $currentUser = WebSessionManager::currentAPIUser();
         $db = $dbObject ?? $this->db;
         if (parent::delete($id, $db)) {
-            logAction($this->db, 'course_delete', $currentUser->user_login);
+            logAction( 'course_delete', $currentUser->user_login);
             return true;
         }
         return false;

@@ -131,7 +131,7 @@ class Roles_permission extends Crud
         $currentUser = WebSessionManager::currentAPIUser();
         $db = $dbObject ?? $this->db;
         if (parent::delete($id, $db)) {
-            logAction($this->db, 'role_assign_permission_deletion', $currentUser->id, $id);
+            logAction( 'role_assign_permission_deletion', $currentUser->id, $id);
             return true;
         }
         return false;

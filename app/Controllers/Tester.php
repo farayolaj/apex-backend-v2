@@ -13,6 +13,11 @@ use Phinx\Migration\Manager\Environment;
 class Tester extends BaseController
 {
     use AuthTrait;
+
+    public function boom()
+    {
+        throw new \App\Exceptions\ValidationFailedException('Testing JSON handler', 422);
+    }
     private function mailTest(){
         $mailer = new Mailer;
         $parser = Services::parser();

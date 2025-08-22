@@ -357,7 +357,7 @@ class Programme extends Crud
 		$currentUser = WebSessionManager::currentAPIUser();
 		$db = $dbObject ?? $this->db;
 		if (parent::delete($id, $db)) {
-			logAction($this->db, 'programme_deletion', $currentUser->id, $id);
+			logAction( 'programme_deletion', $currentUser->id, $id);
 			return true;
 		}
 		return false;

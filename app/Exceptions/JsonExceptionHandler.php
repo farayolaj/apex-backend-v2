@@ -2,13 +2,13 @@
 namespace App\Exceptions;
 
 use CodeIgniter\Debug\BaseExceptionHandler;
-use CodeIgniter\Debug\ExceptionHandlerInterface;
 use CodeIgniter\HTTP\RequestInterface;
-use CodeIgniter\HTTP\ResponseInterface;
 use JetBrains\PhpStorm\NoReturn;
 use Throwable;
+use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Debug\ExceptionHandlerInterface;
 
-class ApiExceptionHandler extends BaseExceptionHandler implements ExceptionHandlerInterface
+class JsonExceptionHandler extends BaseExceptionHandler implements ExceptionHandlerInterface
 {
     #[NoReturn] public function handle(
         Throwable $exception,
@@ -16,13 +16,10 @@ class ApiExceptionHandler extends BaseExceptionHandler implements ExceptionHandl
         ResponseInterface $response,
         int $statusCode,
         int $exitCode,
-    ): void {
-
-        $message = (ENVIRONMENT === 'production')
-            ? $this->friendly($exception, $statusCode)
-            : ($exception->getMessage() ?: 'An error occurred');
-
-        $response->setStatusCode($statusCode)
+    ): void
+    {
+        $message = $this->friendly($exception, $statusCode) ?: 'An error occurred';
+        $response->setStatusCode($statusCode ?: 500)
             ->setJSON(['status' => false, 'message' => $message])
             ->send();
 

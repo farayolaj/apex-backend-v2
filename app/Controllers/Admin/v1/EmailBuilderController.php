@@ -102,7 +102,7 @@ class EmailBuilderController extends BaseController
         $emailRef = generateBatchRef(@$lastRefNo['student_id'], 'BEM');
         $fullname = $currentUser->firstname . ' ' . $currentUser->lastname;
 
-        logAction($this->db, $actionType, $fullname, $emailRef, null,
+        logAction( $actionType, $fullname, $emailRef, null,
             json_encode([
                 'query' => $query,
                 'year_of_entry' => $entryYear,
@@ -117,7 +117,7 @@ class EmailBuilderController extends BaseController
 
         $total = $this->processEmail($query, $subject, $message, $actionType, $emailRef);
         if ($total > 0) {
-            logAction($this->db, $actionType . '_stats', $fullname, $emailRef, null, json_encode([
+            logAction( $actionType . '_stats', $fullname, $emailRef, null, json_encode([
                 'total' => $total
             ]), $subject);
             return sendApiResponse(true, 'Applicant email sent successfully', [
@@ -190,7 +190,7 @@ class EmailBuilderController extends BaseController
         $emailRef = generateBatchRef(@$lastRefNo['student_id'], 'BEM');
         $fullname = $currentUser->firstname . ' ' . $currentUser->lastname;
 
-        logAction($this->db, $actionType, $fullname, $emailRef, null,
+        logAction( $actionType, $fullname, $emailRef, null,
             json_encode([
                 'query' => $query,
                 'year_of_entry' => $entryYear,
@@ -204,7 +204,7 @@ class EmailBuilderController extends BaseController
 
         $total = $this->processEmail($query, $subject, $message, $actionType, $emailRef);
         if ($total > 0) {
-            logAction($this->db, $actionType . '_stats', $fullname, $emailRef, null, json_encode([
+            logAction( $actionType . '_stats', $fullname, $emailRef, null, json_encode([
                 'total' => $total
             ]), $subject);
 

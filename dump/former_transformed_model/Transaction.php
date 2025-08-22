@@ -572,7 +572,7 @@ class Transaction extends Crud
                 return ApiResponse::error("An error occurred, Transaction cannot be deleted at the moment");
             }
 
-            logAction($this->db, 'delete_transaction', $currentUser->user_login);
+            logAction( 'delete_transaction', $currentUser->user_login);
             $this->db->transCommit();
             return ApiResponse::success("Transaction deleted successfully");
         }
@@ -597,7 +597,7 @@ class Transaction extends Crud
                 return ApiResponse::error("An error occurred, applicant transaction cannot be deleted at the moment");
             }
 
-            logAction($this->db, 'delete_applicant_transaction', $currentUser->user_login);
+            logAction( 'delete_applicant_transaction', $currentUser->user_login);
             $this->db->transCommit();
             return ApiResponse::success("Applicant transaction deleted successfully");
         }
@@ -622,7 +622,7 @@ class Transaction extends Crud
                 return ApiResponse::error("An error occurred, non-student transaction cannot be deleted at the moment");
             }
 
-            logAction($this->db, 'delete_transaction_custom', $currentUser->user_login);
+            logAction( 'delete_transaction_custom', $currentUser->user_login);
             $this->db->transCommit();
             return ApiResponse::success("Non-student transaction deleted successfully");
         }

@@ -105,7 +105,7 @@ class Student_verification_fee extends Crud
 				'print_datetime' => date('Y-m-d H:i:s')
 			];
 			$logData = json_encode($logData);
-			logAction($this->db, 'bulk_print_student_cover', $currentUser->user_login, null, null, $logData);
+			logAction( 'bulk_print_student_cover', $currentUser->user_login, null, null, $logData);
 		}
 
 		return $result;

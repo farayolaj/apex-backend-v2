@@ -363,7 +363,7 @@ class TransformHelpers extends BaseCommand
         // Transform logAction
         $content = preg_replace(
             '/logAction\(\s*\$this\s*,\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^)]+)\s*\);/',
-            'logAction($this->db, $1, $2, $3);',
+            'logAction($1, $2, $3);',
             $content
         );
 

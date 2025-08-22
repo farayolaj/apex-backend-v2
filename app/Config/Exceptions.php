@@ -2,7 +2,9 @@
 
 namespace Config;
 
-use App\Exceptions\ApiExceptionHandler;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\JsonExceptionHandler;
+use App\Exceptions\ValidationFailedException;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Debug\ExceptionHandler;
 use CodeIgniter\Debug\ExceptionHandlerInterface;
@@ -102,10 +104,8 @@ class Exceptions extends BaseConfig
      */
     public function handler(int $statusCode, Throwable $exception): ExceptionHandlerInterface
     {
-        // Use JSON handler for API/AJAX or requests that want JSON
-        $request = service('request');
-        if ($request->wantsJSON() || $request->isAJAX()) {
-            return new ApiExceptionHandler($this);
+        if($exception instanceof ValidationFailedException || $exception instanceof ForbiddenException){
+            return new JsonExceptionHandler($this);
         }
 
         return new ExceptionHandler($this);
