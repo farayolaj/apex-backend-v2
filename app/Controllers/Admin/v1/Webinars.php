@@ -5,18 +5,12 @@ namespace App\Controllers\Admin\v1;
 use App\Controllers\BaseController;
 use App\Entities\Course_manager;
 use App\Entities\Webinars as EntitiesWebinars;
-use App\Enums\WebinarStatusEnum;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
-use App\Libraries\WebinarUtil;
 use App\Models\BBBModel;
 use App\Models\WebSessionManager;
-use BigBlueButton\BigBlueButton;
-use BigBlueButton\Parameters\CreateMeetingParameters;
-use BigBlueButton\Parameters\GetRecordingsParameters;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
-use Exception;
 
 class Webinars extends BaseController
 {
@@ -28,7 +22,7 @@ class Webinars extends BaseController
     {
         $this->webinars = EntityLoader::loadClass(null, 'webinars');
         $this->courseManager = EntityLoader::loadClass(null, 'course_manager');
-        $this->bbbModel = EntityLoader::loadClass(null, 'bbbModel', "App\\Models\\");
+        $this->bbbModel = model('BBBModel');
     }
 
     private function processWebinar(array $webinar): array
@@ -213,7 +207,7 @@ class Webinars extends BaseController
         return $this->response->download($filePath, null);
     }
 
-    public function getJoinUrl(int $webinarId): string
+    public function getJoinUrl(int $webinarId)
     {
         $webinar = $this->webinars->getDetails($webinarId);
 
