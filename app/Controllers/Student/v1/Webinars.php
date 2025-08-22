@@ -25,7 +25,7 @@ class Webinars extends BaseController
     private function processWebinar(array $webinar): array
     {
         if ($webinar['presentation_id']) {
-            $webinar['presentation_url'] = WebinarPresentation::getPublicUrl(base_url(), $webinar['presentation_id']);
+            $webinar['presentation_url'] = WebinarPresentation::getPublicUrl(base_url(), $webinar['id']);
         } else {
             $webinar['presentation_url'] = null;
         }
@@ -92,7 +92,7 @@ class Webinars extends BaseController
         if (!$this->bbbModel->meetingExists($webinar['room_id'])) {
             $bbbPresentation = $webinar['presentation_id'] ?
                 $this->bbbModel->createPresentation(
-                    WebinarPresentation::getPublicUrl(base_url(), $webinar['presentation_id']),
+                    WebinarPresentation::getPublicUrl(base_url(), $webinar['id']),
                     $webinar['presentation_name']
                 ) : null;
 

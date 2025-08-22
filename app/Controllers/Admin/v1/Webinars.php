@@ -30,7 +30,7 @@ class Webinars extends BaseController
     private function processWebinar(array $webinar): array
     {
         if ($webinar['presentation_id']) {
-            $webinar['presentation_url'] = WebinarPresentation::getPublicUrl(base_url(), $webinar['presentation_id']);
+            $webinar['presentation_url'] = WebinarPresentation::getPublicUrl(base_url(), $webinar['id']);
         } else {
             $webinar['presentation_url'] = null;
         }
@@ -202,15 +202,21 @@ class Webinars extends BaseController
         return ApiResponse::success();
     }
 
-    public function getPresentation(string $presentationId)
+    public function getPresentation(string $webinarId)
     {
-        $filePath = WebinarPresentation::getFilePath($presentationId);
+        $webinar = $this->webinars->getDetails($webinarId);
 
-        if (!file_exists($filePath)) {
-            throw PageNotFoundException::forPageNotFound("Presentation file not found");
+        if (!$webinar || !$webinar['presentation_id']) {
+            throw PageNotFoundException::forPageNotFound("Presentation file not found for given webinar.");
         }
 
-        return $this->response->download($filePath, null);
+        $filePath = WebinarPresentation::getFilePath($webinar['presentation_id']);
+
+        if (!file_exists($filePath)) {
+            throw PageNotFoundException::forPageNotFound("Presentation file not found.");
+        }
+
+        return $this->response->download($filePath, null)->setFileName($webinar['presentation_name']);
     }
 
     public function getJoinUrl(int $webinarId)
@@ -228,7 +234,7 @@ class Webinars extends BaseController
         if (!$this->bbbModel->meetingExists($webinar['room_id'])) {
             $bbbPresentation = $webinar['presentation_id'] ?
                 $this->bbbModel->createPresentation(
-                    WebinarPresentation::getPublicUrl(base_url(), $webinar['presentation_id']),
+                    WebinarPresentation::getPublicUrl(base_url(), $webinar['id']),
                     $webinar['presentation_name']
                 ) : null;
 

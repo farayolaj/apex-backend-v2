@@ -26,7 +26,7 @@ $routes->group('v1/web/', [
     $routes->options('(:any)/(:any)/(:any)', static function () {});
 });
 
-$routes->get('v1/webinars/presentations/(:any)', '\App\Controllers\Admin\v1\Webinars::getPresentation/$1');
+$routes->get('v1/webinars/(:any)/presentations', '\App\Controllers\Admin\v1\Webinars::getPresentation/$1');
 
 $routes->group('web/email_builder', ['filter' => ['apiValidation:admin']], function ($routes) {
     $routes->get('logs/(:alphanum)', [[EmailBuilderController::class, 'show'], '$1']);

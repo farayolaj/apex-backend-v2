@@ -33,10 +33,10 @@ class WebinarPresentation
     return WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . self::$PRESENTATION_DIR . $presentationId;
   }
 
-  public static function getPublicUrl(string $hostName, string $presentationId): string
+  public static function getPublicUrl(string $hostName, string $webinarId): string
   {
     $hostName = rtrim($hostName, '/');
-    return $hostName . '/v1/webinars/presentations/' . $presentationId;
+    return $hostName . '/v1/webinars/' . $webinarId . '/presentations';
   }
 
   public static function deletePresentation(string $presentationId): void
