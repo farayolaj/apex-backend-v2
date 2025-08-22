@@ -18,6 +18,8 @@ class Webinars extends Crud
         "title",
         "description",
         "scheduled_for",
+        "presentation_id",
+        "presentation_name",
         "updated_at",
         "created_at"
     ];

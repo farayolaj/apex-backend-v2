@@ -12,6 +12,7 @@ $routes->group('v1/api/', [
 ], function ($routes) {
     $routes->get('courses/(:num)/(:num)/webinars', 'Webinars::listWebinars/$1/$2');
     $routes->get('webinars/(:num)', 'Webinars::getWebinar/$1');
+    $routes->get('webinars/(:num)/join_url', 'Webinars::getJoinUrl/$1');
 });
 
 // this is the api for finance sync between server[UI Admission]
