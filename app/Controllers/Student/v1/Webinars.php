@@ -2,11 +2,11 @@
 
 namespace App\Controllers\Student\v1;
 
-use App\Controllers\Admin\v1\Presentation;
 use App\Controllers\BaseController;
 use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
 use App\Models\WebSessionManager;
 use CodeIgniter\I18n\Time;
@@ -25,7 +25,7 @@ class Webinars extends BaseController
     private function processWebinar(array $webinar): array
     {
         if ($webinar['presentation_id']) {
-            $webinar['presentation_url'] = Presentation::getPublicUrl(base_url(), $webinar['presentation_id']);
+            $webinar['presentation_url'] = WebinarPresentation::getPublicUrl(base_url(), $webinar['presentation_id']);
         } else {
             $webinar['presentation_url'] = null;
         }
@@ -92,7 +92,7 @@ class Webinars extends BaseController
         if (!$this->bbbModel->meetingExists($webinar['room_id'])) {
             $bbbPresentation = $webinar['presentation_id'] ?
                 $this->bbbModel->createPresentation(
-                    Presentation::getPublicUrl(base_url(), $webinar['presentation_id']),
+                    WebinarPresentation::getPublicUrl(base_url(), $webinar['presentation_id']),
                     $webinar['presentation_name']
                 ) : null;
 

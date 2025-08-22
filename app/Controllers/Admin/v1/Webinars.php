@@ -7,6 +7,7 @@ use App\Entities\Course_manager;
 use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
 use App\Models\WebSessionManager;
 use CodeIgniter\Exceptions\PageNotFoundException;
@@ -29,7 +30,7 @@ class Webinars extends BaseController
     private function processWebinar(array $webinar): array
     {
         if ($webinar['presentation_id']) {
-            $webinar['presentation_url'] = Presentation::getPublicUrl(base_url(), $webinar['presentation_id']);
+            $webinar['presentation_url'] = WebinarPresentation::getPublicUrl(base_url(), $webinar['presentation_id']);
         } else {
             $webinar['presentation_url'] = null;
         }
@@ -120,7 +121,7 @@ class Webinars extends BaseController
                 return ApiResponse::error($presentationFile->getErrorString());
             }
 
-            $presentation = new Presentation($presentationFile);
+            $presentation = new WebinarPresentation($presentationFile);
             $data['presentation_id'] = $presentation->getId();
             $data['presentation_name'] = $presentation->getName();
         }
@@ -194,7 +195,7 @@ class Webinars extends BaseController
         }
 
         if ($webinar['presentation_id']) {
-            Presentation::deletePresentation($webinar['presentation_id']);
+            WebinarPresentation::deletePresentation($webinar['presentation_id']);
         }
 
         $this->webinars->delete($webinarId);
@@ -203,7 +204,7 @@ class Webinars extends BaseController
 
     public function getPresentation(string $presentationId)
     {
-        $filePath = Presentation::getFilePath($presentationId);
+        $filePath = WebinarPresentation::getFilePath($presentationId);
 
         if (!file_exists($filePath)) {
             throw PageNotFoundException::forPageNotFound("Presentation file not found");
@@ -227,7 +228,7 @@ class Webinars extends BaseController
         if (!$this->bbbModel->meetingExists($webinar['room_id'])) {
             $bbbPresentation = $webinar['presentation_id'] ?
                 $this->bbbModel->createPresentation(
-                    Presentation::getPublicUrl(base_url(), $webinar['presentation_id']),
+                    WebinarPresentation::getPublicUrl(base_url(), $webinar['presentation_id']),
                     $webinar['presentation_name']
                 ) : null;
 
@@ -251,50 +252,5 @@ class Webinars extends BaseController
         $currentUser = WebSessionManager::currentAPIUser();
 
         return $this->courseManager->isCourseManagerAssign($currentUser->id, $courseId, $currentSession);
-    }
-}
-
-class Presentation
-{
-    static string $PRESENTATION_DIR = 'presentations/';
-
-    private string $presentationId;
-    private string $presentationName;
-
-    public function __construct(UploadedFile $file)
-    {
-        $this->presentationId = bin2hex(random_bytes(16)) . '.' . $file->getExtension();
-        $this->presentationName = $file->getName();
-        $file->store(self::$PRESENTATION_DIR, $this->presentationId);
-    }
-
-    public function getId(): string
-    {
-        return $this->presentationId;
-    }
-
-    public function getName(): string
-    {
-        return $this->presentationName;
-    }
-
-    public static function getFilePath(string $presentationId): string
-    {
-        return WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . self::$PRESENTATION_DIR . $presentationId;
-    }
-
-    public static function getPublicUrl(string $hostName, string $presentationId): string
-    {
-        $hostName = rtrim($hostName, '/');
-        return $hostName . '/v1/webinars/presentations/' . $presentationId;
-    }
-
-    public static function deletePresentation(string $presentationId): void
-    {
-        $filePath = self::getFilePath($presentationId);
-
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
     }
 }
