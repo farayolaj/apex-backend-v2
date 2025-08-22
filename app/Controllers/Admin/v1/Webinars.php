@@ -126,7 +126,7 @@ class Webinars extends BaseController
         }
 
         if (!$this->canAccessCourse($data['course_id'])) {
-            return ApiResponse::error('User does not have access to update webinar', code: 403);
+            return ApiResponse::error('User does not have access to create webinar', code: 403);
         }
 
         $presentationFile = $this->request->getFile('presentation');
@@ -252,7 +252,7 @@ class Webinars extends BaseController
         $currentSession = get_setting('active_session_student_portal');
         $currentUser = WebSessionManager::currentAPIUser();
 
-        return !!$this->courseManager->isCourseManagerAssign($currentUser->id, $courseId, $currentSession);
+        return $this->courseManager->isCourseManagerAssign($currentUser->id, $courseId, $currentSession);
     }
 }
 

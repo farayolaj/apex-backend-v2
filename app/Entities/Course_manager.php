@@ -18,21 +18,37 @@ class Course_manager extends Crud
     /*this array contains the fields that are unique*/
     static $uniqueArray = array();
     /*this is an associative array containing the fieldname and the type of the field*/
-    static $typeArray = array('session_id' => 'varchar', 'course_id' => 'varchar', 'course_manager_id' => 'varchar',
-        'course_lecturer_id' => 'varchar', 'active' => 'tinyint', 'date_created' => 'datetime',
-        'course_question_tutor_id' => 'varchar', 'course_e_tutor_id' => 'varchar');
+    static $typeArray = array(
+        'session_id' => 'varchar',
+        'course_id' => 'varchar',
+        'course_manager_id' => 'varchar',
+        'course_lecturer_id' => 'varchar',
+        'active' => 'tinyint',
+        'date_created' => 'datetime',
+        'course_question_tutor_id' => 'varchar',
+        'course_e_tutor_id' => 'varchar'
+    );
     /*this is a dictionary that map a field name with the label name that will be shown in a form*/
-    static $labelArray = array('id' => '', 'session_id' => '', 'course_id' => '', 'course_manager_id' => '',
-        'course_lecturer_id' => '', 'active' => '', 'date_created' => '', 'course_question_tutor_id' => '',
-        'course_e_tutor_id' => '');
+    static $labelArray = array(
+        'id' => '',
+        'session_id' => '',
+        'course_id' => '',
+        'course_manager_id' => '',
+        'course_lecturer_id' => '',
+        'active' => '',
+        'date_created' => '',
+        'course_question_tutor_id' => '',
+        'course_e_tutor_id' => ''
+    );
     /*associative array of fields that have default value*/
     static $defaultArray = array();
-//populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
-//the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
-    static $documentField = array();//array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
+    //populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
+    //the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
+    static $documentField = array(); //array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
 
-    static $relation = array('course' => array('course_id', 'ID')
-    , 'course_manager' => array('course_manager_id', 'ID', array('ID', 'course_manager_id', 1))
+    static $relation = array(
+        'course' => array('course_id', 'ID'),
+        'course_manager' => array('course_manager_id', 'ID', array('ID', 'course_manager_id', 1))
     );
     static $tableAction = array('delete' => 'delete/course_manager', 'edit' => 'edit/course_manager');
 
@@ -43,7 +59,7 @@ class Course_manager extends Crud
 
     function getSession_idFormField($value = '')
     {
-        $fk = null;//change the value of this variable to array('table'=>'session','display'=>'session_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
+        $fk = null; //change the value of this variable to array('table'=>'session','display'=>'session_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
 
         if (is_null($fk)) {
             return $result = "<input type='hidden' value='$value' name='session_id' id='session_id' class='form-control' />
@@ -60,12 +76,11 @@ class Course_manager extends Crud
         }
         $result .= "</div>";
         return $result;
-
     }
 
     function getCourse_idFormField($value = '')
     {
-        $fk = null;//change the value of this variable to array('table'=>'course','display'=>'course_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
+        $fk = null; //change the value of this variable to array('table'=>'course','display'=>'course_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
 
         if (is_null($fk)) {
             return $result = "<input type='hidden' value='$value' name='course_id' id='course_id' class='form-control' />
@@ -82,12 +97,11 @@ class Course_manager extends Crud
         }
         $result .= "</div>";
         return $result;
-
     }
 
     function getCourse_manager_idFormField($value = '')
     {
-        $fk = null;//change the value of this variable to array('table'=>'course_manager','display'=>'course_manager_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
+        $fk = null; //change the value of this variable to array('table'=>'course_manager','display'=>'course_manager_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
 
         if (is_null($fk)) {
             return $result = "<input type='hidden' value='$value' name='course_manager_id' id='course_manager_id' class='form-control' />
@@ -104,12 +118,11 @@ class Course_manager extends Crud
         }
         $result .= "</div>";
         return $result;
-
     }
 
     function getCourse_lecturer_idFormField($value = '')
     {
-        $fk = null;//change the value of this variable to array('table'=>'course_lecturer','display'=>'course_lecturer_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
+        $fk = null; //change the value of this variable to array('table'=>'course_lecturer','display'=>'course_lecturer_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
 
         if (is_null($fk)) {
             return $result = "<input type='hidden' value='$value' name='course_lecturer_id' id='course_lecturer_id' class='form-control' />
@@ -126,7 +139,6 @@ class Course_manager extends Crud
         }
         $result .= "</div>";
         return $result;
-
     }
 
     function getActiveFormField($value = '')
@@ -139,7 +151,6 @@ class Course_manager extends Crud
 		<option value='0' selected='selected'>No</option>
 	</select>
 	</div> ";
-
     }
 
     function getDate_createdFormField($value = '')
@@ -294,12 +305,10 @@ class Course_manager extends Crud
                 order by date_created desc limit 1";
         $result = $this->query($query, [$course, $session]);
         if (!$result) {
-            return null;
+            return false;
         }
         $result = $result[0];
         $lecturers = json_decode($result['course_lecturer_id'], true);
         return in_array($userId, $lecturers);
     }
-
-
 }
