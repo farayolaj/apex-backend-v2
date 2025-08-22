@@ -132,7 +132,7 @@ class Webinars extends BaseController
         // Generate random room id for the webinar
         $data['room_id'] = bin2hex(random_bytes(16));
 
-        $webinarId = $this->webinars->create($data);
+        $this->webinars->create($data);
 
         return ApiResponse::success(message: "Webinar created.");
     }
@@ -283,6 +283,7 @@ class Presentation
 
     public static function getPublicUrl(string $hostName, string $presentationId): string
     {
+        $hostName = rtrim($hostName, '/');
         return $hostName . '/v1/webinars/presentations/' . $presentationId;
     }
 
