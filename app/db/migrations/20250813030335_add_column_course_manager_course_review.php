@@ -20,8 +20,13 @@ final class AddColumnCourseManagerCourseReview extends AbstractMigration
 	public function change(): void
 	{
 		$table = $this->table('course_manager');
-		$table->addColumn('writing_course_material', 'string', ['limit' => 100, 'null' => true])
-			->addColumn('review_course_material', 'string', ['limit' => 100, 'null' => true])
-			->update();
+		if (!$table->hasColumn('writing_course_material')) {
+			$table->addColumn('writing_course_material', 'string', ['limit' => 100, 'null' => true]);
+		}
+
+		if (!$table->hasColumn('review_course_material')) {
+			$table->addColumn('review_course_material', 'string', ['limit' => 100, 'null' => true]);
+		}
+		$table->update();
 	}
 }

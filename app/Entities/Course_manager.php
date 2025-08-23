@@ -288,10 +288,10 @@ class Course_manager extends Crud
         return $result[0];
     }
 
-    public function isCourseManagerAssign($userId, $course, $session): ?bool
+    public function isCourseManagerAssign($userId, $course, $session)
     {
         $query = "SELECT * FROM course_manager WHERE course_id=? and session_id=? and active = '1' 
-                order by date_created desc limit 1";
+            order by date_created desc limit 1";
         $result = $this->query($query, [$course, $session]);
         if (!$result) {
             return null;
@@ -299,6 +299,17 @@ class Course_manager extends Crud
         $result = $result[0];
         $lecturers = json_decode($result['course_lecturer_id'], true);
         return in_array($userId, $lecturers);
+    }
+
+    public function getCourseManagerClaims($course, $session, $userID)
+    {
+        $query = "SELECT * FROM course_manager_claims WHERE course_id=? and session_id=? and user_id=? 
+            and active = '1' order by created_at desc limit 1";
+        $result = $this->query($query, [$course, $session, $userID]);
+        if (!$result) {
+            return null;
+        }
+        return $result[0];
     }
 
 

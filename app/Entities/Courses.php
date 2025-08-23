@@ -10,6 +10,10 @@ use App\Models\WebSessionManager;
 use App\Support\DTO\ApiListParams;
 use App\Traits\ResultManagerTrait;
 
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the courses table.
  */
@@ -446,6 +450,7 @@ class Courses extends Crud
         $contents = [];
         EntityLoader::loadClass($this, 'sessions');
         EntityLoader::loadClass($this, 'examination_courses');
+        EntityLoader::loadClass($this, 'course_request_claims');
         $result = useGenerators($result);
         $sumEstimate = 0;
         $sumNewEstimate = 0;
@@ -489,16 +494,28 @@ class Courses extends Crud
                     $dataAmount = self::calcDataAllowance()['sumTotal'];
                     $excessAmountFormer = self::calcWebinarWorkLoadAllowance($res['total'], 100)['sumTotal'];
                     $examTypeAmount = self::calcExamType(ClaimType::EXAM_CBT->value)['sumTotal'];
+                    $logisticsAmount = self::calcLogisticsAllowance()['sumTotal'];
                     $totalProposedEstimateAmount = $inferProposedEstimate + $physicalAmount + $dataAmount +
-                        $excessAmountFormer + $examTypeAmount;
+                        $excessAmountFormer + $examTypeAmount + $logisticsAmount;
                 }
 
                 $lecturerName = $this->examination_courses->getCourseLecturerName($res['course_id'], $session);
                 $lecturerName = $lecturerName ? $lecturerName['lecturers_name'] : '';
                 $courseCode = $res['code'] . ' - ' . $res['course_title'];
+                $actualSubmittedAmount = $this->course_request_claims->getCourseClaimsAmountOnly($res['course_id'], $session);
+                $userSubmitted = $this->course_request_claims->getExistingCourseClaims($session, $res['course_id']);
+                $fullname = null;
+                $departmentName = null;
+                if($userSubmitted){
+                    $userSubmitted = $userSubmitted[0];
+                    $userData = $this->users_new->getUserInfoWithDepartment($userSubmitted['course_manager_id'], 'staffs');
+                    $fullname = ucwords(strtolower($userData['title'] .' '. $userData['firstname'])) . ' '. strtoupper($userData['lastname']);
+                    $departmentName = $userData['department_name'];
+                }
 
                 $item = [
                     'course_code' => $courseCode,
+                    'course_short' => $res['code'],
                     'course_status' => $res['course_status'],
                     'enrolled' => $res['total'] ?? 0,
                     'scored' => $course['total'] ?? 0,
@@ -506,7 +523,11 @@ class Courses extends Crud
                     'old_regime_estimate' => $totalOldEstimateAmount,
                     'revised_regime_estimate' => $totalEstimateAmount,
                     'new_intended_regime_estimate' => $totalProposedEstimateAmount,
+                    'actual_amount' => $actualSubmittedAmount,
                     'lecturer_name' => $lecturerName,
+                    'user_id' => $userSubmitted ? $userSubmitted['course_manager_id'] : '',
+                    'department_name' => $departmentName,
+                    'fullname' => $fullname
                 ];
 
                 if ($download == 'yes') {
@@ -530,10 +551,36 @@ class Courses extends Crud
 
             $contents = array_slice($contents, 0, $nth);
             if ($download == 'yes') {
-                $contents = array2csv($contents);
-                $filename = "Courses_predictive_analysis_" . date('Y-m-d') . "_download.csv";
-                $header = 'text/csv';
-                return sendDownload($contents, $header, $filename);
+                // $contents = array2csv($contents);
+                // $header = 'text/csv';
+                // return sendDownload($contents, $header, $filename);
+
+                $tempname = "Courses_predictive_analysis_" . date('Y-m-d') . "_download.xlsx";
+                $filename = FCPATH . "temp/export/" . $tempname;
+
+                $aggregated = aggregateForReport($contents, 50000, []);
+                $rows = flattenForSheetReport($aggregated);
+
+                $ss = new Spreadsheet();
+                $sheet = $ss->getActiveSheet();
+                $sheet->fromArray($rows, null, 'A1');
+
+                $highestRow = $sheet->getHighestRow();
+                $sheet->getStyle('D2:D' . $highestRow)
+                    ->getNumberFormat()->setFormatCode('#,##0.00');
+                foreach (range(1, 4) as $colIdx) {
+                    $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($colIdx))->setAutoSize(true);
+                }
+
+                $writer = new Xlsx($ss);
+                $writer->save($filename);
+                $exportLink = generateDownloadLink($filename, "temp/export");
+
+                $payload = [
+                    'export_link' => $exportLink,
+                ];
+
+                return sendAPiResponse(true, 'link', $payload);
             }
         }
 

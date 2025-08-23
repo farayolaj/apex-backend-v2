@@ -1,5 +1,5 @@
 [*] - I need to change logAction helper across board since i have change the structure
-[] - I need to move some data changes from CI3 to CI4 especially the course predictive analysis I did
+[*] - I need to move some data changes from CI3 to CI4 especially the course predictive analysis I did
 [] - I need to generate this observers, validation files from command line using spark commands
 [] - I need to generate the entity files too using spark commands
 [] - i need to write test for each core automation files using PEST in CI4 if possible

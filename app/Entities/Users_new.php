@@ -317,4 +317,17 @@ class Users_new extends Crud
         return $entityModel;
     }
 
+    public function getUserInfoWithDepartment(int $userID, string $table, string $userType='staff')
+    {
+        $query = "SELECT b.*,a.id as user_id,a.user_login as username, c.name as department_name from users_new a 
+		join {$table} b on b.id = a.user_table_id
+		left join department c on c.id = b.department_id
+        where a.id = ? and a.user_type = ?";
+        $result = $this->query($query, [$userID, $userType]);
+        if (!$result) {
+            return false;
+        }
+        return $result[0];
+    }
+
 }

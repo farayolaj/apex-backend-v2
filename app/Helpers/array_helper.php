@@ -1,5 +1,119 @@
 <?php
 
+/**
+ * @param array $rows  // your raw rows (course_code, actual_amount, user_id, etc.)
+ * @param float|null $defaultLogisticsAmount // fallback allowance if not set per-user
+ * @param array $logisticsPerUser // e.g. ['1' => 20000.00, '5' => 15000.00]
+ * @return array       // grouped structure ready to flatten for Excel
+ */
+function aggregateForReport(array $rows, ?float $defaultLogisticsAmount = null, array $logisticsPerUser = []): array
+{
+    $withUser = [];   // key: user_id
+    $noUser   = [];   // list of singletons
+
+    foreach ($rows as $r) {
+        $uid = trim((string)($r['user_id'] ?? ''));
+        $label = (string)($r['course_short'] ?? $r['course_code'] ?? '');
+        $actual = (float)($r['actual_amount'] ?? 0);
+        $estimate = (float)($r['new_intended_regime_estimate'] ?? 0);
+        $fullname = isset($r['fullname']) ? trim((string)$r['fullname']) : null;
+        $dept = isset($r['department_name']) ? trim((string)$r['department_name']) : null;
+
+        if ($uid !== '') {
+            if (!isset($withUser[$uid])) {
+                $withUser[$uid] = [
+                    'user_id'    => $uid,
+                    'fullname'   => $fullname,
+                    'department' => $dept,
+                    'items'      => [], // each: ['label' => string, 'amount' => float]
+                ];
+            }
+            // keep first non-empty fullname/department encountered
+            if (!$withUser[$uid]['fullname'] && $fullname)   $withUser[$uid]['fullname'] = $fullname;
+            if (!$withUser[$uid]['department'] && $dept)     $withUser[$uid]['department'] = $dept;
+
+            $withUser[$uid]['items'][] = [
+                'label'  => $label,
+                'amount' => $actual,
+            ];
+        } else {
+            // no user_id → standalone row (no logistics)
+            $noUser[] = [
+                'user_id'    => null,
+                'fullname'   => null,          // or $fullname if you want to surface it for non-users
+                'department' => $dept ?: null, // keep if provided
+                'items'      => [
+                    ['label' => $label, 'amount' => $estimate],
+                ],
+            ];
+        }
+    }
+
+    // Append exactly one logistics_allowance item to each user group (if configured)
+    foreach ($withUser as $uid => &$bucket) {
+        $allow = $logisticsPerUser[(string)$uid] ?? $defaultLogisticsAmount;
+        if ($allow !== null) {
+            $bucket['items'][] = [
+                'label'  => 'Logistics Allowance',
+                'amount' => (float)$allow,
+            ];
+        }
+    }
+    unset($bucket);
+
+    // Compute totals & shape final rows
+    $final = [];
+
+    foreach ($withUser as $bucket) {
+        $total = 0.0;
+        $itemStrs = [];
+        foreach ($bucket['items'] as $it) {
+            $total += (float)$it['amount'];
+            $itemStrs[] = $it['label'] . ' - ' . number_format((float)$it['amount'], 2, '.', ',');
+        }
+        $final[] = [
+            'fullname'   => $bucket['fullname'] ?: '',
+            'department' => $bucket['department'] ?: '',
+            'items'      => $itemStrs,     // keep array if you like; join for sheet below
+            'total'      => $total,
+        ];
+    }
+
+    foreach ($noUser as $bucket) {
+        $amt = (float)$bucket['items'][0]['amount'];
+        $label = $bucket['items'][0]['label'];
+        $final[] = [
+            'fullname'   => '', // per requirement: only show fullname if user_id exists
+            'department' => $bucket['department'] ?: '',
+            'items'      => [ $label . ' - ' . number_format($amt, 2, '.', ',') ],
+            'total'      => $amt,
+        ];
+    }
+
+    return $final;
+}
+
+/**
+ * Flatten for PhpSpreadsheet:
+ * Columns: fullname | department | items | total
+ * (items joined with " | ")
+ */
+function flattenForSheetReport(array $aggregated): array
+{
+    $rows = [];
+    $rows[] = ['fullname', 'department', 'items', 'total'];
+
+    foreach ($aggregated as $r) {
+        $rows[] = [
+            $r['fullname'],
+            $r['department'],
+            implode(' | ', $r['items']),
+            $r['total'], // keep numeric for Excel formatting
+        ];
+    }
+    return $rows;
+}
+
 if (!function_exists('isSequential')) {
     function isSequential($array) {
         if (empty($array)) {
@@ -12,6 +126,7 @@ if (!function_exists('isSequential')) {
         }
     }
 }
+
 
 if (!function_exists('subArrayAssoc')) {
     function subArrayAssoc($array, $start, $len) {

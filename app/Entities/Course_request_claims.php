@@ -577,4 +577,22 @@ class Course_request_claims extends Crud
 		return $this->query($query, [$course, $session]);
 	}
 
+    public function getCourseClaimsAmountOnly($course, $session)
+    {
+        $query = "SELECT COALESCE(sum(b.sum_total), 0) as total FROM course_request_claims a join course_request_claim_items b on b.course_request_claim_id = a.id 
+         WHERE a.session_id=? and a.course_id = ? ";
+        $result = $this->query($query, [$session, $course]);
+        if(!$result) return 0;
+
+        return $result[0]['total'];
+    }
+
+    public function getCourseClaimManagerNew($course, $session, $userID)
+    {
+        $query = "SELECT id, essential_inline_waiver as waiver, exam_type from course_manager_claims 
+			where course_id = ? and session_id = ? and user_id = ?
+                order by created_at desc limit 1";
+        return $this->query($query, [$course, $session, $userID]);
+    }
+
 }
