@@ -1,13 +1,13 @@
 <?php
-namespace App\Validation\Resolver;
+namespace App\Validation\Support\Resolver;
 
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ValidationFailedException;
-use App\Validation\Contracts\RulesProvider;
+use App\Validation\Support\Contracts\RulesProvider;
 
 final class ValidationResolver
 {
-    public static function run(string $entity, string $action, array $data): void
+    public static function run(string $entity, string $action, array $data, array $ctx = []): void
     {
         $class = self::classFor($entity, $action);
         if (!class_exists($class) || !is_subclass_of($class, RulesProvider::class)) {
@@ -16,7 +16,7 @@ final class ValidationResolver
 
         // authorize() — optional, must allow before validation can run
         if (method_exists($class, 'authorize')) {
-            $ok = (bool) $class::authorize($data);
+            $ok = (bool) $class::authorize($data, $ctx);
             if (!$ok) {
                 $msg = method_exists($class, 'denyMessage') ? (string) $class::denyMessage() : 'Unauthorized to perform action';
                 throw new ForbiddenException($msg);
@@ -48,6 +48,6 @@ final class ValidationResolver
     {
         $e = studly($entity);
         $a = studly($action);
-        return "App\\Validation\\{$e}\\{$a}Rules";
+        return "App\\Validation\\Entities\\{$e}\\{$a}Rules";
     }
 }

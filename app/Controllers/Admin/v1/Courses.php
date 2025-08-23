@@ -30,11 +30,21 @@ class Courses extends BaseController
             $payload ?? [],
             $this->request->getFiles() ?? []
         );
-
         if(!$row) return ApiResponse::error("Unable to create course");
 
         return ApiResponse::success('Course inserted successfully', $payload);
+    }
 
+    public function update($id){
+        $course = new \App\Entities\Courses();
+        $payload = $this->request->getRawInput();
+
+        $row = $course->updateSingle(
+            $id, $payload ?? [],
+        );
+        if(!$row) return ApiResponse::error("Unable to update course");
+
+        return ApiResponse::success('Course updated successfully', $payload);
     }
 
 }

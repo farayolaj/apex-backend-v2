@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Validation\Courses;
+namespace App\Validation\Entities\Courses;
 
 use App\Exceptions\ValidationFailedException;
-use App\Validation\Contracts\RulesProvider;
+use App\Validation\Support\Contracts\RulesProvider;
 
 /**
  * All-in-one:
@@ -17,7 +17,7 @@ final class CreateRules implements RulesProvider
     /**
      * Optional: called first; return false to stop with 403
      */
-    public static function authorize(array $data): bool
+    public static function authorize(array $data, array $ctx): bool
     {
         return permissionAuthorize('course_create');
     }

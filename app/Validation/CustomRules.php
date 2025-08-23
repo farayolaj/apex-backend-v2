@@ -9,10 +9,12 @@ class CustomRules
      * Accepts ISO 8601 and common formats.
      *
      * @param string $value
+     * @param string $params
+     * @param array $data
      * @param string|null &$error
      * @return bool
      */
-    public function valid_datetime($value, string $params, array $data, ?string &$error = null): bool
+    public function valid_datetime(string $value, string $params, array $data, ?string &$error = null): bool
     {
         $params = explode(',', $params);
         $field = $params[0];

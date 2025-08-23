@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Exceptions\ValidationFailedException;
 use App\Hooks\Resolver\ObserverResolver;
 use App\Support\Entity\SubsetSupport;
-use App\Validation\Resolver\ValidationResolver;
+use App\Validation\Support\Resolver\ValidationResolver;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use Throwable;
@@ -49,9 +49,23 @@ class Crud extends BaseCrud
 
     /** Resolved once per repo instance */
     private ?object $observer = null;
-    /** @var array{before:bool,after:bool,handle:bool,cleanup:bool} */
-    private array $obsFlags = ['before'=>false, 'after'=>false, 'handle'=>false, 'cleanup'=>false];
-
+    /** @var array{
+     *     beforeCreate:bool,
+     *     afterCreate:bool,
+     *     beforeUpdate:bool,
+     *     afterUpdate:bool,
+     *     handle:bool,
+     *     cleanup:bool
+     * }
+     */
+    private array $obsFlags = [
+        'beforeCreate'=>false,
+        'afterCreate'=>false,
+        'beforeUpdate'=>false,
+        'afterUpdate'=>false,
+        'handle'=>false,
+        'cleanup'=>false
+    ];
     private bool $hooksReady = false;
 
     public function __construct($array = [])
@@ -75,9 +89,12 @@ class Crud extends BaseCrud
 
     // ---------------- Hooks (receive $extra too and can be overridden by subclass) ----------------
     protected function beforeCreating(array &$data, array $extra): void {}
+    protected function afterCreated(int $id, array &$data, array $extra): void {}
+    protected function beforeUpdating(int $id, array &$data, array $extra): void {}
+    protected function afterUpdated(int $id, array &$data, array $extra): void {}
     protected function handleUploads(array &$data, array $files, array $extra): void {}
     protected function cleanupUploadsOnFailure(array $data, array $extra = []): void {}
-    protected function afterCreated(int $id, array &$data, array $extra): void {}
+
 
     // ----------------------------------------------------------------
     protected function builder(): BaseBuilder
@@ -98,8 +115,12 @@ class Crud extends BaseCrud
     {
         if (!$this->useTimestamps) return;
         $now = date('Y-m-d H:i:s');
-        if ($isInsert && $this->createdField && !isset($data[$this->createdField])) $data[$this->createdField] = $now;
-        if ($this->updatedField && !isset($data[$this->updatedField])) $data[$this->updatedField] = $now;
+        if ($isInsert) {
+            if ($this->createdField && !isset($data[$this->createdField])) $data[$this->createdField] = $now;
+            if ($this->updatedField && !isset($data[$this->updatedField])) $data[$this->updatedField] = $now;
+        } else {
+            if ($this->updatedField) $data[$this->updatedField] = $now;
+        }
     }
 
     /**
@@ -110,7 +131,7 @@ class Crud extends BaseCrud
      *
      * @return array{0: array, 1: array} [$persist, $extra]
      */
-    protected function buildInsertPayloads(array $input): array
+    protected function buildDataPayloads(array $input): array
     {
         if ($this->useLabelDrivenInsert && $this->entityClass) {
             return SubsetSupport::partitionByModelLabel($this->entityClass, $input, ['id']);
@@ -122,18 +143,18 @@ class Crud extends BaseCrud
         return [$persist, $extra];
     }
 
-    // --------- HOOK DISPATCH (ORDERED) ----------
+    // --------- HOOK DISPATCH CREATE (ORDERED) ----------
     private function runBeforeCreating(array &$data, array $extra): void
     {
         $this->ensureObserver();
         if ($this->externalObserversFirst) {
-            if ($this->observer && $this->obsFlags['before']) {
+            if ($this->observer && $this->obsFlags['beforeCreate']) {
                 $this->observer->beforeCreating($data, $extra);
             }
             $this->beforeCreating($data, $extra);
         } else {
             $this->beforeCreating($data, $extra);
-            if ($this->observer && $this->obsFlags['before']) {
+            if ($this->observer && $this->obsFlags['beforeCreate']) {
                 $this->observer->beforeCreating($data, $extra);
             }
         }
@@ -143,14 +164,47 @@ class Crud extends BaseCrud
     {
         $this->ensureObserver();
         if ($this->externalObserversFirst) {
-            if ($this->observer && $this->obsFlags['after']) {
+            if ($this->observer && $this->obsFlags['afterCreate']) {
                 $this->observer->afterCreated($id, $data, $extra);
             }
             $this->afterCreated($id, $data, $extra);
         } else {
             $this->afterCreated($id, $data, $extra);
-            if ($this->observer && $this->obsFlags['after']) {
+            if ($this->observer && $this->obsFlags['afterCreate']) {
                 $this->observer->afterCreated($id, $data, $extra);
+            }
+        }
+    }
+
+    // --------- HOOK DISPATCH UPDATE (ORDERED) ----------
+    private function runBeforeUpdating(int $id, array &$data, array $extra): void
+    {
+        $this->ensureObserver();
+        if ($this->externalObserversFirst) {
+            if ($this->observer && $this->obsFlags['beforeUpdate']) {
+                $this->observer->beforeUpdating($id, $data, $extra);
+            }
+            $this->beforeUpdating($id, $data, $extra);
+        } else {
+            $this->beforeUpdating($id, $data, $extra);
+            if ($this->observer && $this->obsFlags['beforeUpdate']) {
+                $this->observer->beforeUpdating($id, $data, $extra);
+            }
+        }
+    }
+
+    private function runAfterUpdated(int $id, array &$data, array $extra): void
+    {
+        $this->ensureObserver();
+        if ($this->externalObserversFirst) {
+            if ($this->observer && $this->obsFlags['afterUpdate']) {
+                $this->observer->afterUpdated($id, $data, $extra);
+            }
+            $this->afterUpdated($id, $data, $extra);
+        } else {
+            $this->afterUpdated($id, $data, $extra);
+            if ($this->observer && $this->obsFlags['afterUpdate']) {
+                $this->observer->afterUpdated($id, $data, $extra);
             }
         }
     }
@@ -207,7 +261,7 @@ class Crud extends BaseCrud
     {
         $useTx = !array_key_exists('dbTransaction', $options) || (bool)$options['dbTransaction'];
         // Partition input -> persistable + extra (EXTRA IS KEPT)
-        [$data, $extra] = $this->buildInsertPayloads($input);
+        [$data, $extra] = $this->buildDataPayloads($input);
         $this->injectDataToExtra($extra);
 
         // Quick presence check on persistable
@@ -247,5 +301,91 @@ class Crud extends BaseCrud
             $this->runCleanupUploads($data, $extra);
             throw $e;
         }
+    }
+
+    /**
+     * Update a single row.
+     * - $id: primary key value
+     * - $input: raw payload (label-driven subset will be persisted)
+     * - $files: for uploads (optional)
+     * - $options:
+     *     'dbTransaction'=> bool (default true)
+     *     'where'        => array additional where pairs (optimistic guard)
+     *     'include'      => array passed to findById() if you use updateAndShow()
+     *
+     * Throws your global exceptions (Forbidden/ValidationFailed/Database) — let them bubble.
+     * @throws Throwable
+     */
+    public function updateSingle(int $id, array $input, array $files = [], array $options = []): bool
+    {
+        // Build payloads & context
+        [$data, $extra] = $this->buildDataPayloads($input);
+        $this->injectDataToExtra($extra);
+
+        // Validation (authorize + precheck + rules) — pass id for rules
+        $entity = $this->validationEntity ?: $this->getTableName();
+        $ctx    = $options['context'] ?? [];
+        $ctx['id'] = $id; // handy if your authorize() needs it
+        ValidationResolver::run($entity, 'update', array_merge($data, $extra, ['id'=>$id]), $ctx);
+
+        // Hooks & timestamps
+        $this->runBeforeUpdating($id, $data, $extra);
+        $this->applyTimestamps($data, false);
+        if (!empty($files)) $this->runHandleUploads($data, $files, $extra);
+
+        // Persist
+        $tx = !array_key_exists('dbTransaction', $options) || (bool)$options['dbTransaction'];
+        if ($tx) $this->db->transBegin();
+
+        try {
+            $b = $this->builder();
+            $b->where($this->primaryKey, $id);
+            if (!empty($options['where']) && is_array($options['where'])) {
+                foreach ($options['where'] as $k => $v) {
+                    $b->where($k, $v);
+                }
+            }
+
+            if (!$b->update($data)) {
+                $err = $this->db->error();
+                throw new DatabaseException($err['message'] ?? 'Update failed');
+            }
+
+            // Commit before afterUpdate side effects
+            if ($tx) $this->db->transCommit();
+
+            $this->runAfterUpdated($id, $data, $extra);
+
+            // Cache invalidation
+            $this->invalidateById($id);
+            $this->invalidateAll();
+
+            return true;
+        } catch (\Throwable $e) {
+            if ($tx && $this->db->transStatus() !== false) $this->db->transRollback();
+            $this->runCleanupUploads($data, $extra);
+            throw $e;
+        }
+    }
+
+    /**
+     * Update then return the fresh row (if you prefer the row back).
+     * @throws Throwable
+     */
+    public function updateAndShow(
+        int $id,
+        array $input,
+        array $files = [],
+        array $options = []
+    ): array {
+        $ok = $this->updateSingle($id, $input, $files, $options);
+        if (!$ok) {
+            throw new DatabaseException('Update indicated failure');
+        }
+        $include = $options['include'] ?? [];
+        $select  = $options['select']  ?? null;
+        $escape  = (bool)($options['escape'] ?? false);
+        $cache   = $options['cache']   ?? [];
+        return $this->detail($id, $include, $select, $escape, $cache);
     }
 }

@@ -20,11 +20,22 @@ class Courses implements Observer
 
     public function handleUploads(array &$data, array $files, array $extra): void
     {
-        // TODO: Implement handleUploads() method.
     }
 
     public function cleanupUploads(array $data, array $extra): void
     {
-        // TODO: Implement cleanupUploads() method.
     }
+
+    public function beforeUpdating(int $id, array &$data, array $extra): void
+    {
+        if (isset($data['code']))  $data['code']  = strtoupper(trim((string)$data['code']));
+        if (isset($data['title'])) $data['title'] = trim((string)$data['title']);
+    }
+
+    public function afterUpdated(int $id, array &$data, array $extra): void
+    {
+        logAction('course_update', $extra['current_user']->user_login, $id, null, json_encode($data));
+    }
+
+
 }

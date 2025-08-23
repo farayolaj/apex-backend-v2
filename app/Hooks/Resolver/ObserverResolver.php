@@ -18,12 +18,22 @@ final class ObserverResolver
     private static array $instances = [];
 
     /**
-     * @var array<string,array{before:bool,after:bool,handle:bool,cleanup:bool}>
+     * @var array<string,array{
+     *      before:bool,
+     *      after:bool,
+     *      handle:bool,
+     *      cleanup:bool
+     * }>
      */
     private static array $flags = [];
 
     /**
-     * @return array{0: (object|null), 1: array{before:bool,after:bool,handle:bool,cleanup:bool}}
+     * @return array{0: (object|null), 1: array{
+     *     before:bool,
+     *     after:bool,
+     *     handle:bool,
+     *     cleanup:bool
+     * }}
      */
     public static function resolve(string $entity): array
     {
@@ -35,16 +45,17 @@ final class ObserverResolver
 
             self::$flags[$key] = $inst
                 ? [
-                    'before'  => \is_callable([$inst, 'beforeCreating']),
-                    'after'   => \is_callable([$inst, 'afterCreated']),
-                    'handle'  => \is_callable([$inst, 'handleUploads']),
-                    'cleanup' => \is_callable([$inst, 'cleanupUploads']),
+                    'beforeCreate' => \is_callable([$inst, 'beforeCreating']),
+                    'afterCreate'  => \is_callable([$inst, 'afterCreated']),
+                    'beforeUpdate' => \is_callable([$inst, 'beforeUpdating']),
+                    'afterUpdate'  => \is_callable([$inst, 'afterUpdated']),
+                    'handle'       => \is_callable([$inst, 'handleUploads']),
+                    'cleanup'      => \is_callable([$inst, 'cleanupUploads']),
                 ]
                 : [
-                    'before'=>false,
-                    'after'=>false,
-                    'handle'=>false,
-                    'cleanup'=>false
+                    'beforeCreate'=>false, 'afterCreate'=>false,
+                    'beforeUpdate'=>false, 'afterUpdate'=>false,
+                    'handle'=>false, 'cleanup'=>false,
                 ];
         }
 
