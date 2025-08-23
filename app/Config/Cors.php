@@ -43,6 +43,7 @@ class Cors extends BaseConfig
             'http://localhost:8181',
             'https://apex.ui.edu.ng',
             'https://apex.staging.edutechportal.net',
+            'https://portal.staging.edutechportal.net',
         ],
 
         /**
