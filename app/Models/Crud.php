@@ -38,16 +38,27 @@ class Crud extends BaseCrud
     protected string $createdField = 'date_created';
     protected string $updatedField = 'date_modified';
 
-    /** If null -> defaults to $this->table */
-    protected ?string $hooksEntity      = null;
+    // Optional soft delete support
+    protected bool   $useSoftDeletes  = false;
+    protected string $deletedField    = 'deleted_at';
+    protected ?string $deletedByField = null; // e.g. 'deleted_by' if you want
 
-    /** External hooks toggle + order */
+    /**
+     * If null -> defaults to $this->table
+     */
+    protected ?string $hooksEntity      = null;
+    /**
+     * External hooks toggle + order
+     */
     protected bool $useExternalHooks = true;
 
-    /** If true: external runs first, else repo runs first */
+    /**
+     * If true: external runs first, else repo runs first
+     */
     protected bool $externalObserversFirst = false;
-
-    /** Resolved once per repo instance */
+    /**
+     * Resolved once per repo instance
+     */
     private ?object $observer = null;
     /** @var array{
      *     beforeCreate:bool,
@@ -59,12 +70,10 @@ class Crud extends BaseCrud
      * }
      */
     private array $obsFlags = [
-        'beforeCreate'=>false,
-        'afterCreate'=>false,
-        'beforeUpdate'=>false,
-        'afterUpdate'=>false,
-        'handle'=>false,
-        'cleanup'=>false
+        'beforeCreate'=>false, 'afterCreate'=>false,
+        'beforeUpdate'=>false, 'afterUpdate'=>false,
+        'beforeDelete'=>false, 'afterDelete'=>false,
+        'handle'=>false, 'cleanup'=>false
     ];
     private bool $hooksReady = false;
 
@@ -90,8 +99,13 @@ class Crud extends BaseCrud
     // ---------------- Hooks (receive $extra too and can be overridden by subclass) ----------------
     protected function beforeCreating(array &$data, array $extra): void {}
     protected function afterCreated(int $id, array &$data, array $extra): void {}
+
     protected function beforeUpdating(int $id, array &$data, array $extra): void {}
     protected function afterUpdated(int $id, array &$data, array $extra): void {}
+
+    protected function beforeDeleting(int $id, array $extra): void {}
+    protected function afterDeleted(int $id, array $extra): void {}
+
     protected function handleUploads(array &$data, array $files, array $extra): void {}
     protected function cleanupUploadsOnFailure(array $data, array $extra = []): void {}
 
@@ -159,7 +173,6 @@ class Crud extends BaseCrud
             }
         }
     }
-
     private function runAfterCreated(int $id, array &$data, array $extra): void
     {
         $this->ensureObserver();
@@ -192,7 +205,6 @@ class Crud extends BaseCrud
             }
         }
     }
-
     private function runAfterUpdated(int $id, array &$data, array $extra): void
     {
         $this->ensureObserver();
@@ -205,6 +217,38 @@ class Crud extends BaseCrud
             $this->afterUpdated($id, $data, $extra);
             if ($this->observer && $this->obsFlags['afterUpdate']) {
                 $this->observer->afterUpdated($id, $data, $extra);
+            }
+        }
+    }
+
+    // --------- HOOK DISPATCH DELETE (ORDERED) ----------
+    private function runBeforeDeleting(int $id, array $extra): void
+    {
+        $this->ensureObserver();
+        if ($this->externalObserversFirst) {
+            if ($this->observer && $this->obsFlags['beforeDelete']) {
+                $this->observer->beforeDeleting($id, $extra);
+            }
+            $this->beforeDeleting($id, $extra);
+        } else {
+            $this->beforeDeleting($id, $extra);
+            if ($this->observer && $this->obsFlags['beforeDelete']) {
+                $this->observer->beforeDeleting($id, $extra);
+            }
+        }
+    }
+    private function runAfterDeleted(int $id, array $extra): void
+    {
+        $this->ensureObserver();
+        if ($this->externalObserversFirst) {
+            if ($this->observer && $this->obsFlags['afterDelete']) {
+                $this->observer->afterDeleted($id, $extra);
+            }
+            $this->afterDeleted($id, $extra);
+        } else {
+            $this->afterDeleted($id, $extra);
+            if ($this->observer && $this->obsFlags['afterDelete']) {
+                $this->observer->afterDeleted($id, $extra);
             }
         }
     }
@@ -224,7 +268,6 @@ class Crud extends BaseCrud
             }
         }
     }
-
     private function runCleanupUploads(array $data, array $extra): void
     {
         $this->ensureObserver();
@@ -310,8 +353,8 @@ class Crud extends BaseCrud
      * - $files: for uploads (optional)
      * - $options:
      *     'dbTransaction'=> bool (default true)
-     *     'where'        => array additional where pairs (optimistic guard)
-     *     'include'      => array passed to findById() if you use updateAndShow()
+     *     'where'  => array additional where pairs (optimistic guard ('where' => ['tenant_id' => 5]))
+     *     'include' => array passed to findById() if you use updateAndShow()
      *
      * Throws your global exceptions (Forbidden/ValidationFailed/Database) — let them bubble.
      * @throws Throwable
@@ -387,5 +430,70 @@ class Crud extends BaseCrud
         $escape  = (bool)($options['escape'] ?? false);
         $cache   = $options['cache']   ?? [];
         return $this->detail($id, $include, $select, $escape, $cache);
+    }
+
+    /**
+     * Delete a single row by id.
+     * Options:
+     *  - 'dbTransaction' => bool (default true)
+     *  - 'where' => array extra guards (e.g. 'where' => ['tenant_id' => 5])
+     * @throws Throwable
+     */
+    public function deleteSingle(int $id, array $options = []): bool
+    {
+        $extra = [];
+        $this->injectDataToExtra($extra);
+
+        // Validation (authorize/precheck/rules)
+        $entity = $this->validationEntity ?: $this->getTableName();
+        $ctx    = $options['context'] ?? [];
+        $ctx['id'] = $id;
+        ValidationResolver::run($entity, 'delete', ['id' => $id, '__entity__' => $entity] + $extra, $ctx);
+
+        // Hooks
+        $this->runBeforeDeleting($id, $extra);
+
+        $tx = !array_key_exists('dbTransaction', $options) || (bool)$options['dbTransaction'];
+        if ($tx) $this->db->transBegin();
+
+        try {
+            $b = $this->builder()->where($this->primaryKey, $id);
+            if (!empty($options['where']) && is_array($options['where'])) {
+                foreach ($options['where'] as $k => $v) $b->where($k, $v);
+            }
+
+            $soft = array_key_exists('soft', $options) ? (bool)$options['soft'] : $this->useSoftDeletes;
+            if ($soft) {
+                $payload = [];
+                $now = date('Y-m-d H:i:s');
+                if ($this->deletedField) $payload[$this->deletedField] = $now;
+                if ($this->deletedByField && isset($extra['current_user'])) {
+                    $uid = is_object($extra['current_user']) ? ($extra['current_user']->id ?? null) : ($extra['current_user']['id'] ?? null);
+                    if ($uid !== null) $payload[$this->deletedByField] = (int)$uid;
+                }
+                if (!$b->update($payload)) {
+                    $err = $this->db->error();
+                    throw new DatabaseException($err['message'] ?? 'Soft delete failed');
+                }
+            } else {
+                if (!$b->delete()) {
+                    $err = $this->db->error();
+                    throw new DatabaseException($err['message'] ?? 'Delete failed');
+                }
+            }
+
+            if ($tx) $this->db->transCommit();
+
+            $this->runAfterDeleted($id, $extra);
+
+            // Cache bust
+            $this->invalidateById($id);
+            $this->invalidateAll();
+
+            return true;
+        } catch (\Throwable $e) {
+            if ($tx && $this->db->transStatus() !== false) $this->db->transRollback();
+            throw $e;
+        }
     }
 }

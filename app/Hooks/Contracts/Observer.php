@@ -11,4 +11,7 @@ interface Observer
 
     public function handleUploads(array &$data, array $files, array $extra): void;
     public function cleanupUploads(array $data, array $extra): void;
+
+    public function beforeDeleting(int $id, array $extra): void;
+    public function afterDeleted(int $id, array $extra): void;
 }

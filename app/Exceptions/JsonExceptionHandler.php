@@ -28,13 +28,12 @@ class JsonExceptionHandler extends BaseExceptionHandler implements ExceptionHand
 
     private function friendly(Throwable $e, int $status): string
     {
-        if ($status === 422) {
+        if ($status === 422 || $status === 403) {
             return $e->getMessage() ?: 'Validation failed';
         }
         return match ($status) {
             400 => 'Bad request',
             401 => 'Unauthenticated',
-            403 => 'Forbidden',
             404 => 'Not found',
             default => 'Server error',
         };

@@ -5,7 +5,7 @@ namespace App\Controllers\Admin\v1;
 use App\Controllers\BaseController;
 use App\Libraries\ApiResponse;
 use App\Traits\Crud\EntityListTrait;
-use PHPUnit\Exception;
+use Throwable;
 
 class Courses extends BaseController
 {
@@ -21,6 +21,9 @@ class Courses extends BaseController
         return ApiResponse::success(data: $payload);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function store(){
         $course = new \App\Entities\Courses();
 
@@ -35,6 +38,9 @@ class Courses extends BaseController
         return ApiResponse::success('Course inserted successfully', $payload);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function update($id){
         $course = new \App\Entities\Courses();
         $payload = $this->request->getRawInput();
@@ -45,6 +51,17 @@ class Courses extends BaseController
         if(!$row) return ApiResponse::error("Unable to update course");
 
         return ApiResponse::success('Course updated successfully', $payload);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function delete($id){
+        $course = new \App\Entities\Courses();
+        $row = $course->deleteSingle($id);
+        if(!$row) return ApiResponse::error("Unable to delete course");
+
+        return ApiResponse::success('Course deleted successfully');
     }
 
 }

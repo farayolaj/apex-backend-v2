@@ -17,14 +17,12 @@ final class ObserverResolver
      */
     private static array $instances = [];
 
-    /**
-     * @var array<string,array{
-     *      before:bool,
-     *      after:bool,
-     *      handle:bool,
-     *      cleanup:bool
-     * }>
-     */
+    /** @var array<string,array{
+     *   beforeCreate:bool, afterCreate:bool,
+     *   beforeUpdate:bool, afterUpdate:bool,
+     *   beforeDelete:bool, afterDelete:bool,
+     *   handle:bool, cleanup:bool
+     * }> */
     private static array $flags = [];
 
     /**
@@ -49,12 +47,15 @@ final class ObserverResolver
                     'afterCreate'  => \is_callable([$inst, 'afterCreated']),
                     'beforeUpdate' => \is_callable([$inst, 'beforeUpdating']),
                     'afterUpdate'  => \is_callable([$inst, 'afterUpdated']),
+                    'beforeDelete' => \is_callable([$inst, 'beforeDeleting']),
+                    'afterDelete'  => \is_callable([$inst, 'afterDeleted']),
                     'handle'       => \is_callable([$inst, 'handleUploads']),
                     'cleanup'      => \is_callable([$inst, 'cleanupUploads']),
                 ]
                 : [
                     'beforeCreate'=>false, 'afterCreate'=>false,
                     'beforeUpdate'=>false, 'afterUpdate'=>false,
+                    'beforeDelete'=>false, 'afterDelete'=>false,
                     'handle'=>false, 'cleanup'=>false,
                 ];
         }

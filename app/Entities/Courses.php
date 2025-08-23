@@ -112,11 +112,10 @@ class Courses extends Crud
 
     public function delete($id = null, &$dbObject = null, $type = null): bool
     {
-        permissionAccess('course_delete', 'delete');
         $currentUser = WebSessionManager::currentAPIUser();
         $db = $dbObject ?? $this->db;
         if (parent::delete($id, $db)) {
-            logAction( 'course_delete', $currentUser->user_login);
+            logAction('course_delete', $currentUser->user_login);
             return true;
         }
         return false;

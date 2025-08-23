@@ -37,5 +37,15 @@ class Courses implements Observer
         logAction('course_update', $extra['current_user']->user_login, $id, null, json_encode($data));
     }
 
+    public function beforeDeleting(int $id, array $extra): void
+    {
+
+    }
+
+    public function afterDeleted(int $id, array $extra): void
+    {
+        logAction('course_delete', $extra['current_user']->user_login, $id,);
+    }
+
 
 }

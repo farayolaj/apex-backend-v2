@@ -16,6 +16,7 @@ $routes->group('v1/web/', [
     $routes->get('courses/(:num)', 'Courses::show/$1');
     $routes->post('courses', 'Courses::store');
     $routes->patch('courses/(:num)', 'Courses::update/$1');
+    $routes->delete('courses/delete/(:num)', 'Courses::delete/$1');
 
     // webinar management
     $routes->get('courses/(:num)/webinars', 'Webinars::index/$1');
