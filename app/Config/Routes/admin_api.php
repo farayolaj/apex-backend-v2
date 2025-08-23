@@ -7,16 +7,29 @@ use App\Controllers\Admin\v1\EmailBuilderController;
  * @var RouteCollection $routes
  */
 
+// this routes handle things that their content-type shouldn't be application/json
+$routes->group('v1/web/', [
+    'filter' => ['apiValidation:admin,no-json'],
+    'namespace' => 'App\Controllers\Admin\v1'
+], function ($routes) {
+
+    $routes->get('samples/(:segment)', 'SamplesController::download/$1');
+
+    // handle CORS preflight requests
+    $routes->options('(:any)', static function () {});
+    $routes->options('(:any)/(:num)', static function () {});
+});
+
 $routes->group('v1/web/', [
     'filter' => ['apiValidation:admin'],
     'namespace' => 'App\Controllers\Admin\v1'
 ], function ($routes) {
     // course management
-    $routes->get('courses', 'Courses::index');
-    $routes->get('courses/(:num)', 'Courses::show/$1');
-    $routes->post('courses', 'Courses::store');
-    $routes->patch('courses/(:num)', 'Courses::update/$1');
-    $routes->delete('courses/delete/(:num)', 'Courses::delete/$1');
+    $routes->get('courses', 'CoursesController::index');
+    $routes->get('courses/(:num)', 'CoursesController::show/$1');
+    $routes->post('courses', 'CoursesController::store');
+    $routes->patch('courses/(:num)', 'CoursesController::update/$1');
+    $routes->delete('courses/delete/(:num)', 'CoursesController::delete/$1');
 
     // webinar management
     $routes->get('courses/(:num)/webinars', 'Webinars::index/$1');

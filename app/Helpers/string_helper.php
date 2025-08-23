@@ -1,6 +1,18 @@
 <?php
-
 use App\Enums\CommonEnum as CommonSlug;
+
+if(!function_exists('sendNewDownload')){
+    /**
+     * If you want to download an existing file from the server you’ll need to pass null explicitly
+     * for the second parameter:
+     * Contents [path/to/photo.jpg] will be automatically read
+     * @param $filename - Either the filename or absolute path if content already on server
+     * @param $data - The data to download or explicit null if data already exist on server
+     */
+    function sendNewDownload($filename, $data = null){
+        return response()->download($filename, $data);
+    }
+}
 
 if(!function_exists('studly')){
     function studly(string $s): string

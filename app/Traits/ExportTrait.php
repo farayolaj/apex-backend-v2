@@ -4,12 +4,14 @@ namespace App\Traits;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Html;
 
 trait ExportTrait
 {
-    static private $_map = array();
+     private static $_map = array();
 
-    static public function get($col, $row = null): string
+    public static function get($col, $row = null): string
     {
         if (!in_array($col, self::$_map)) {
             self::$_map[] = $col;
@@ -19,12 +21,12 @@ trait ExportTrait
         return $columnLetter . ($row ? $row : null);
     }
 
-    static public function getLast(): string
+    public static function getLast(): string
     {
         return Coordinate::stringFromColumnIndex(count(self::$_map));
     }
 
-    static public function reset(): void
+    public static function reset(): void
     {
         self::$_map = array();
     }
@@ -93,6 +95,28 @@ trait ExportTrait
         $writer = new Xlsx($spreadsheet);
         $writer->save($filename);
         return self::generateDownloadLink($filename);
+    }
+
+    /**
+     * @param string $filename
+     * @param string $content
+     * @param bool $download
+     * @return \CodeIgniter\HTTP\DownloadResponse|string|null
+     */
+    public static function downloadSample(string $filename, string $content, bool $download = true)
+    {
+        $html = "<table> $content</table>";
+        $filename = WRITEPATH . "temp/{$filename}";
+        $reader = new Html();
+        $spreadsheet = $reader->loadFromString($html);
+
+        $writer = IOFactory::createWriter($spreadsheet, 'Csv');
+        $writer->save($filename);
+        if ($download) {
+            return sendNewDownload($filename, null);
+        }
+
+        return $filename;
     }
 
 }

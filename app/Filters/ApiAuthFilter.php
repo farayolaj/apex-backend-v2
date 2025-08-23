@@ -52,7 +52,12 @@ class ApiAuthFilter implements FilterInterface
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null): void
     {
         // Do something here
-        $response->setHeader('Content-Type', 'application/json');
+        $type = $arguments[0];
+        $check = !isset($arguments[1]);
+
+        if($check){
+            $response->setHeader('Content-Type', 'application/json');
+        }
     }
 
     /**

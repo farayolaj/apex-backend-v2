@@ -7,7 +7,7 @@ use App\Libraries\ApiResponse;
 use App\Traits\Crud\EntityListTrait;
 use Throwable;
 
-class Courses extends BaseController
+class CoursesController extends BaseController
 {
     use EntityListTrait;
 
