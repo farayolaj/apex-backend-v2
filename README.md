@@ -953,3 +953,266 @@ protected function cleanupUploadsOnFailure(array $data, array $extra = []): void
 }
 
 ```
+
+# Create Flow (CI4) — Usage Guide
+
+---
+
+## What you get
+
+* **One call**: `$repo->create($payload, $files, $options)`
+* **Automatic**: authorization (optional), prechecks (DB), CI4 rules, transactions, uploads, observers, cache busting, and consistent JSON errors (via global handler).
+* **Convention** over config: predictable file/dir names.
+
+---
+
+## Directory & Naming
+
+```
+app/
+  Validation/
+    Courses/
+      CreateRules.php                 # Create validator for 'courses' entity
+  Hooks/
+    Observers/
+      Courses.php                     # Observer for 'courses' entity (optional)
+```
+
+**Conventions**
+
+* Entity name = DB table (e.g., `courses`).
+* `CreateRules` lives at `App\Validation\<StudlyEntity>\CreateRules`.
+* Observer class lives at `App\Hooks\Observers\<StudlyEntity>`.
+
+---
+
+## Quick Start (5 steps)
+
+1. **Repository**
+   In your child repo, set the table and (optionally) the observer entity:
+
+   ```php
+   final class CourseRepository extends BaseCrudRepository
+   {
+       protected string  $table       = 'courses';
+       protected ?string $hooksEntity = 'courses'; // optional, defaults to $table
+   }
+   ```
+
+2. **Validation** (authorize → precheck → rules/messages)
+   Create `app/Validation/Courses/CreateRules.php`:
+
+   ```php
+   final class CreateRules implements RulesProvider
+   {
+       public static function authorize(array $data, array $ctx): bool { /* return true/false */ }
+       public static function denyMessage(): string { return '...' ; }
+       public static function precheck(array $data): void { /* throw ApiValidationException::field(...) */ }
+       public static function rules(): array { return [/* CI4 rules */]; }
+       public static function messages(): array { return [/* CI4 messages */]; }
+   }
+   ```
+
+3. **Observer (hooks)** — optional
+   Create `app/Hooks/Observers/Courses.php` with any of:
+
+   ```php
+   final class Courses
+   {
+       public function beforeInsert(array &$data, array &$extra): void {}
+       public function handleUploads(array &$data, array $files, array &$extra): void {}
+       public function afterInsert(int $id, array &$data, array &$extra): void {}
+       public function cleanupUploads(array $data, array &$extra): void {}
+   }
+   ```
+
+4. **Global JSON errors**
+   Ensure your global handler is set (so controllers don’t need try/catch):
+
+   ```php
+   // app/Config/Exceptions.php
+   public ?string $handler = \App\Exceptions\JsonExceptionHandler::class;
+   ```
+
+5. **Controller usage**
+
+   ```php
+   $repo = new CourseRepository();
+
+   $payload = $this->request->getJSON(true) ?: $this->request->getPost();
+   $files   = $this->request->getFiles() ?? [];
+
+   $row = $repo->create($payload, $files, [
+       'transaction' => true,                         // default true
+   ]);
+
+   return $this->respondCreated($row, site_url('api/v1/courses/'.$row['id']));
+   ```
+
+---
+
+## The Create Flow (what happens)
+
+1. **Payload split**
+
+    * `data`: keys allowed by your model’s `static $labelArray` (persisted).
+    * `extra`: all other keys (for hooks/logic; not auto-persisted).
+
+2**Validation, in order**
+
+    * `authorize($data, $ctx)` → if false → **403** (no DB work).
+    * `precheck($data)` → can query DB and throw **ApiValidationException** with custom messages.
+    * CI4 `rules()/messages()` → standard validation → **422** with field bag.
+
+3**Observers (hooks)**
+
+    * `beforeInsert(&$data, $extra)` → normalize/derive fields; anything you add stays for later hooks.
+    * `handleUploads(&$data, $files, $extra)` → move files, set persisted paths.
+    * Transaction insert.
+    * `afterInsert($id, &$data, $extra)` → side effects (audit, events…).
+    * On failure → `cleanupUploads($data, $extra)` → delete moved files, etc.
+
+4**Cache**
+
+    * List/entity caches are invalidated automatically after commit.
+
+---
+
+## Validation: how to use it
+
+* Put everything for an action in **one class**: `CreateRules`.
+* **Authorize** quickly:
+
+  ```php
+  public static function authorize(array $data, array $ctx): bool
+  {
+      $roles = array_map('strtolower', (array)($ctx['roles'] ?? []));
+      return in_array('admin', $roles, true);
+  }
+  public static function denyMessage(): string { return 'Not allowed.'; }
+  ```
+* **Precheck** for richer errors:
+
+  ```php
+  public static function precheck(array $data): void
+  {
+      if (!empty($data['code'])) {
+          $row = db_connect()->table('courses')->select('id,title')
+                ->where('code', (string)$data['code'])->get()->getRowArray();
+          if ($row) {
+              throw \App\Exceptions\ApiValidationException::field(
+                  'code', "Course '{$data['code']}' exists (ID: {$row['id']})."
+              );
+          }
+      }
+  }
+  ```
+* **Rules/messages** remain standard CI4 arrays.
+
+**Error shape** (via global handler)
+
+```json
+// 422 (validation)
+{ "status": 422, "error": 422, "messages": { "code": "Course 'ECO101' exists (ID: 7)." } }
+
+// 403 (authorize)
+{ "status": 403, "error": 403, "messages": "Not allowed." }
+```
+
+---
+
+## Observers: how to use them
+
+Create one class per entity (optional but recommended):
+
+`app/Hooks/Observers/Courses.php`
+
+```php
+final class Courses
+{
+  public function beforeInsert(array &$data, array &$extra): void
+  {
+    $user = $extra['auth'] ?? null;
+    if ($user) $data['created_by'] = $user->id ?? ($user['id'] ?? null);
+
+    // normalize or derive fields
+    if (isset($data['code'])) $data['code'] = strtoupper($data['code']);
+    if (!isset($data['active'])) $data['active'] = 1;
+
+    // add transient data for later hooks
+    $extra['trace_id'] = bin2hex(random_bytes(6));
+  }
+
+  public function handleUploads(array &$data, array $files, array &$extra): void
+  {
+    if (!isset($files['course_guide'])) return;
+    $f = $files['course_guide']; if (!$f->isValid()) return;
+
+    $dir = WRITEPATH.'uploads/course_guides'; if (!is_dir($dir)) @mkdir($dir, 0775, true);
+    $name = strtolower($data['code'] ?? 'course') . '_' . time() . '.' . $f->getExtension();
+    $f->move($dir, $name, true);
+
+    $data['course_guide_url']        = 'uploads/course_guides/'.$name;
+    $data['__uploaded_course_guide'] = $data['course_guide_url']; // used by cleanupUploads
+  }
+
+  public function afterInsert(int $id, array &$data, array &$extra): void
+  {
+    db_connect()->table('audit_log')->insert([
+      'entity' => 'course', 'entity_id' => $id, 'action' => 'create',
+      'details' => json_encode(['trace_id'=>$extra['trace_id'] ?? null], JSON_UNESCAPED_SLASHES),
+      'created_at' => date('Y-m-d H:i:s'),
+    ]);
+  }
+
+  public function cleanupUploads(array $data, array &$extra): void
+  {
+    if (!empty($data['__uploaded_course_guide'])) {
+      @unlink(WRITEPATH . $data['__uploaded_course_guide']);
+    }
+  }
+}
+```
+---
+
+## Controller: passing auth & includes
+
+  ```php
+  $row = $repo->create($payload, $files, [
+      'include' => [], // if your repo supports includes on show
+  ]);
+  ```
+* `include`, `select`, `transaction` are optional.
+
+**422 Validation**
+
+```json
+{ "status": 422, "error": 422, "messages": { "code": "Course 'ECO101' exists (ID: 7)." } }
+```
+
+**403 Forbidden**
+
+```json
+{ "status": 403, "error": 403, "messages": "You do not have permission to create courses." }
+```
+
+---
+
+## Options you can tweak
+* `select` (string|array): override fields for the return fetch.
+* `transaction` (bool): default `true`.
+* In your repo:
+
+    * `protected bool $externalFirst = false;` (run observer hooks before repo hooks if `true`).
+    * `protected bool $useExternalHooks = true;` (disable observers if `false`).
+    * `protected ?string $hooksEntity = 'courses';` (usually equals `$table`).
+
+---
+
+## Common pitfalls
+
+* **Not setting the global exception handler** → you’ll see HTML errors. Fix `app/Config/Exceptions.php`.
+* **Mismatched entity names** → Observer class name must match the entity/table (`Courses` for `courses`).
+
+---
+

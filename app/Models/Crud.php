@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\ValidationFailedException;
 use App\Hooks\Resolver\ObserverResolver;
 use App\Support\Entity\SubsetSupport;
 use App\Validation\Resolver\ValidationResolver;
@@ -88,7 +89,7 @@ class Crud extends BaseCrud
     {
         foreach ($this->required as $field) {
             if (!array_key_exists($field, $data) || $data[$field] === null || $data[$field] === '') {
-                throw new \InvalidArgumentException("Missing required field: {$field}");
+                throw new ValidationFailedException("Missing required field: {$field}");
             }
         }
     }
@@ -204,7 +205,7 @@ class Crud extends BaseCrud
      */
     public function insertSingle(array $input, array $files = [], array $options = []): ?int
     {
-        $useTx   = !array_key_exists('dbTransaction', $options) || (bool)$options['dbTransaction'];
+        $useTx = !array_key_exists('dbTransaction', $options) || (bool)$options['dbTransaction'];
         // Partition input -> persistable + extra (EXTRA IS KEPT)
         [$data, $extra] = $this->buildInsertPayloads($input);
         $this->injectDataToExtra($extra);

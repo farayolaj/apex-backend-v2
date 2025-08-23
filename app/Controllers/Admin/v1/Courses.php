@@ -28,10 +28,7 @@ class Courses extends BaseController
 
         $row = $course->insertSingle(
             $payload ?? [],
-            $this->request->getFiles() ?? [],
-            [
-                'dbTransaction' => true,
-            ]
+            $this->request->getFiles() ?? []
         );
 
         if(!$row) return ApiResponse::error("Unable to create course");

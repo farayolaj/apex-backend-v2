@@ -104,7 +104,9 @@ class Exceptions extends BaseConfig
      */
     public function handler(int $statusCode, Throwable $exception): ExceptionHandlerInterface
     {
-        if($exception instanceof ValidationFailedException || $exception instanceof ForbiddenException){
+        if($exception instanceof ValidationFailedException ||
+            $exception instanceof ForbiddenException
+        ){
             return new JsonExceptionHandler($this);
         }
 
