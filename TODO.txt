@@ -3,4 +3,4 @@
 [] - I need to generate this observers, validation files from command line using spark commands
 [] - I need to generate the entity files too using spark commands
 [] - i need to write test for each core automation files using PEST in CI4 if possible
-[] -
+[] - I want to catch RouteNotFound exception to pretty format

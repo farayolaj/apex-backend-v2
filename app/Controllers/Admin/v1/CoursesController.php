@@ -5,11 +5,12 @@ namespace App\Controllers\Admin\v1;
 use App\Controllers\BaseController;
 use App\Libraries\ApiResponse;
 use App\Traits\Crud\EntityListTrait;
+use App\Traits\ExportTrait;
 use Throwable;
 
 class CoursesController extends BaseController
 {
-    use EntityListTrait;
+    use EntityListTrait, ExportTrait;
 
     public function index(){
         $payload = $this->listApiEntity('courses');
@@ -145,6 +146,7 @@ class CoursesController extends BaseController
                 'errorLogPath'     => $logPath,
             ]
         );
+        $result['process_log_link'] = generateDownloadLink($logPath, 'temp/logs', 'logs');
 
         return ApiResponse::success('Courses imported successfully', $result);
     }

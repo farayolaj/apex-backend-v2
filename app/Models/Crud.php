@@ -759,7 +759,8 @@ class Crud extends BaseCrud
         return array_intersect_key($row, $allow);
     }
 
-    private function processLogHeader(){
+    private function processLogHeader(): array
+    {
         $user      = WebSessionManager::currentAPIUser() ?? null;
         $username  = $user->user_login;
         $userInfo  = [

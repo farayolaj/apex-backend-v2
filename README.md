@@ -1216,3 +1216,241 @@ final class Courses
 
 ---
 
+# CSV Import (Batch / Update / Upsert)
+
+Lightweight, fast CSV imports that reuse your existing repository pipeline (`insertSingle` / `updateSingle`) with **CI4 validation**, **observers/hooks**, and **clear error reporting**. Tuned for **large files**.
+
+
+## TL;DR (Quick Start)
+
+```php
+$result = $repo->importCsv($file, [
+  'mode'            => 'upsert',                 // insert | update | upsert
+  'delimiter'       => ',',                      // ',', ';', or "\t"
+  'headerMap'       => ['course_code' => 'code', 'course_title' => 'title'],
+  'validateColumns' => ['course_code','course_title'],
+  'staticColumns'   => ['active' => 1],          // defaults if missing in CSV
+  'preprocessRow'   => fn(array $r) => [         // normalize/derive before validate/insert/update
+      'code'  => strtoupper(trim($r['code'] ?? '')),
+      'title' => trim($r['title'] ?? ''),
+  ],
+  'finder'          => fn(array $r) => $map[$r['code'] ?? ''] ?? null,  // return existing id or null
+  'batchSize'       => 1000,                     // progress checkpoint
+  'runAfterHook'    => false,                    // skip heavy after-hooks for speed
+]);
+
+```
+
+----------
+
+## What the importer does
+
+-   Streams the CSV (no giant arrays in memory).
+
+-   Remaps headers **once** (`headerMap`), lowercases them (`lowercaseHeaders=true`).
+
+-   Optionally checks the CSV has the columns you expect (`validateColumns`, order not important).
+
+-   Per row: `preprocessRow` → CI4 validation (`authorize` → `precheck` → `rules`) → observers/hooks → insert/update.
+
+-   Flexible matching for update/upsert via `finder` **or** `matchBy` (AND-equality) + optional `where` guards.
+
+-   Clear summary with counts and sampled errors; supports **file-based batched error logging** for huge runs.
+
+
+----------
+
+
+| Option             | Type                             | Default  | What it does                                                                    |
+| ------------------ | -------------------------------- | -------- | ------------------------------------------------------------------------------- |
+| `mode`             | `insert` \| `update` \| `upsert` | `insert` | Import behavior.                                                                |
+| `delimiter`        | string                           | `,`      | CSV separator (`,` `;` or `"\t"`).                                              |
+| `lowercaseHeaders` | bool                             | `true`   | Lowercase header names before use.                                              |
+| `maxRows`          | int\|null                        | `null`   | Process only first N data rows (header not counted).                            |
+| `headerMap`        | array                            | `null`   | One-time mapping `['csv_name'=>'model_field']`.                                 |
+| `validateColumns`  | string\[]                        | `null`   | Required CSV headers (order ignored); checks once before rows.                  |
+| `staticColumns`    | array                            | `[]`     | Defaults merged into each row **if missing**.                                   |
+| `preprocessRow`    | `callable(array):array`          | `null`   | Normalize/derive per row; may throw your validation exception to fail that row. |
+| `finder`           | `callable(array):?int`           | `null`   | Custom “find existing id” (returns id or `null`).                               |
+| `matchBy`          | string\[]                        | `null`   | AND-equality on fields present in row to find existing record.                  |
+| `where`            | array                            | `[]`     | Extra guards during matching (e.g., `['tenant_id'=>5]`).                        |
+| `updateFields`     | string\[]                        | `null`   | Only these fields are updated (whitelist).                                      |
+| `auth`             | mixed                            | `null`   | Passed to hooks/validation via `$extra['auth']` / `$ctx`.                       |
+| `dbTransaction`    | bool                             | `true`   | Per-row transaction (when `allOrNothing=false`).                                |
+| `allOrNothing`     | bool                             | `false`  | One big transaction for the whole file; any error rolls back all.               |
+| `stopOnFirstError` | bool                             | `false`  | Stop immediately on first row error (keeps prior successes).                    |
+| `runHooks`         | bool                             | `true`   | Master switch for repository/observer hooks.                                    |
+| `runAfterHook`     | bool                             | `true`   | Skip only the after-hook (keep before/upload hooks).                            |
+| `batchSize`        | int                              | `0`      | Checkpoint every N rows (call `onBatch`, run GC).                               |
+| `onBatch`          | `callable(int,array&):void`      | `null`   | Progress callback at each checkpoint.                                           |
+| `onError`          | `callable(array):void`           | `null`   | Stream each error (row + messages) out-of-band.                                 |
+| `collectIds`       | bool                             | `true`   | Store `ids`/`updated_ids` arrays; set `false` to save memory.                   |
+| `maxErrorSamples`  | int                              | `1000`   | Cap how many errors are kept in-memory in `summary.errors`.                     |
+| `errorLogPath`     | string\|null                     | `null`   | If set, write errors to this file in batches.                                   |
+| `errorFlushEvery`  | int                              | `200`    | Batch size for file writes (with `errorLogPath`).                               |
+| `errorLogHeader`   | string\|array\|null              | `null`   | Meta header written once at top of the error log file.                          |
+
+> **Validation & Authorization:** Your existing rules classes still run (`authorize($data,$ctx)`/`precheck($data)`/`rules()`). Pass context via `options['context']` if you use it; `__authrorize__` is forwarded for hooks.
+
+## Recipes
+
+### 1) Minimal insert
+
+```php
+$repo->importCsv($file, [
+  'mode'            => 'insert',
+  'delimiter'       => ',',
+  'validateColumns' => ['course_code','course_title'],
+  'headerMap'       => ['course_code'=>'code','course_title'=>'title'],
+  'preprocessRow'   => fn($r) => ['code'=>strtoupper(trim($r['code'] ?? '')), 'title'=>trim($r['title'] ?? '')],
+  'auth'            => $user,
+]);
+
+```
+
+### 2) Update only (match on fields; restrict what can change)
+
+```php
+$repo->importCsv($file, [
+  'mode'            => 'update',
+  'headerMap'       => ['course_code'=>'code'],
+  'validateColumns' => ['course_code'],
+  'staticColumns'   => ['tenant_id'=>5],
+  'matchBy'         => ['code','tenant_id'],            // must be in each row
+  'updateFields'    => ['title','description','type'],  // only these are updated
+  'auth'            => $user,
+]);
+
+```
+
+### 3) Upsert with preloaded dictionary (fast for big files)
+
+```php
+// Build in-memory map once: "CODE|DEPT_ID" => id
+$rows = db_connect()->table('courses')
+    ->select('id, UPPER(code) as code, department_id')->get()->getResultArray();
+$map = [];
+foreach ($rows as $r) $map[$r['code'].'|'.$r['department_id']] = (int)$r['id'];
+
+$repo->importCsv($file, [
+  'mode'             => 'upsert',
+  'headerMap'        => ['course_code'=>'code','department_code'=>'department_code','course_title'=>'title'],
+  'validateColumns'  => ['course_code','department_code','course_title'],
+  'staticColumns'    => ['active'=>1],
+  'preprocessRow'    => function(array $r): array {
+      static $dept = []; $db = db_connect();
+      $r['code'] = strtoupper(trim($r['code'] ?? ''));
+      if (!empty($r['department_code'])) {
+          $c = strtoupper(trim($r['department_code']));
+          if (!isset($dept[$c])) $dept[$c] = (int)$db->table('department')->select('id')->where('code',$c)->get()->getRow('id');
+          if ($dept[$c] <= 0) throw \App\Exceptions\ApiValidationException::field('department_code', "Unknown department '{$c}'.");
+          $r['department_id'] = $dept[$c];
+      }
+      unset($r['department_code']);
+      return $r;
+  },
+  'finder'           => fn(array $r) => ($map[strtoupper($r['code'] ?? '').'|'.(int)($r['department_id'] ?? 0)] ?? null),
+  'batchSize'        => 1000,
+  'runAfterHook'     => false,
+  'collectIds'       => false,
+  'maxErrorSamples'  => 200,
+  'auth'             => $user,
+]);
+
+```
+
+### 4) Fail-fast / transactional modes
+
+```php
+// Stop on first error (keep earlier successes)
+$repo->importCsv($file, ['stopOnFirstError' => true]);
+
+// All or nothing (one big transaction; any error rolls back all)
+$repo->importCsv($file, ['allOrNothing' => true]);
+
+```
+
+### 5) Large file + batched error logging to disk
+
+```php
+$logPath = WRITEPATH.'imports/errors/'.date('Ymd_His').'_courses.err.log';
+
+// Optional: header at top of the file
+$agent = $this->request->getUserAgent();
+$header = [
+  "Process started ".date('l F d, Y h:i:s').PHP_EOL,
+  "Uploaded by: {$fullname}".PHP_EOL,
+  "Username: {$username}".PHP_EOL,
+  "User Agent: ".$agent->getAgentString().PHP_EOL,
+  "Browser: ".$agent->getBrowser()." Version: ".$agent->getVersion().PHP_EOL,
+  "IP Address: ".$this->request->getIPAddress().PHP_EOL,
+  "Platform: ".$agent->getPlatform().PHP_EOL,
+  "Hostname: ".gethostname().PHP_EOL,
+  str_repeat('_', 75).PHP_EOL.PHP_EOL.PHP_EOL,
+];
+
+$repo->importCsv($file, [
+  // …normal options…
+  'batchSize'        => 2000,
+  'collectIds'       => false,
+  'maxErrorSamples'  => 100,          // keep API light; full log goes to file
+  'errorLogPath'     => $logPath,
+  'errorFlushEvery'  => 500,          // flush in batches
+  'errorLogHeader'   => $header,      // meta info once at top
+]);
+
+```
+
+----------
+
+## Understanding the key helpers
+
+-   **`headerMap`**: Make CSV columns look like your model fields once (cheaper than remapping every row).
+
+-   **`validateColumns`**: Presence-only check (no order); fails before any rows are processed.
+
+-   **`staticColumns`**: Defaults for missing fields per row (won’t overwrite CSV values).
+
+-   **`preprocessRow`**: Normalize, type-cast, derive FKs; throw your validation exception to fail a single row.
+
+-   **`finder`**: Custom resolver that returns an **ID** or `null` (use preloaded dictionaries for speed).
+
+-   **Hooks**: `runHooks=false` skips all hooks; `runAfterHook=false` skips only the after-hook (keep validation & before/upload hooks).
+
+
+----------
+
+## Error semantics
+
+-   With `allOrNothing=false` (default):
+
+    -   Errors are per-row; we **continue** unless `stopOnFirstError=true`.
+
+    -   Counts still reflect total/inserted/updated/failed.
+
+-   With `allOrNothing=true`:
+
+    -   First error aborts and **rolls back everything**.
+
+-   `errors` array in the summary is **capped** by `maxErrorSamples`.  
+    For every error, use `errorLogPath` (batched file) or `onError` (stream) to capture **all** rows without memory bloat.
+
+
+----------
+
+## Performance tips
+
+-   Preload dictionaries for matching (O(1) `finder`) instead of per-row DB queries.
+
+-   Use `headerMap` so you don’t remap keys per row.
+
+-   Use `batchSize` (e.g., 1000–2000) + `onBatch` to monitor progress and keep memory flat.
+
+-   Set `collectIds=false` and a reasonable `maxErrorSamples` (e.g., 100–200).
+
+-   Skip `runAfterHook` in bulk runs if it does heavy work (audit/events).
+
+-   Prefer per-row transactions for resilience; use `allOrNothing` only when truly required.
+
+
+----------

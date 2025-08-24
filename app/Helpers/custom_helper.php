@@ -3,6 +3,11 @@
 if(!function_exists('generateDownloadLink')){
     function generateDownloadLink(string $filename, string $folder = 'temp/download_passport', string $downloadRoute = 'direct_link', bool $removeOldFiles = true): string
     {
+        $downloadRouteList = [
+            'direct_link' => 'direct_link',
+            'logs' => 'direct_link_logs',
+        ];
+        $downloadRoute = $downloadRouteList[$downloadRoute] ?? $downloadRoute;
         $originalName = pathinfo($filename, PATHINFO_FILENAME);
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
