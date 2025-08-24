@@ -19,7 +19,9 @@ final class CreateRules implements RulesProvider
      */
     public static function authorize(array $data, array $ctx): bool
     {
-        return permissionAuthorize('course_create');
+        $authKey = $ctx['__authorize__'] ?? 'course_create';
+        return permissionAuthorize($authKey);
+
     }
 
     /**

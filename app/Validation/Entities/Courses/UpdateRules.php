@@ -9,7 +9,8 @@ final class UpdateRules implements RulesProvider
 {
     public static function authorize(array $data, array $ctx): bool
     {
-        return permissionAuthorize('course_edit');
+        $authKey = $ctx['__authorize__'] ?? 'course_create';
+        return permissionAuthorize($authKey);
     }
     public static function denyMessage(): string { return 'You do not have permission to update courses.'; }
 

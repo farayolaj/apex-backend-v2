@@ -30,6 +30,7 @@ $routes->group('v1/web/', [
     $routes->post('courses', 'CoursesController::store');
     $routes->patch('courses/(:num)', 'CoursesController::update/$1');
     $routes->delete('courses/delete/(:num)', 'CoursesController::delete/$1');
+    $routes->post('courses/bulk_course_upload', 'CoursesController::import');
 
     // webinar management
     $routes->get('courses/(:num)/webinars', 'Webinars::index/$1');

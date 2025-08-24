@@ -2,12 +2,19 @@
 
 namespace App\Models;
 
+use App\Enums\WebinarStatusEnum;
+use App\Exceptions\ForbiddenException;
 use App\Exceptions\ValidationFailedException;
 use App\Hooks\Resolver\ObserverResolver;
+use App\Support\Entity\BatchErrorLogger;
 use App\Support\Entity\SubsetSupport;
 use App\Validation\Support\Resolver\ValidationResolver;
+use App\Support\Csv\CsvReader;
+use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\Exceptions\DatabaseException;
+use InvalidArgumentException;
+use RuntimeException;
 use Throwable;
 
 class Crud extends BaseCrud
@@ -148,7 +155,7 @@ class Crud extends BaseCrud
     protected function buildDataPayloads(array $input): array
     {
         if ($this->useLabelDrivenInsert && $this->entityClass) {
-            return SubsetSupport::partitionByModelLabel($this->entityClass, $input, ['id']);
+            return SubsetSupport::partitionByModelLabel($this->entityClass, $input);
         }
 
         // fallback to fillable
@@ -294,6 +301,15 @@ class Crud extends BaseCrud
     }
 
     /**
+     * This automated insert:
+     * - Partitions input into persistable + extra (extra is kept)
+     * - Ensures required fields (if any) OR - Validates full input (persist + extra) via ValidationResolver
+     * - Runs beforeCreate hooks & Runs afterCreate hooks
+     * - Applies timestamps (if enabled)
+     * - Handles uploads (if any)
+     * - Persists to DB (in transaction if enabled)
+     * - Invalidates caches
+     * - Returns new ID
      * @param array $input
      * @param array $files
      * @param array $options {array: ['dbTransaction']}
@@ -302,7 +318,8 @@ class Crud extends BaseCrud
      */
     public function insertSingle(array $input, array $files = [], array $options = []): ?int
     {
-        $useTx = !array_key_exists('dbTransaction', $options) || (bool)$options['dbTransaction'];
+        $useTx = !array_key_exists('dbTransaction', $options) || $options['dbTransaction'];
+        $ctx = $options['context'] ?? [];
         // Partition input -> persistable + extra (EXTRA IS KEPT)
         [$data, $extra] = $this->buildDataPayloads($input);
         $this->injectDataToExtra($extra);
@@ -312,12 +329,12 @@ class Crud extends BaseCrud
 
         // Auto-validation against FULL input (persist + extra)
         $entityForValidation = $this->validationEntity ?: $this->getTableName();
-        ValidationResolver::run($entityForValidation, 'create', array_merge($data, $extra));
+        ValidationResolver::run($entityForValidation, 'create', array_merge($data, $extra), $ctx);
 
         // Hooks + timestamps (hooks can use $extra to derive persist fields)
-        $this->runBeforeCreating($data, $extra);
-        $this->applyTimestamps($data, true);
-        if (!empty($files)) $this->runHandleUploads($data, $files, $extra);
+        if (($options['runHooks'] ?? true) === true) $this->runBeforeCreating($data, $extra);
+        $this->applyTimestamps($data);
+        if (($options['runHooks'] ?? true) === true && !empty($files)) $this->runHandleUploads($data, $files, $extra);
 
         try {
             if ($useTx) $this->db->transBegin();
@@ -330,7 +347,7 @@ class Crud extends BaseCrud
             $id = (int)$this->db->insertID();
             if ($id <= 0) throw new DatabaseException('Could not obtain insert ID');
 
-            $this->runAfterCreated($id, $data, $extra);
+            if (($options['runHooks'] ?? true) === true && ($options['runAfterHook'] ?? true) === true) $this->runAfterCreated($id, $data, $extra);
 
             if ($useTx) $this->db->transCommit();
 
@@ -339,18 +356,15 @@ class Crud extends BaseCrud
             $this->invalidateById($id);
 
             return $id;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($useTx && $this->db->transStatus() !== false) $this->db->transRollback();
-            $this->runCleanupUploads($data, $extra);
+            if (($options['runHooks'] ?? true) === true) $this->runCleanupUploads($data, $extra);
             throw $e;
         }
     }
 
     /**
-     * Update a single row.
-     * - $id: primary key value
-     * - $input: raw payload (label-driven subset will be persisted)
-     * - $files: for uploads (optional)
+     * Update a single row automatically based on defined entity class:
      * - $options:
      *     'dbTransaction'=> bool (default true)
      *     'where'  => array additional where pairs (optimistic guard ('where' => ['tenant_id' => 5]))
@@ -361,23 +375,23 @@ class Crud extends BaseCrud
      */
     public function updateSingle(int $id, array $input, array $files = [], array $options = []): bool
     {
-        // Build payloads & context
+        // Build payloads and context
         [$data, $extra] = $this->buildDataPayloads($input);
         $this->injectDataToExtra($extra);
 
-        // Validation (authorize + precheck + rules) — pass id for rules
+        // Validation (authorize + precheck and rules) — pass id for rules
         $entity = $this->validationEntity ?: $this->getTableName();
         $ctx    = $options['context'] ?? [];
         $ctx['id'] = $id; // handy if your authorize() needs it
         ValidationResolver::run($entity, 'update', array_merge($data, $extra, ['id'=>$id]), $ctx);
 
         // Hooks & timestamps
-        $this->runBeforeUpdating($id, $data, $extra);
+        if (($options['runHooks'] ?? true) === true) $this->runBeforeUpdating($id, $data, $extra);
         $this->applyTimestamps($data, false);
-        if (!empty($files)) $this->runHandleUploads($data, $files, $extra);
+        if (($options['runHooks'] ?? true) === true && !empty($files)) $this->runHandleUploads($data, $files, $extra);
 
         // Persist
-        $tx = !array_key_exists('dbTransaction', $options) || (bool)$options['dbTransaction'];
+        $tx = !array_key_exists('dbTransaction', $options) || $options['dbTransaction'];
         if ($tx) $this->db->transBegin();
 
         try {
@@ -397,16 +411,16 @@ class Crud extends BaseCrud
             // Commit before afterUpdate side effects
             if ($tx) $this->db->transCommit();
 
-            $this->runAfterUpdated($id, $data, $extra);
+            if (($options['runHooks'] ?? true) === true && ($options['runAfterHook'] ?? true) === true) $this->runAfterUpdated($id, $data, $extra);
 
             // Cache invalidation
             $this->invalidateById($id);
             $this->invalidateAll();
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($tx && $this->db->transStatus() !== false) $this->db->transRollback();
-            $this->runCleanupUploads($data, $extra);
+            if (($options['runHooks'] ?? true) === true) $this->runCleanupUploads($data, $extra);
             throw $e;
         }
     }
@@ -453,7 +467,7 @@ class Crud extends BaseCrud
         // Hooks
         $this->runBeforeDeleting($id, $extra);
 
-        $tx = !array_key_exists('dbTransaction', $options) || (bool)$options['dbTransaction'];
+        $tx = !array_key_exists('dbTransaction', $options) || $options['dbTransaction'];
         if ($tx) $this->db->transBegin();
 
         try {
@@ -491,10 +505,284 @@ class Crud extends BaseCrud
             $this->invalidateAll();
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($tx && $this->db->transStatus() !== false) $this->db->transRollback();
             throw $e;
         }
+    }
+
+    /**
+     * Batch import with modes: insert | update | upsert
+     *
+     * Options (all optional; defaults keep behavior simple):
+     *  - mode: 'insert' | 'update' | 'upsert'       (default 'insert')
+     *  - delimiter: string                           (default ',')
+     *  - maxRows: int|null                           (limit rows, default null = all)
+     *  - lowercaseHeaders: bool                      (default true)
+     *  - headerMap: array<string,string>             (map CSV headers once: ['course_code'=>'code'])
+     *  - validateColumns: string[]                   (required CSV headers; order ignored)
+     *  - staticColumns: array                        (defaults merged into each row if missing for data injection)
+     *  - preprocessRow: callable(array): array       (normalize/derive; may throw your ApiValidationException)
+     *  - finder: callable(array): ?int               (custom match resolver; return id or null)
+     *  - matchBy: string[]                           (AND-equality fields in row for matching)
+     *  - where: array                                (extra guards during match/update, e.g. ['tenant_id'=>5])
+     *  - updateFields: string[]                      (restrict which fields can be updated)
+     *  - dbTransaction: bool                         (per-row when allOrNothing=false; default true)
+     *  - allOrNothing: bool                          (wrap entire file in one tx; default false)
+     *  - stopOnFirstError: bool                      (default false)
+     *  - runHooks: bool                              (default true; master switch for repo/observer hooks)
+     *  - runAfterHook: bool                          (default true; skip heavy after hooks if false)
+     *  - batchSize: int                              (checkpoint every N rows; default 0 = off)
+     *  - onBatch: callable(int $batchNo, array &$summary): void   (progress callback)
+     *  - onError: callable(array $err): void         (stream every error out; err = ['row'=>n,'messages'=>...])
+     *  - collectIds: bool                            (default true; store ids/updated_ids arrays)
+     *  - maxErrorSamples: int                        (default 1000; cap in-memory stored errors)
+     *
+     * @return array{
+     *   total:int, inserted:int, updated:int, failed:int,
+     *   ids:int[], updated_ids:int[], errors:array<int,array{row:int,messages:mixed}>
+     * }
+     */
+    public function bulkUpload(UploadedFile|string $file, array $options = []): array
+    {
+        // Core options
+        $mode             = strtolower((string)($options['mode'] ?? 'insert'));
+        $delimiter        = $options['delimiter']        ?? ',';
+        $maxRows          = $options['maxRows']          ?? null;
+        $lowercaseHeaders = $options['lowercaseHeaders'] ?? true;
+        $headerMap        = $options['headerMap']        ?? null; // this is required
+
+        $validateCols     = $options['validateColumns']  ?? null;
+        $static           = $options['staticColumns']    ?? [];
+        $preprocess       = $options['preprocessRow']    ?? null;
+
+        $finder           = $options['finder']   ?? null;
+        $matchBy          = $options['matchBy']  ?? null;
+        $whereGuards      = $options['where']    ?? [];
+
+        $updateFields     = $options['updateFields']     ?? null;
+        $authorize        = $options['__authorize__'] ?? null;
+
+        // Transactions & control
+        $allOrNothing     = $options['allOrNothing']     ?? false;
+        $stopOnFirstError = $options['stopOnFirstError'] ?? false;
+        $perRowTx         = $allOrNothing ? false : ($options['dbTransaction'] ?? true);
+
+        // Hooks
+        $runHooks         = $options['runHooks']     ?? false;
+        $runAfterHook     = $options['runAfterHook'] ?? false;
+
+        // Perf knobs
+        $batchSize        = (int)($options['batchSize'] ?? 0);
+        $onBatch          = $options['onBatch'] ?? null;
+        $onError          = $options['onError'] ?? null;
+        $collectIds       = (bool)($options['collectIds'] ?? false);
+        $maxErrorSamples  = (int)($options['maxErrorSamples'] ?? 100);
+
+        $errorLogPath    = $options['errorLogPath']    ?? null;
+        $errorFlushEvery = (int)($options['errorFlushEvery'] ?? 200);
+        $errLogger = $errorLogPath ? new BatchErrorLogger($errorLogPath, $errorFlushEvery, $this->processLogHeader()) : null;
+
+        $summary = [
+            'total'       => 0,
+            'inserted'    => 0,
+            'updated'     => 0,
+            'failed'      => 0,
+            'ids'         => [],
+            'updated_ids' => [],
+            'errors'      => [],
+        ];
+
+        if ($allOrNothing) $this->db->transBegin();
+
+        $processedSinceBatch = 0;
+        $batchNo = 0;
+        try {
+            foreach (CsvReader::readAssoc($file, $headerMap, $delimiter, $maxRows, $lowercaseHeaders) as [$rowNo, $row]) {
+
+                // Validate required headers once using first data row keys (after headerMap/lowercase)
+                if ($summary['total'] === 0 && is_array($validateCols) && $validateCols) {
+                    $firstKeys = array_keys($row);
+                    $required = array_map(function ($k) use ($lowercaseHeaders, $headerMap) {
+                        $k = (string)$k;
+                        if ($lowercaseHeaders) $k = strtolower($k);
+                        return $headerMap[$k] ?? $k;
+                    }, $validateCols);
+                    $missing = array_values(array_diff($required, $firstKeys));
+                    if ($missing) throw new InvalidArgumentException('CSV is missing required columns: '.implode(', ', $missing));
+                }
+                $summary['total']++;
+
+                // Defaults (do not overwrite explicitly provided values)
+                foreach ($static as $k => $v) {
+                    if (!array_key_exists($k, $row)) $row[$k] = $v;
+                }
+
+                // Preprocess (normalize, derive, FK, type-cast); may throw ValidationFailedException
+                if (is_callable($preprocess)) $row = (array)$preprocess($row);
+
+                try {
+                    // Per-row options handed to insert/update
+                    $rowOptions = [
+                        'context' => [
+                            '__authorize__' => $authorize,
+                        ],
+                        'dbTransaction' => $perRowTx,
+                        'runHooks'      => $runHooks,
+                        'runAfterHook'  => $runAfterHook,
+                    ];
+
+                    if ($mode === 'insert') {
+                        $newId = $this->insertSingle($row, [], $rowOptions);
+                        if (!$newId) throw new DatabaseException('Insert failed at row '.$rowNo);
+
+                        $summary['inserted']++;
+                        if ($collectIds) $summary['ids'][] = $newId;
+
+                    } elseif ($mode === 'update') {
+                        $id = $this->findExistingIdForImport($row, $finder, $matchBy, $whereGuards);
+                        if (!$id) throw new RuntimeException('Match not found for update at row '.$rowNo);
+
+                        $payload = $this->restrictUpdateFields($row, $updateFields);
+                        $ok = $this->updateSingle($id, $payload, [], $rowOptions);
+                        if (!$ok) throw new DatabaseException('Update failed at row '.$rowNo);
+
+                        $summary['updated']++;
+                        if ($collectIds) $summary['updated_ids'][] = $id;
+
+                    } elseif ($mode === 'upsert') {
+                        $id = $this->findExistingIdForImport($row, $finder, $matchBy, $whereGuards);
+                        if ($id) {
+                            $payload = $this->restrictUpdateFields($row, $updateFields);
+                            $ok = $this->updateSingle($id, $payload, [], $rowOptions);
+                            if (!$ok) throw new DatabaseException('Update failed at row '.$rowNo);
+
+                            $summary['updated']++;
+                            if ($collectIds) $summary['updated_ids'][] = $id;
+                        } else {
+                            $newId = $this->insertSingle($row, [], $rowOptions);
+                            if (!$newId) throw new DatabaseException('Insert failed at row '.$rowNo);
+
+                            $summary['inserted']++;
+                            if ($collectIds) $summary['ids'][] = $newId;
+                        }
+                    } else {
+                        throw new InvalidArgumentException("Unknown import mode '{$mode}'");
+                    }
+
+                } catch (Throwable $e) {
+                    $summary['failed']++;
+                    $err = ['row' => $rowNo, 'messages' => $this->toErrorBag($e)];
+
+                    if ($errLogger) $errLogger->add($err['row'], $err['messages']);
+                    if (is_callable($onError)) $onError($err);
+                    if (count($summary['errors']) < $maxErrorSamples) $summary['errors'][] = $err;
+
+                    if($e instanceof ForbiddenException){
+                        if ($allOrNothing || $stopOnFirstError) throw $e;
+                        break;
+                    }
+                    if ($allOrNothing || $stopOnFirstError) throw $e;
+                }
+
+                // Batch checkpoint (progress + GC)
+                if ($batchSize > 0 && (++$processedSinceBatch % $batchSize) === 0) {
+                    $batchNo++;
+                    if (is_callable($onBatch)) $onBatch($batchNo, $summary);
+                    $processedSinceBatch = 0;
+                    if (function_exists('gc_collect_cycles')) gc_collect_cycles();
+                }
+            }
+
+            if ($allOrNothing) {
+                if ($summary['failed'] > 0) $this->db->transRollback();
+                else $this->db->transCommit();
+            }
+
+            if ($errLogger) $errLogger->close();
+            return $summary;
+
+        } catch (Throwable $e) {
+            if ($allOrNothing && $this->db->transStatus() !== false) $this->db->transRollback();
+            $err = ['row' => 0, 'messages' => $this->toErrorBag($e)];
+            if (is_callable($onError)) $onError($err);
+            if (count($summary['errors']) < $maxErrorSamples) $summary['errors'][] = $err;
+            if ($errLogger) $errLogger->close();
+            return $summary;
+        }
+    }
+
+    /** Error shape helper (matches your global handler messages) */
+    private function toErrorBag(Throwable $e): array|string
+    {
+        // If you already have ErrorBag::fromThrowable(), call that here instead.
+        // Return a string or array; importer passes it through verbatim.
+        return $e->getMessage() ?: 'Import error';
+    }
+
+    /**
+     * Resolve existing id for update/upsert.
+     * Priority: custom $finder(row) → AND-equality on $matchBy (+$whereGuards).
+     */
+    private function findExistingIdForImport(array $row, $finder, ?array $matchBy, array $whereGuards): ?int
+    {
+        if (is_callable($finder)) {
+            $id = (int)$finder($row);
+            return $id > 0 ? $id : null;
+        }
+
+        if (is_array($matchBy) && $matchBy) {
+            $b = $this->builder()->select($this->primaryKey)->limit(1);
+            foreach ($matchBy as $field) {
+                if (!array_key_exists($field, $row)) return null;
+
+                $b->where($field, $row[$field]);
+            }
+            foreach ($whereGuards as $k => $v) $b->where($k, $v);
+
+            $hit = $b->get()->getRowArray();
+            if ($hit && isset($hit[$this->primaryKey])) return (int)$hit[$this->primaryKey];
+        }
+
+        return null;
+    }
+
+    /**
+     * Optionally restrict the update payload to an allowlist of fields.
+     * The Primary key is always excluded.
+     */
+    private function restrictUpdateFields(array $row, ?array $fields): array
+    {
+        if (!$fields) return $row;
+        $allow = array_flip($fields);
+        unset($allow[$this->primaryKey]);
+        return array_intersect_key($row, $allow);
+    }
+
+    private function processLogHeader(){
+        $user      = WebSessionManager::currentAPIUser() ?? null;
+        $username  = $user->user_login;
+        $userInfo  = [
+            'title'     => $user->title,
+            'firstname' => $user->firstname,
+            'lastname'  => $user->lastname,
+        ];
+
+        $fullname = ucwords(strtolower(trim("{$userInfo['title']} {$userInfo['firstname']} {$userInfo['lastname']}")));
+
+        $agent = request()->getUserAgent();
+        $progressLog = [];
+        $progressLog[] = "Process started " . date('l F d, Y h:i:s') . PHP_EOL;
+        $progressLog[] = "Uploaded by: {$fullname}" . PHP_EOL;
+        $progressLog[] = "Username: {$username}" . PHP_EOL;
+        $progressLog[] = "User Agent: " . $agent->getAgentString() . PHP_EOL;
+        $progressLog[] = "Browser: " . $agent->getBrowser() . " Version: " . $agent->getVersion() . PHP_EOL;
+        $progressLog[] = "IP Address: " . request()->getIPAddress() . PHP_EOL;
+        $progressLog[] = "Platform: " . $agent->getPlatform() . PHP_EOL;
+        $progressLog[] = "Hostname: " . gethostname() . PHP_EOL;
+        $progressLog[] = str_repeat('_', 75) . PHP_EOL . PHP_EOL . PHP_EOL;
+
+        return $progressLog;
     }
 
 
