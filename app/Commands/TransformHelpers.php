@@ -7,7 +7,7 @@ use CodeIgniter\CLI\CLI;
 
 class TransformHelpers extends BaseCommand
 {
-    protected $group       = 'Custom';
+    protected $group       = 'Support';
     protected $name        = 'transform:helpers';
     protected $description = 'Transforms old CodeIgniter 3 model files into CodeIgniter 4 compatible model files.';
     protected $usage       = "transform:model <input_path> [output_path] \n
