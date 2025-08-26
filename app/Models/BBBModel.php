@@ -32,7 +32,7 @@ class BBBModel
    * @param bool $isStudent
    * @return string|null
    */
-  public function getJoinUrl(string $meetingId, string $fullName, string $logoutURL, bool $isStudent = false): string
+  public function getJoinUrl(string $meetingId, string $fullName, string $logoutURL, ?string $userId = null, bool $isStudent = false): string
   {
     $joinMeetingParams = new JoinMeetingParameters($meetingId, $fullName, $isStudent ? Role::VIEWER : Role::MODERATOR);
     $joinMeetingParams
@@ -40,6 +40,7 @@ class BBBModel
       ->setCustomParameter('logoutURL', $logoutURL);
 
     if ($isStudent) $joinMeetingParams->setGuest(true);
+    if ($userId) $joinMeetingParams->setUserID($userId);
 
     $joinUrl = $this->bbb->getUrlBuilder()->getJoinMeetingURL($joinMeetingParams);
 

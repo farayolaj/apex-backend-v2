@@ -79,8 +79,6 @@ class Webinars extends BaseController
 
     public function getJoinUrl(int $webinarId)
     {
-        $redirectURL = $this->request->getGet('redirect_url') ??
-            $this->request->header('origin')->getValue();
         $webinar = $this->webinars->getDetails($webinarId);
 
         if (!$webinar) {
@@ -105,7 +103,15 @@ class Webinars extends BaseController
 
         $currentUser = WebSessionManager::currentAPIUser();
         $fullName = trim($currentUser->firstname . ' ' . $currentUser->lastname);
+        $redirectURL = $this->request->getGet('redirect_url') ??
+            $this->request->header('origin')->getValue();
 
-        return ApiResponse::success(data: $this->bbbModel->getJoinUrl($webinar['room_id'], $fullName, $redirectURL, true));
+        return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
+            meetingId: $webinar['room_id'],
+            fullName: $fullName,
+            logoutURL: $redirectURL,
+            userId: $currentUser->id,
+            isStudent: true
+        ));
     }
 }
