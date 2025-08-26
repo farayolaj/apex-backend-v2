@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use BigBlueButton\BigBlueButton;
+use BigBlueButton\Enum\DocumentOption;
+use BigBlueButton\Enum\GuestPolicy;
 use BigBlueButton\Enum\Role;
+use BigBlueButton\Parameters\Config\DocumentOptionsStore;
 use BigBlueButton\Parameters\CreateMeetingParameters;
 use BigBlueButton\Parameters\GetMeetingInfoParameters;
 use BigBlueButton\Parameters\GetRecordingsParameters;
@@ -29,12 +32,17 @@ class BBBModel
    * @param bool $isStudent
    * @return string|null
    */
-  public function getJoinUrl(string $meetingId, string $fullName, bool $isStudent = false): string
+  public function getJoinUrl(string $meetingId, string $fullName, string $logoutURL, ?string $userId = null, bool $isStudent = false): string
   {
     $joinMeetingParams = new JoinMeetingParameters($meetingId, $fullName, $isStudent ? Role::VIEWER : Role::MODERATOR);
-    $joinMeetingParams->setRedirect(true);
+    $joinMeetingParams
+      ->setRedirect(true)
+      ->setCustomParameter('logoutURL', $logoutURL);
 
-    $joinUrl = $this->bbb->getJoinMeetingURL($joinMeetingParams);
+    if ($isStudent) $joinMeetingParams->setGuest(true);
+    if ($userId) $joinMeetingParams->setUserID($userId);
+
+    $joinUrl = $this->bbb->getUrlBuilder()->getJoinMeetingURL($joinMeetingParams);
 
     return $joinUrl;
   }
@@ -62,9 +70,18 @@ class BBBModel
     $createParams->setRecord(true);
     $createParams->setAllowStartStopRecording(false);
     $createParams->setAllowModsToUnmuteUsers(true);
+    $createParams->setGuestPolicy(GuestPolicy::ASK_MODERATOR);
 
     if ($presentation) {
-      $createParams->addPresentation($presentation->url, null, $presentation->name);
+      $documentOptionStore = new DocumentOptionsStore();
+      $documentOptionStore->addAttribute(DocumentOption::CURRENT, 'true');
+      $documentOptionStore->addAttribute(DocumentOption::DOWNLOADABLE, 'true');
+
+      $createParams->addPresentation(
+        nameOrUrl: $presentation->url,
+        filename: $presentation->name,
+        attributes: $documentOptionStore
+      );
     }
 
     $createMeetingResponse = $this->bbb->createMeeting($createParams);
