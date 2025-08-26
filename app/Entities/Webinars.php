@@ -12,18 +12,21 @@ class Webinars extends Crud
     protected static $tablename = 'webinars';
 
     static $apiSelectClause = [
+        "id",
         "course_id",
         "room_id",
         "title",
         "description",
         "scheduled_for",
+        "presentation_id",
+        "presentation_name",
         "updated_at",
         "created_at"
     ];
 
-    public function list(int $courseId)
+    public function list(int $sessionId, int $courseId)
     {
-        $query = "SELECT " . implode(", ", self::$apiSelectClause) . " FROM webinars WHERE course_id = $courseId ORDER BY scheduled_for DESC";
+        $query = "SELECT " . implode(", ", self::$apiSelectClause) . " FROM webinars WHERE session_id = $sessionId AND course_id = $courseId ORDER BY scheduled_for DESC";
         $res = $this->db->query($query);
         return $res->getResultArray();
     }

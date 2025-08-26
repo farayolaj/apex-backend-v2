@@ -36,9 +36,13 @@ class Cors extends BaseConfig
          */
         'allowedOrigins' => [
             'http://127.0.0.1',
+            'http://localhost:3000',
+            'http://localhost:5173',
             'http://localhost:8080',
             'http://localhost:8083',
             'http://localhost:8181',
+            'https://apex.staging.edutechportal.net',
+            'https://portal.staging.edutechportal.net',
             'https://apex.ui.edu.ng'
         ],
 
