@@ -221,7 +221,7 @@ class Webinars extends BaseController
     public function getJoinUrl(int $webinarId)
     {
         $redirectURL = $this->request->getGet('redirect_url') ??
-            $this->request->header('host');
+            $this->request->header('origin')->getValue();
         $webinar = $this->webinars->getDetails($webinarId);
 
         if (!$webinar) {
