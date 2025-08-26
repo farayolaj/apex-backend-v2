@@ -52,6 +52,11 @@ $routes->group('v1/web/', [
     $routes->delete('webinars/(:num)', 'WebinarController::delete/$1');
     $routes->get('webinars/(:num)/join_url', 'WebinarController::getJoinUrl/$1');
 
+    // webinar comments
+    $routes->get('webinars/(:num)/comments', 'WebinarCommentController::getComments/$1');
+    $routes->post('webinars/(:num)/comments', 'WebinarCommentController::newComment/$1');
+    $routes->delete('webinars/comments/(:num)', 'WebinarCommentController::deleteComment/$1');
+
     // handle CORS preflight requests
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});

@@ -10,9 +10,15 @@ $routes->group('v1/api/', [
     'filter' => ['apiValidation:student'],
     'namespace' => 'App\Controllers\Student\v1'
 ], function ($routes) {
+    // webinars
     $routes->get('courses/(:num)/(:num)/webinars', 'WebinarController::listWebinars/$1/$2');
     $routes->get('webinars/(:num)', 'WebinarController::getWebinar/$1');
     $routes->get('webinars/(:num)/join_url', 'WebinarController::getJoinUrl/$1');
+
+    // webinar comments
+    $routes->get('webinars/(:num)/comments', 'WebinarCommentController::getComments/$1');
+    $routes->post('webinars/(:num)/comments', 'WebinarCommentController::newComment/$1');
+    $routes->delete('webinars/comments/(:num)', 'WebinarCommentController::deleteComment/$1');
 
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});

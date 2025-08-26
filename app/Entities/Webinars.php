@@ -24,6 +24,11 @@ class Webinars extends Crud
         "created_at"
     ];
 
+    public function webinarExists(int $webinarId): bool
+    {
+        return $this->db->table('webinars')->where('id', $webinarId)->countAllResults() === 1;
+    }
+
     public function list(int $sessionId, int $courseId)
     {
         $query = "SELECT " . implode(", ", self::$apiSelectClause) . " FROM webinars WHERE session_id = $sessionId AND course_id = $courseId ORDER BY scheduled_for DESC";
