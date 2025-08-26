@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use BigBlueButton\BigBlueButton;
+use BigBlueButton\Enum\DocumentOption;
 use BigBlueButton\Enum\GuestPolicy;
 use BigBlueButton\Enum\Role;
+use BigBlueButton\Parameters\Config\DocumentOptionsStore;
 use BigBlueButton\Parameters\CreateMeetingParameters;
 use BigBlueButton\Parameters\GetMeetingInfoParameters;
 use BigBlueButton\Parameters\GetRecordingsParameters;
@@ -69,7 +71,17 @@ class BBBModel
     $createParams->setAllowModsToUnmuteUsers(true);
     $createParams->setGuestPolicy(GuestPolicy::ASK_MODERATOR);
 
-    if ($presentation) $createParams->addPresentation($presentation->url, null, $presentation->name);
+    if ($presentation) {
+      $documentOptionStore = new DocumentOptionsStore();
+      $documentOptionStore->addAttribute(DocumentOption::CURRENT, 'true');
+      $documentOptionStore->addAttribute(DocumentOption::DOWNLOADABLE, 'true');
+
+      $createParams->addPresentation(
+        nameOrUrl: $presentation->url,
+        filename: $presentation->name,
+        attributes: $documentOptionStore
+      );
+    }
 
     $createMeetingResponse = $this->bbb->createMeeting($createParams);
 
