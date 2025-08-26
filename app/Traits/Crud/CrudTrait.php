@@ -46,7 +46,7 @@ trait CrudTrait {
     /**
      * Array of columns OR a raw select string
      */
-    protected function defaultSelect(): array
+    protected function defaultSelect():string|array
     {
         return ['a.*'];
     }
@@ -64,14 +64,14 @@ trait CrudTrait {
     /**
      * Override if you need permanent constraints (e.g., active=1)
      */
-    protected function applyBaseFilters($b): void {}
+    protected function applyBaseFilters(BaseBuilder $builder): void {}
 
     /**
      * Internal dict already validated/mapped at controller/repo level
      */
-    protected function applyCustomFilters($b, array $internalDict): void
+    protected function applyCustomFilters(BaseBuilder $builder, array $internalDict): void
     {
-        DictFilters::apply($b, $internalDict, 'a');
+        DictFilters::apply($builder, $internalDict, 'a');
     }
 
     /**

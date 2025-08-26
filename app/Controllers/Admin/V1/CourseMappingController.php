@@ -43,6 +43,7 @@ class CourseMappingController extends BaseController
             return ApiResponse::error("Unable to create course mapping");
         }
 
+        $payload['id'] = $row;
         return ApiResponse::success('Course mapping inserted successfully', $payload);
     }
 
@@ -79,5 +80,137 @@ class CourseMappingController extends BaseController
         }
 
         return ApiResponse::success('Course mapping deleted successfully');
+    }
+
+    public function import(){
+        $course = new \App\Entities\Course_mapping();
+
+        $rules = [
+            'course_file' => [
+                'label' => 'CSV file',
+                'rules' => implode('|', [
+                    'uploaded[course_file]',
+                    'max_size[course_file,1024]',
+                    'mime_in[course_file,text/plain,text/csv,application/csv,application/vnd.ms-excel,text/tab-separated-values]',
+                    'ext_in[course_file,csv,txt,tsv]',
+                ]),
+            ],
+        ];
+
+        if (! $this->validate($rules)) {
+            $errors = $this->validator->getErrors();
+            return ApiResponse::error(reset($errors));
+        }
+        $file = $this->request->getFile('course_file');
+
+        // Optional: preload a dictionary for fast upsert matching (CODE|DEPT_ID → id)
+        $cachePayload = [];
+        $rows = $this->db->table('course_mapping')
+            ->select('id, course_id, programme_id, semester, mode_of_entry, level')
+            ->get()->getResultArray();
+        foreach ($rows as $r) {
+            $entryMode = removeNonAlphanumeric($r['mode_of_entry']);
+            $key = $r['course_id'].':'.$r['programme_id'].':'.$r['semester'].':'.$entryMode;
+            $cachePayload[$key] = [
+                'id' => $r['id'],
+                'level' => json_decode($r['level'], true)
+            ];
+        }
+
+        $preprocessRow = function(array $row): array {
+            static $prog = [];
+            static $course = [];
+            $db = $this->db;
+            $semesterStr = strtolower($row['semester']);
+            $semester = ($semesterStr == 'first' || $semesterStr == 'first semester') ? 1 : 2;
+
+            if (isset($row['course_status'])) $row['course_status'] = strtoupper(trim((string)$row['course_status']));
+            $row['semester'] = $semester;
+            $row['pre_select'] = isset($row['preselect']) ? (int)$row['preselect'] : 0;
+            $row['course_unit'] = (int)$row['course_unit'];
+            $row['pass_score'] = (int)$row['passing_score'];
+            $row['mode_of_entry'] = $row['entry_mode'];
+            $level = !empty($row['level']) ? str_replace("00", "", $row['level']) : [];
+            $row['level'] = json_encode([$level]);
+
+            if (!empty($row['course_code'])) {
+                $c = strtolower(trim((string)$row['course_code']));
+                if (!isset($course[$c])) {
+                    $course[$c] = (int)$db->table('courses')->select('id')->where('code', $c)->get()->getRow('id');
+                }
+                if ($course[$c] <= 0) {
+                    throw new \App\Exceptions\ValidationFailedException("unknown course_code '{$c}'.");
+                }
+                $row['course_id'] = $course[$c];
+            }
+
+            if (!empty($row['programme'])) {
+                $c = strtolower(trim((string)$row['programme']));
+                if (!isset($prog[$c])) {
+                    $prog[$c] = (int)$db->table('programme')->select('id')->where('name', $c)->get()->getRow('id');
+                }
+                if ($prog[$c] <= 0) {
+                    throw new \App\Exceptions\ValidationFailedException("unknown programme '{$c}'.");
+                }
+                $row['programme_id'] = $prog[$c];
+            }
+            unset($row['programme'], $row['course_code'], $row['preselect'], $row['passing_score'], $row['entry_mode']);
+
+            return $row;
+        };
+
+        // Callback: fast match for update/upsert
+        $finder = function(array $row) use (&$cachePayload): ?int {
+            $entryMode = removeNonAlphanumeric($row['mode_of_entry']);
+            $code = $row['course_id'].':'.$row['programme_id'].':'.$row['semester'].':'.$entryMode;
+            $result = $cachePayload[$code] ?? null;
+            $level = json_decode($row['level'],true);
+            if($result){
+                return in_array($level[0], $result['level']) ? $result['id'] : null;
+            }
+            return null;
+        };
+
+        $logFile = 'bulk_courses_mapping_log_' . date('Y-mM-dl h:i:s') . '_' . time() . '.txt';
+        $logPath = WRITEPATH . "temp/logs/$logFile";
+
+        $result = $course->bulkUpload(
+            $file ?? [],
+            [
+                'mode'             => 'upsert',
+                '__authorize__'             => 'course_import',
+                'headerMap'        => [
+                    'course_code'       => 'course_code',
+                    'programme'      => 'programme',
+                    'semester' => 'semester',
+                    'course_unit'  => 'course_unit',
+                    'course_status'       => 'course_status',
+                    'passing_score'   => 'passing_score',
+                    'level'   => 'level',
+                    'entry_mode'   => 'entry_mode',
+                    'preselect'   => 'preselect',
+                ],
+                'validateColumns'  => [
+                    'course_code',
+                    'programme',
+                    'semester',
+                    'course_unit',
+                    'course_status',
+                    'passing_score',
+                    'level',
+                    'entry_mode',
+                    'preselect',
+                ],
+                'staticColumns'    => [],
+
+                'batchSize'        => 1000,
+                'preprocessRow'    => $preprocessRow,
+                'finder'           => $finder,
+                'errorLogPath'     => $logPath,
+            ]
+        );
+        $result['process_log_link'] = generateDownloadLink($logPath, 'temp/logs', 'logs');
+
+        return ApiResponse::success('Courses mapping imported successfully. Please click the link for full process log', $result);
     }
 }

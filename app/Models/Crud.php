@@ -42,8 +42,8 @@ class Crud extends BaseCrud
 
     /** Timestamps */
     protected bool $useTimestamps  = true;
-    protected string $createdField = 'date_created';
-    protected string $updatedField = 'date_modified';
+    protected ?string $createdField = 'date_created';
+    protected ?string $updatedField = 'date_modified';
 
     // Optional soft delete support
     protected bool   $useSoftDeletes  = false;
@@ -62,7 +62,7 @@ class Crud extends BaseCrud
     /**
      * If true: external runs first, else repo runs first
      */
-    protected bool $externalObserversFirst = false;
+    protected bool $externalObserversFirst = true;
     /**
      * Resolved once per repo instance
      */
@@ -298,6 +298,19 @@ class Crud extends BaseCrud
         if($auth){
             $extra['current_user'] = $auth;
         }
+
+        if(isset($extra['context']) && $extra['context'] === 'delete' && isset($extra['__id__'])){
+            $entity = $extra['__entity__'];
+            $label = formatToLabel($entity);
+            $exists = $this->db->table($entity)
+                ->select('*')
+                ->where('id', (int)$extra['__id__'])
+                ->get()->getFirstRow('array');
+            if (!$exists) {
+                throw new ValidationFailedException("$label not found");
+            }
+            $extra['__record__'] = $exists;
+        }
     }
 
     /**
@@ -330,6 +343,7 @@ class Crud extends BaseCrud
         // Auto-validation against FULL input (persist + extra)
         $entityForValidation = $this->validationEntity ?: $this->getTableName();
         ValidationResolver::run($entityForValidation, 'create', array_merge($data, $extra), $ctx);
+
 
         // Hooks + timestamps (hooks can use $extra to derive persist fields)
         if (($options['runHooks'] ?? true) === true) $this->runBeforeCreating($data, $extra);
@@ -455,7 +469,11 @@ class Crud extends BaseCrud
      */
     public function deleteSingle(int $id, array $options = []): bool
     {
-        $extra = [];
+        $extra = [
+            '__id__' => $id,
+            '__entity__' => $this->getTableName(),
+            'context' => 'delete'
+        ];
         $this->injectDataToExtra($extra);
 
         // Validation (authorize/precheck/rules)

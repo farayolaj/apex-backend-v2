@@ -235,7 +235,8 @@ PHP;
         if (!\$row) {
             return ApiResponse::error("Unable to create {$lowerLabel}");
         }
-
+        
+        \$payload['id'] = \$row;
         return ApiResponse::success('{$ucFirstLabel} inserted successfully', \$payload);
     }
 PHP;

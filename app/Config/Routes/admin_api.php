@@ -29,13 +29,14 @@ $routes->group('v1/web/', [
     $routes->get('courses/(:num)', 'CoursesController::show/$1');
     $routes->post('courses', 'CoursesController::store');
     $routes->patch('courses/(:num)', 'CoursesController::update/$1');
-    $routes->delete('courses/delete/(:num)', 'CoursesController::delete/$1');
+    $routes->delete('courses/(:num)', 'CoursesController::delete/$1');
     $routes->post('courses/bulk_course_upload', 'CoursesController::import');
 
     $routes->resource('course_mapping', [
         'controller' => 'CourseMappingController',
         'only' => ['index', 'show', 'create', 'update', 'delete']
     ]);
+    $routes->post('courses_mapping/bulk_course_mapping_upload', 'CourseMappingController::import');
 
     // webinar management
     $routes->get('courses/(:num)/webinars', 'Webinars::index/$1');

@@ -265,6 +265,68 @@ class EntityDetails
         return $this->sessions->toArray();
     }
 
+    public function getCourse_committeeDetails($id)
+    {
+        EntityLoader::loadClass($this, 'course_committee');
+        EntityLoader::loadClass($this, 'users_new');
+        $this->course_committee->id = $id;
+        if (!$this->course_committee->load()) {
+            return null;
+        }
+        $result = $this->course_committee->toArray();
+        return $this->course_committee->loadExtras($result, true);
+    }
+
+    public function getCourse_request_claimsDetails($id)
+    {
+        EntityLoader::loadClass($this, 'user_requests');
+        EntityLoader::loadClass($this, 'users_new');
+        EntityLoader::loadClass($this, 'course_request_claims');
+        $this->user_requests->id = $id;
+        if (!$this->user_requests->load()) {
+            return null;
+        }
+        $result = $this->user_requests->toArray();
+        unset($result['admon_reference'], $result['deduction'], $result['retire_advance_doc'],
+            $result['voucher_document'], $result['withhold_tax'], $result['vat'], $result['stamp_duty'], $result['deduction_amount']);
+
+        return $this->course_request_claims->loadExtras($result, true);
+    }
+
+    public function getPayment_bookstoreDetails($id)
+    {
+        EntityLoader::loadClass($this, 'payment_bookstore');
+        $this->payment_bookstore->id = $id;
+        if (!$this->payment_bookstore->load()) {
+            return null;
+        }
+        $result = $this->payment_bookstore->toArray();
+        unset($result['service_type_id'], $result['service_charge'], $result['amount'], $result['subaccount_amount']);
+
+        return $result;
+    }
+
+    public function getBookstore_transactionDetails($id)
+    {
+        EntityLoader::loadClass($this, 'payment_bookstore');
+        $transaction = $this->payment_bookstore->getBookstoreTransaction(null, $id);
+        if (empty($transaction)) {
+            $result = null;
+        }
+        return $transaction[0];
+    }
+
+    public function getCourse_mappingDetails($id)
+    {
+        EntityLoader::loadClass($this, 'course_mapping');
+        $this->course_mapping->id = $id;
+        if (!$this->course_mapping->load()) {
+            return null;
+        }
+        $data = $this->course_mapping->toArray();
+        return $this->course_mapping->loadExtras($data);
+    }
+
 
 }
 

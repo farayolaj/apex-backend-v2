@@ -81,6 +81,7 @@ final class {$class} implements RulesProvider
     {
         // e.g., ensure foreign keys exist, or ownership checks
         // throw new \\App\\Exceptions\\ValidationFailedException('Reason');
+   
     }
 
     /** CodeIgniter rules array. Keep it minimal and explicit. */

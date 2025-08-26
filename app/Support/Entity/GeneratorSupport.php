@@ -48,25 +48,7 @@ class GeneratorSupport
 
     public static function studly(string $name, bool $classic = false): string
     {
-        $name = trim($name);
-        if ($name === '') return '';
-
-        if ($classic) {
-            // Old behavior: CourseMapping (remove separators, title-case each part)
-            $name = str_replace(['-', '_'], ' ', $name);
-            $name = ucwords(strtolower($name));
-            return str_replace(' ', '', $name);
-        }
-
-        // NEW default: only uppercase-first character, keep underscores/dashes as-is.
-        // e.g., "course_mapping" => "Course_mapping"
-        if (function_exists('mb_substr')) {
-            $first = mb_substr($name, 0, 1, 'UTF-8');
-            $rest  = mb_substr($name, 1, null, 'UTF-8');
-            return mb_strtoupper($first, 'UTF-8') . $rest;
-        }
-
-        return ucfirst($name);
+        return studly($name, $classic);
     }
 
     public static function kebab(string $name): string

@@ -78,13 +78,15 @@ class MakeTemplate extends BaseCommand
 <?php
 namespace {$ns};
 
+use App\Hooks\Contracts\Template;
+
 /**
  * CSV template for {$studly} uploads.
  * - columns(): header names (order shown will be exported in HTML/CSV)
  * - sampleRows(): at least one sample row aligned to columns()
  * - filenamePrefix(): used by your download helper
  */
-final class {$studly}
+final class {$studly} implements Template
 {
     /** @return string[] */
     public static function columns(): array

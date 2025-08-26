@@ -73,7 +73,7 @@ trait EntityListTrait
         $params = ApiListParams::fromArray($request, [
             'perPage'    => 25,
             'maxPerPage' => 100,
-            'sort'       => 'code',
+            'sort'       => 'id',
         ]);
 
         $params->filters = $filterList;

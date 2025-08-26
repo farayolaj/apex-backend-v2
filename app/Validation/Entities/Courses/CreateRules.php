@@ -21,7 +21,6 @@ final class CreateRules implements RulesProvider
     {
         $authKey = $ctx['__authorize__'] ?? 'course_create';
         return permissionAuthorize($authKey);
-
     }
 
     /**

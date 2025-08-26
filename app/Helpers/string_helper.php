@@ -1,6 +1,19 @@
 <?php
 use App\Enums\CommonEnum as CommonSlug;
 
+if(!function_exists('formatToLabel'))
+{
+    function formatToLabel($string, $separator = ' '): string
+    {
+        $string = str_replace(['-', '_'], ' ', $string);
+        $string = ucfirst(strtolower($string));
+        if ($separator !== ' ') {
+            $string = str_replace(' ', $separator, $string);
+        }
+        return $string;
+    }
+}
+
 if(!function_exists('sendNewDownload')){
     /**
      * If you want to download an existing file from the server you’ll need to pass null explicitly
@@ -15,11 +28,27 @@ if(!function_exists('sendNewDownload')){
 }
 
 if(!function_exists('studly')){
-    function studly(string $s): string
+    function studly(string $name, bool $classic = false): string
     {
-        $s = str_replace(['-', '_'], ' ', strtolower($s));
-        $s = ucwords($s);
-        return str_replace(' ', '', $s);
+        $name = trim($name);
+        if ($name === '') return '';
+
+        if ($classic) {
+            // Old behavior: CourseMapping (remove separators, title-case each part)
+            $name = str_replace(['-', '_'], ' ', $name);
+            $name = ucwords(strtolower($name));
+            return str_replace(' ', '', $name);
+        }
+
+        // NEW default: only uppercase-first character, keep underscores/dashes as-is.
+        // e.g., "course_mapping" => "Course_mapping"
+        if (function_exists('mb_substr')) {
+            $first = mb_substr($name, 0, 1, 'UTF-8');
+            $rest  = mb_substr($name, 1, null, 'UTF-8');
+            return mb_strtoupper($first, 'UTF-8') . $rest;
+        }
+
+        return ucfirst($name);
     }
 }
 

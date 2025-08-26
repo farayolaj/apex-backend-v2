@@ -121,14 +121,14 @@ class CoursesController extends BaseController
             return $courseIdByKey[$code] ?? null;
         };
 
-        $logFile = 'bulk_courses_mapping_log_' . date('Y-mM-dl h:i:s') . '_' . time() . '.txt';
+        $logFile = 'bulk_courses_log_' . date('Y-mM-dl h:i:s') . '_' . time() . '.txt';
         $logPath = WRITEPATH . "temp/logs/$logFile";
 
         $result = $course->bulkUpload(
             $file ?? [],
             [
-                'mode'             => 'update',
-                '__authorize__'             => 'course_imports',
+                'mode'             => 'upsert',
+                '__authorize__'             => 'course_import',
                 'headerMap'        => [
                     'course_code'       => 'code',
                     'course_title'      => 'title',
