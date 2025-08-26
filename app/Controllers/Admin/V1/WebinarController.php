@@ -13,7 +13,7 @@ use App\Models\WebSessionManager;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\I18n\Time;
 
-class Webinars extends BaseController
+class WebinarController extends BaseController
 {
     private EntitiesWebinars $webinars;
     private Course_manager $courseManager;

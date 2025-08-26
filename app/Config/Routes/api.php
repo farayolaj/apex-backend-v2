@@ -10,9 +10,9 @@ $routes->group('v1/api/', [
     'filter' => ['apiValidation:student'],
     'namespace' => 'App\Controllers\Student\v1'
 ], function ($routes) {
-    $routes->get('courses/(:num)/(:num)/webinars', 'Webinars::listWebinars/$1/$2');
-    $routes->get('webinars/(:num)', 'Webinars::getWebinar/$1');
-    $routes->get('webinars/(:num)/join_url', 'Webinars::getJoinUrl/$1');
+    $routes->get('courses/(:num)/(:num)/webinars', 'WebinarController::listWebinars/$1/$2');
+    $routes->get('webinars/(:num)', 'WebinarController::getWebinar/$1');
+    $routes->get('webinars/(:num)/join_url', 'WebinarController::getJoinUrl/$1');
 
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});

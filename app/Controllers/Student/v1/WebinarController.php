@@ -11,7 +11,7 @@ use App\Models\BBBModel;
 use App\Models\WebSessionManager;
 use CodeIgniter\I18n\Time;
 
-class Webinars extends BaseController
+class WebinarController extends BaseController
 {
     private EntitiesWebinars $webinars;
     private BBBModel $bbbModel;

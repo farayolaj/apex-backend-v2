@@ -45,12 +45,12 @@ $routes->group('v1/web/', [
     $routes->post('course_configuration/bulk_course_config_upload', 'CourseConfigController::import');
 
     // webinar management
-    $routes->get('courses/(:num)/(:num)/webinars', 'Webinars::index/$1/$2');
-    $routes->get('webinars/(:num)/recordings', 'Webinars::getRecordings/$1');
-    $routes->post('webinars', 'Webinars::create');
-    $routes->patch('webinars/(:num)', 'Webinars::update/$1');
-    $routes->delete('webinars/(:num)', 'Webinars::delete/$1');
-    $routes->get('webinars/(:num)/join_url', 'Webinars::getJoinUrl/$1');
+    $routes->get('courses/(:num)/(:num)/webinars', 'WebinarController::index/$1/$2');
+    $routes->get('webinars/(:num)/recordings', 'WebinarController::getRecordings/$1');
+    $routes->post('webinars', 'WebinarController::create');
+    $routes->patch('webinars/(:num)', 'WebinarController::update/$1');
+    $routes->delete('webinars/(:num)', 'WebinarController::delete/$1');
+    $routes->get('webinars/(:num)/join_url', 'WebinarController::getJoinUrl/$1');
 
     // handle CORS preflight requests
     $routes->options('(:any)', static function () {});
@@ -58,7 +58,7 @@ $routes->group('v1/web/', [
     $routes->options('(:any)/(:any)/(:any)', static function () {});
 });
 
-$routes->get('v1/webinars/(:any)/presentations', '\App\Controllers\Admin\V1\Webinars::getPresentation/$1');
+$routes->get('v1/webinars/(:any)/presentations', '\App\Controllers\Admin\V1\WebinarController::getPresentation/$1');
 
 $routes->group('v1/web/email_builder', [
     'filter' => ['apiValidation:admin'],
