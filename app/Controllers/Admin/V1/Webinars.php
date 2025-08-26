@@ -11,7 +11,6 @@ use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
 use App\Models\WebSessionManager;
 use CodeIgniter\Exceptions\PageNotFoundException;
-use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 
 class Webinars extends BaseController
@@ -89,7 +88,7 @@ class Webinars extends BaseController
         $data = $this->request->getPost();
         $rules = [
             'title' => 'required|string|max_length[255]',
-            'description' => 'string|permit_empty',
+            'description' => 'permit_empty|string',
             'course_id' => 'required|integer',
             'scheduled_for' => 'required|valid_datetime[scheduled_for]',
             'presentation' => [
@@ -97,7 +96,7 @@ class Webinars extends BaseController
                 'rules' => [
                     'permit_empty',
                     'ext_in[presentation,pdf,doc,docx,ppt,pptx,xls,xlsx]',
-                    'max_size[presentation,30720]', // 30 MB
+                    'max_size[presentation,10240]', // 10 MB
                 ],
             ],
         ];
