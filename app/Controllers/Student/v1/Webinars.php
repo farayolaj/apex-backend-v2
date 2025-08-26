@@ -68,7 +68,7 @@ class Webinars extends BaseController
             'id' => $record->getRecordId(),
             'date_recorded' => Time::createFromTimestamp($record->getStartTime() / 1000)->toDateTimeString(),
             'duration' => (int) (($record->getEndTime() - $record->getStartTime()) / 1000),
-            'recording_url' => $record->getPlaybackFormats()[0]->getUrl(),
+            'recording_url' => $record->getFormats()[0]->getUrl(),
         ], $this->bbbModel->getRecordings($webinar['room_id']));
 
         $webinar = $this->processWebinar($webinar);
@@ -79,6 +79,8 @@ class Webinars extends BaseController
 
     public function getJoinUrl(int $webinarId)
     {
+        $redirectURL = $this->request->getGet('redirect_url') ??
+            $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
         $webinar = $this->webinars->getDetails($webinarId);
 
         if (!$webinar) {
@@ -104,6 +106,6 @@ class Webinars extends BaseController
         $currentUser = WebSessionManager::currentAPIUser();
         $fullName = trim($currentUser->firstname . ' ' . $currentUser->lastname);
 
-        return ApiResponse::success(data: $this->bbbModel->getJoinUrl($webinar['room_id'], $fullName, true));
+        return ApiResponse::success(data: $this->bbbModel->getJoinUrl($webinar['room_id'], $fullName, $redirectURL, true));
     }
 }

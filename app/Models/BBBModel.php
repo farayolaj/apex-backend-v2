@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use BigBlueButton\BigBlueButton;
+use BigBlueButton\Enum\GuestPolicy;
 use BigBlueButton\Enum\Role;
 use BigBlueButton\Parameters\CreateMeetingParameters;
 use BigBlueButton\Parameters\GetMeetingInfoParameters;
@@ -29,12 +30,16 @@ class BBBModel
    * @param bool $isStudent
    * @return string|null
    */
-  public function getJoinUrl(string $meetingId, string $fullName, bool $isStudent = false): string
+  public function getJoinUrl(string $meetingId, string $fullName, string $logoutURL, bool $isStudent = false): string
   {
     $joinMeetingParams = new JoinMeetingParameters($meetingId, $fullName, $isStudent ? Role::VIEWER : Role::MODERATOR);
-    $joinMeetingParams->setRedirect(true);
+    $joinMeetingParams
+      ->setRedirect(true)
+      ->setCustomParameter('logoutURL', $logoutURL);
 
-    $joinUrl = $this->bbb->getJoinMeetingURL($joinMeetingParams);
+    if ($isStudent) $joinMeetingParams->setGuest(true);
+
+    $joinUrl = $this->bbb->getUrlBuilder()->getJoinMeetingURL($joinMeetingParams);
 
     return $joinUrl;
   }
@@ -62,10 +67,9 @@ class BBBModel
     $createParams->setRecord(true);
     $createParams->setAllowStartStopRecording(false);
     $createParams->setAllowModsToUnmuteUsers(true);
+    $createParams->setGuestPolicy(GuestPolicy::ASK_MODERATOR);
 
-    if ($presentation) {
-      $createParams->addPresentation($presentation->url, null, $presentation->name);
-    }
+    if ($presentation) $createParams->addPresentation($presentation->url, null, $presentation->name);
 
     $createMeetingResponse = $this->bbb->createMeeting($createParams);
 
