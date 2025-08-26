@@ -4,6 +4,16 @@ use CodeIgniter\CLI\CLI;
 
 class GeneratorSupport
 {
+    /** New: PascalCase (e.g., "course_mapping" => "CourseMapping") */
+    public static function pascal(string $name): string
+    {
+        $name = trim($name);
+        if ($name === '') return '';
+        $name = str_replace(['-', '_'], ' ', $name);
+        $name = ucwords(strtolower($name));
+        return str_replace(' ', '', $name);
+    }
+
     public static function option(string $key): ?string
     {
         // 1) CI4 normal path (works for --key=value or some shells)

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Admin\v1;
+namespace App\Controllers\Admin\V1;
 
 use App\Controllers\BaseController;
 use App\Enums\CommonEnum as CommonSlug;

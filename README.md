@@ -1454,3 +1454,145 @@ $repo->importCsv($file, [
 
 
 ----------
+
+# Generators (Spark CLI)
+
+## Observer
+
+**Syntax**
+
+```bash
+php spark app:make:observer <Entity> [--classic-studly] [--force] [--dry-run]
+
+```
+
+**Examples**
+
+```bash
+php spark app:make:observer Courses
+php spark app:make:observer course_mapping
+php spark app:make:observer course_mapping --classic-studly
+php spark app:make:observer Courses --force
+php spark app:make:observer Courses --dry-run
+
+```
+
+**Options**
+
+```
+--classic-studly   Use CourseMapping instead of Course_mapping
+--force            Overwrite if file exists
+--dry-run          Show output path; do not write
+
+```
+
+## Rules
+
+**Syntax**
+
+```bash
+php spark app:make:rules <Entity> [--actions=create,update,delete] [--classic-studly] [--force] [--dry-run]
+
+```
+
+**Examples**
+
+```bash
+php spark app:make:rules Courses
+php spark app:make:rules Courses --actions=create,update
+php spark app:make:rules course_mapping --classic-studly
+php spark app:make:rules Courses --force
+php spark app:make:rules Courses --dry-run
+
+```
+
+**Options**
+
+```
+--actions          Comma list: create,update,delete (default: all)
+--classic-studly   Use CourseMapping instead of Course_mapping
+--force            Overwrite if file exists
+--dry-run          Show output paths; do not write
+
+```
+
+## Template
+
+**Syntax**
+
+```bash
+php spark app:make:template <Entity> [--columns=a,b,c] [--sample=JSON|key=value,...] [--classic-studly] [--force] [--dry-run]
+
+```
+
+**Examples**
+
+```bash
+php spark app:make:template Courses
+php spark app:make:template Courses --columns course_code,course_title,department_code
+php spark app:make:template Courses --sample '{"course_code":"BUS101","course_title":"Business Intelligence"}'
+php spark app:make:template Courses --sample course_code=BUS101,course_title='Business Intelligence',department_code=ECO
+php spark app:make:template course_mapping --classic-studly
+php spark app:make:template Courses --force
+php spark app:make:template Courses --dry-run
+
+```
+
+**Options**
+
+```
+--columns          Comma list of headers (supports "--columns a,b" or "--columns=a,b")
+--sample           JSON or key=value CSV (supports "--sample v" or "--sample=v")
+--classic-studly   Use CourseMapping instead of Course_mapping
+--force            Overwrite if file exists
+--dry-run          Show output path; do not write
+
+```
+
+## Controller
+
+**Syntax**
+
+```bash
+php spark app:make:controller <Name> [--in=Api/V1] [--entity=Courses] [--slug=courses] \
+  [--preset=rest|rest+import] [--methods=index,show,store,update,delete,sample,import,ping] \
+  [--extends=BaseController|ResourceController] [--force] [--dry-run]
+
+```
+
+**Examples**
+
+```bash
+php spark app:make:controller course_mapping
+php spark app:make:controller course_mapping --in=Api/V1
+php spark app:make:controller CourseMappingController --in=Api/V1
+php spark app:make:controller course_mapping --entity=Courses --slug=courses
+php spark app:make:controller course_mapping --preset=rest+import --slug=courses
+php spark app:make:controller course_mapping --methods index,show,ping --slug=courses
+php spark app:make:controller course_mapping --extends=ResourceController --slug=courses
+php spark app:make:controller course_mapping --force
+php spark app:make:controller course_mapping --dry-run
+
+```
+
+**Options**
+
+```
+--in               Subdirectory under app/Controllers (e.g., Api/V1)
+--entity           Entity basename under App\Entities (default: derived from name)
+--slug             Slug for EntityListTrait (default: auto; set explicitly for plural)
+--preset           rest (default) | rest+import
+--methods          Overrides preset; comma list of method stubs
+--extends          BaseController (default) | ResourceController
+--force            Overwrite if file exists
+--dry-run          Show output path + stub; do not write
+
+```
+
+**Notes**
+
+```
+- Value options accept both "--opt value" and "--opt=value".
+- Controller class naming: PascalCase + "Controller" (e.g., CourseMappingController).
+
+```

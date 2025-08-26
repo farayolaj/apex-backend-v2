@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Admin\v1;
+namespace App\Controllers\Admin\V1;
 
 use App\Controllers\BaseController;
 use App\Libraries\ApiResponse;
@@ -148,7 +148,7 @@ class CoursesController extends BaseController
         );
         $result['process_log_link'] = generateDownloadLink($logPath, 'temp/logs', 'logs');
 
-        return ApiResponse::success('Courses imported successfully', $result);
+        return ApiResponse::success('Courses imported successfully. Please click the link for full process log', $result);
     }
 
 }
