@@ -1,7 +1,7 @@
 <?php
 namespace App\Support\Entity;
 
-final class BatchErrorLogger
+final class BatchProcessLogger
 {
     private string $path;
     private int $flushEvery;

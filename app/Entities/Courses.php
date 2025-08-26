@@ -53,7 +53,7 @@ class Courses extends Crud
 
     protected bool $externalObserversFirst = true;
 
-    protected string $updatedField = 'updated_at';
+    protected ?string $updatedField = 'updated_at';
 
     function __construct($array = array())
     {
@@ -155,8 +155,8 @@ class Courses extends Crud
 
     public function APIListNew($request, array $filterList){
         $params = ApiListParams::fromArray($request, [
-            'perPage'    => 25,
-            'maxPerPage' => 100,
+            'perPage'    => 1,
+            'maxPerPage' => 20,
             'sort'       => 'code',
         ]);
 

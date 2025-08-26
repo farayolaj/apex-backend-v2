@@ -6,7 +6,7 @@ use App\Enums\WebinarStatusEnum;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ValidationFailedException;
 use App\Hooks\Resolver\ObserverResolver;
-use App\Support\Entity\BatchErrorLogger;
+use App\Support\Entity\BatchProcessLogger;
 use App\Support\Entity\SubsetSupport;
 use App\Validation\Support\Resolver\ValidationResolver;
 use App\Support\Csv\CsvReader;
@@ -597,9 +597,10 @@ class Crud extends BaseCrud
         $collectIds       = (bool)($options['collectIds'] ?? false);
         $maxErrorSamples  = (int)($options['maxErrorSamples'] ?? 100);
 
-        $errorLogPath    = $options['errorLogPath']    ?? null;
-        $errorFlushEvery = (int)($options['errorFlushEvery'] ?? 200);
-        $errLogger = $errorLogPath ? new BatchErrorLogger($errorLogPath, $errorFlushEvery, $this->processLogHeader()) : null;
+        $processLogPath    = $options['processLogPath']    ?? null;
+        $processFlushEvery = (int)($options['processFlushEvery'] ?? 200);
+        $processLogMessage = $options['processLogMessage'] ?? null;
+        $processLogger = $processLogPath ? new BatchProcessLogger($processLogPath, $processFlushEvery, $this->processLogHeader()) : null;
 
         $summary = [
             'total'       => 0,
@@ -636,6 +637,9 @@ class Crud extends BaseCrud
                     if (!array_key_exists($k, $row)) $row[$k] = $v;
                 }
 
+                $logMessage = null;
+                if(is_callable($processLogMessage)) $logMessage = $processLogMessage($row);
+
                 // Preprocess (normalize, derive, FK, type-cast); may throw ValidationFailedException
                 if (is_callable($preprocess)) $row = (array)$preprocess($row);
 
@@ -657,6 +661,9 @@ class Crud extends BaseCrud
                         $summary['inserted']++;
                         if ($collectIds) $summary['ids'][] = $newId;
 
+                        $logMessage = $logMessage['insert'] ?? 'New record has been inserted';
+                        if ($processLogger) $processLogger->add($rowNo, $logMessage);
+
                     } elseif ($mode === 'update') {
                         $id = $this->findExistingIdForImport($row, $finder, $matchBy, $whereGuards);
                         if (!$id) throw new RuntimeException('Match not found for update at row '.$rowNo);
@@ -668,6 +675,9 @@ class Crud extends BaseCrud
                         $summary['updated']++;
                         if ($collectIds) $summary['updated_ids'][] = $id;
 
+                        $logMessage = $logMessage['update'] ?? 'Record has been updated';
+                        if ($processLogger) $processLogger->add($rowNo, $logMessage);
+
                     } elseif ($mode === 'upsert') {
                         $id = $this->findExistingIdForImport($row, $finder, $matchBy, $whereGuards);
                         if ($id) {
@@ -677,12 +687,18 @@ class Crud extends BaseCrud
 
                             $summary['updated']++;
                             if ($collectIds) $summary['updated_ids'][] = $id;
+
+                            $logMessage = $logMessage['update'] ?? 'Record has been updated';
+                            if ($processLogger) $processLogger->add($rowNo, $logMessage);
                         } else {
                             $newId = $this->insertSingle($row, [], $rowOptions);
                             if (!$newId) throw new DatabaseException('Insert failed at row '.$rowNo);
 
                             $summary['inserted']++;
                             if ($collectIds) $summary['ids'][] = $newId;
+
+                            $logMessage = $logMessage['insert'] ?? 'New record has been inserted';
+                            if ($processLogger) $processLogger->add($rowNo, $logMessage);
                         }
                     } else {
                         throw new InvalidArgumentException("Unknown import mode '{$mode}'");
@@ -692,7 +708,7 @@ class Crud extends BaseCrud
                     $summary['failed']++;
                     $err = ['row' => $rowNo, 'messages' => $this->toErrorBag($e)];
 
-                    if ($errLogger) $errLogger->add($err['row'], $err['messages']);
+                    if ($processLogger) $processLogger->add($err['row'], $err['messages']);
                     if (is_callable($onError)) $onError($err);
                     if (count($summary['errors']) < $maxErrorSamples) $summary['errors'][] = $err;
 
@@ -717,7 +733,7 @@ class Crud extends BaseCrud
                 else $this->db->transCommit();
             }
 
-            if ($errLogger) $errLogger->close();
+            if ($processLogger) $processLogger->close();
             return $summary;
 
         } catch (Throwable $e) {
@@ -725,7 +741,7 @@ class Crud extends BaseCrud
             $err = ['row' => 0, 'messages' => $this->toErrorBag($e)];
             if (is_callable($onError)) $onError($err);
             if (count($summary['errors']) < $maxErrorSamples) $summary['errors'][] = $err;
-            if ($errLogger) $errLogger->close();
+            if ($processLogger) $processLogger->close();
             return $summary;
         }
     }

@@ -1,0 +1,77 @@
+<?php
+namespace App\Validation\Entities\Course_configuration;
+
+use App\Exceptions\ValidationFailedException;
+use App\Validation\Support\Contracts\RulesProvider;
+/**
+ * Validation rules for Course_configuration (update).
+ * Methods are static to work with your ValidationAuto runner.
+ * Keep authorize fast (no heavy I/O); use precheck for DB lookups.
+ */
+final class UpdateRules implements RulesProvider
+{
+    /** Gate the action using roles/permissions/tenant context from $ctx. */
+    public static function authorize(array $data, array $ctx): bool
+    {
+        return permissionAuthorize($ctx['__authorize__'] ?? 'course_config_edit');
+    }
+
+    /** Message returned if authorize() returns false. */
+    public static function denyMessage(): string
+    {
+        return 'You are not allowed to perform this action.';
+    }
+
+    /**
+     * Optional: perform lightweight DB checks; throw your ApiValidationException::field(...)
+     * to produce friendly per-field messages.
+     */
+    public static function precheck(array $data): void
+    {
+        if (!empty($data['programme_id'])) {
+            $db  = db_connect();
+            $progName = get_single_record('programme', ['id' => $data['programme_id']]);
+            $progName = $progName ? $progName->name : 'Programme';
+            $row = $db->table('course_configuration')
+                ->select('id')
+                ->where('id !=', $data['id'])
+                ->where('programme_id', $data['programme_id'])
+                ->where('semester', $data['semester'])
+                ->where('level', $data['level'])
+                ->where('entry_mode', $data['entry_mode'])
+                ->get()
+                ->getRowArray();
+
+            if ($row) {
+                $semester = $data['semester'] == '1' ? 'First' : 'Second';
+                $level = $data['level'];
+                $entryMode = $data['entry_mode'];
+                $message = "{$progName} already exist for {$semester} semester, level: {$level} and entry mode: {$entryMode}";
+                throw new ValidationFailedException($message);
+            }
+        }
+   
+    }
+
+    /** CodeIgniter rules array. Keep it minimal and explicit. */
+    public static function rules(): array
+    {
+        return [
+            'semester'   => ['label' => 'semester',           'rules' => 'required|in_list[1,2]'],
+            'programme_id' => ['label' => 'Programme',        'rules' => 'permit_empty'],
+            'level'      => ['label' => 'level',              'rules' => 'permit_empty'],
+            'entry_mode' => ['label' => 'entry mode',         'rules' => 'required'],
+            'min_unit'   => ['label' => 'minimum unit',       'rules' => 'required|is_natural_no_zero|less_than_equal_to[100]'],
+            'max_unit'   => ['label' => 'maximum unit',       'rules' => 'required|is_natural_no_zero|less_than_equal_to[100]'],
+            'enable_reg' => ['label' => 'course reg. status', 'rules' => 'permit_empty|in_list[1,0]'],
+        ];
+    }
+
+    /** Optional custom messages per rule. */
+    public static function messages(): array
+    {
+        return [
+            // 'code.required' => 'Code is required.',
+        ];
+    }
+}

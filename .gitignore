@@ -135,6 +135,7 @@ writable/temp/export/*
 writable/temp/import/*
 writable/temp/lmsdb/*
 writable/temp/logs/*
+writable/temp/events/*
 writable/temp/mpdf/*
 writable/temp/result_csv/*
 writable/temp/script_logs/*
@@ -154,8 +155,6 @@ writable/uploads/verification_documents/*
 .phpactor.json
 sample.zip
 /*.zip
-
-writable/temp/*
 
 deploy-production.sh
 env-live

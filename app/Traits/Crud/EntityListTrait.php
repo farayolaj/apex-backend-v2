@@ -64,20 +64,21 @@ trait EntityListTrait
         unset($filterList['sortDirection']);
 
         $filterList = $this->validateEntityFilters($entity, $filterList);
-        $entityObject = EntityLoader::loadClass($this, $entity);
+        $entityObject = EntityLoader::loadClass(null, $entity);
 
         if(method_exists($entityObject, 'APIList')){
             return $entityObject->APIList($request, $filterList);
         }
 
         $params = ApiListParams::fromArray($request, [
-            'perPage'    => 25,
-            'maxPerPage' => 100,
+            'perPage'    => 1,
+            'maxPerPage' => 20,
             'sort'       => 'id',
         ]);
 
         $params->filters = $filterList;
-        return $entityObject->listApi($entityObject::$apiSelectClause,
+        $select = $entityObject->defaultSelect();
+        return $entityObject->listApi($select,
             $params
         );
     }

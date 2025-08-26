@@ -40,7 +40,7 @@ class Course_mapping extends Crud
 
     protected bool $useTimestamps = false;
 
-    protected array $searchable = ['c.name', 'b.code'];
+    protected array $searchable = ['b.code', 'c.name'];
 
     function __construct($array = array())
     {
@@ -162,8 +162,8 @@ class Course_mapping extends Crud
     public function APIList($request, $filterList)
     {
         $params = ApiListParams::fromArray($request, [
-            'start' => 25,
-            'len' => 100,
+            'start' => 1,
+            'len' => 20,
         ]);
         $params->filters = $filterList;
 

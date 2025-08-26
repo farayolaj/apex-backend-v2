@@ -108,7 +108,7 @@ class CourseMappingController extends BaseController
         $rows = $this->db->table('course_mapping')
             ->select('id, course_id, programme_id, semester, mode_of_entry, level')
             ->get()->getResultArray();
-        foreach ($rows as $r) {
+        foreach (useGenerators($rows) as $r) {
             $entryMode = removeNonAlphanumeric($r['mode_of_entry']);
             $key = $r['course_id'].':'.$r['programme_id'].':'.$r['semester'].':'.$entryMode;
             $cachePayload[$key] = [
@@ -206,7 +206,13 @@ class CourseMappingController extends BaseController
                 'batchSize'        => 1000,
                 'preprocessRow'    => $preprocessRow,
                 'finder'           => $finder,
-                'errorLogPath'     => $logPath,
+                'processLogPath'     => $logPath,
+                'processLogMessage' => function (array $row){
+                    return [
+                        'update' => "Course Code {$row['course_code']} has been updated with Semester - {$row['semester']}, Course Unit - {$row['course_unit']}, Course Status - {$row['course_status']}, Level - {$row['level']}, Passing Score - {$row['passing_score']} Entry Mode - {$row['entry_mode']}, Pre select - {$row['preselect']}",
+                        'insert' => "New Record has been inserted for Course Code {$row['course_code']} with Programme {$row['programme']}"
+                    ];
+                }
             ]
         );
         $result['process_log_link'] = generateDownloadLink($logPath, 'temp/logs', 'logs');

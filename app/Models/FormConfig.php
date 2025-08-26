@@ -178,294 +178,329 @@ class FormConfig
      * 'filter_display'=>'active_status' # this is the query param supplied
      * )),
      */
-    private function getFilter(string $tablename)
+    private function getFilter($tablename)
     {
-        $result = [];
-        if ($this->apiEntity) {
-            $result = array(
-                'department' => array(
-                    array(
-                        'filter_label' => 'faculty_id',
-                        'filter_display' => 'Faculty',
-                        'preload_query' => false, //this will normally be a query that returns two field id and value where id is the value to be set inthe database and value will be the display value
-                        'select_items' => ['type' => 'entity', 'table' => 'faculty', 'display' => 'name', 'id' => 'id'],
-                    ),
+        $result = array(
+            'department' => array(
+                array(
+                    'filter_label' => 'faculty_id',
+                    'filter_display' => 'Faculty',
+                    'preload_query' => false, //this will normally be a query that returns two field id and value where id is the value to be set inthe database and value will be the display value
+                    'select_items' => ['type' => 'entity', 'table' => 'faculty', 'display' => 'name', 'id' => 'id'],
+                ),
 
+            ),
+            'programme' => array(
+                array(
+                    'filter_label' => 'faculty_id',
+                    'filter_display' => 'Faculty',
+                    'preload_query' => false, //this will normally be a query that returns two field id and value where id is the value to be set inthe database and value will be the display value
+                    'select_items' => ['type' => 'entity', 'table' => 'faculty', 'display' => 'name', 'id' => 'id'],
                 ),
-                'programme' => array(
-                    array(
-                        'filter_label' => 'faculty_id',
-                        'filter_display' => 'Faculty',
-                        'preload_query' => false, //this will normally be a query that returns two field id and value where id is the value to be set inthe database and value will be the display value
-                        'select_items' => ['type' => 'entity', 'table' => 'faculty', 'display' => 'name', 'id' => 'id'],
-                    ),
-                    array(
-                        'filter_label' => 'department_id',
-                        'filter_display' => 'Department',
-                        'preload_query' => false, //this will normally be a query that returns two field id and value where id is the value to be set inthe database and value will be the display value
-                        'select_items' => ['type' => 'entity', 'table' => 'department', 'display' => 'name', 'id' => 'id'],
-                    ),
+                array(
+                    'filter_label' => 'department_id',
+                    'filter_display' => 'Department',
+                    'preload_query' => false, //this will normally be a query that returns two field id and value where id is the value to be set inthe database and value will be the display value
+                    'select_items' => ['type' => 'entity', 'table' => 'department', 'display' => 'name', 'id' => 'id'],
                 ),
-                'applicants' => array(
-                    array(
-                        'filter_label' => 'session_id',
-                        'filter_display' => 'session',
-                    ),
-                    array(
-                        'filter_label' => 'programme_id',
-                        'filter_display' => 'programmeInterest',
-                    ),
-                    array(
-                        'filter_label' => 'programme_given',
-                        'filter_display' => 'programmeOffered',
-                    ),
-                    array(
-                        'filter_label' => 'admission_id',
-                        'filter_display' => 'admissionType',
-                    ),
-                    array(
-                        'filter_label' => 'step',
-                        'filter_display' => 'step',
-                        'preload_query' => null,
-                    ),
+            ),
+            'applicants' => array(
+                array(
+                    'filter_label' => 'session_id',
+                    'filter_display' => 'session',
+                ),
+                array(
+                    'filter_label' => 'programme_id',
+                    'filter_display' => 'programmeInterest',
+                ),
+                array(
+                    'filter_label' => 'programme_given',
+                    'filter_display' => 'programmeOffered',
+                ),
+                array(
+                    'filter_label' => 'admission_id',
+                    'filter_display' => 'admissionType',
+                ),
+                array(
+                    'filter_label' => 'step',
+                    'filter_display' => 'step',
+                    'preload_query' => null,
+                ),
 
+            ),
+            'students' => array(
+                array(
+                    'filter_label' => 'c.id',
+                    'filter_display' => 'entryYear', // to be used on the client side
+                    'preload_query' => "SELECT id,date as value from sessions order by date desc",
                 ),
-                'students' => array(
-                    array(
-                        'filter_label' => 'c.id',
-                        'filter_display' => 'entryYear', // to be used on the client side
-                        'preload_query' => "SELECT id,date as value from sessions order by date desc",
-                    ),
-                    array(
-                        'filter_label' => 'e.id',
-                        'filter_display' => 'department',
-                        'preload_query' => "SELECT id,name as value from department where type = 'academic' order by value asc",
-                    ),
-                    array(
-                        'filter_label' => 'f.id',
-                        'filter_display' => 'faculty',
-                        'preload_query' => "SELECT id,name as value from faculty order by value asc",
-                    ),
-                    array(
-                        'filter_label' => 'd.id',
-                        'filter_display' => 'programme',
-                        'preload_query' => "SELECT id,name as value from programme order by value asc",
-                    ),
-                    array(
-                        'filter_label' => 'b.current_level',
-                        'filter_display' => 'levels',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'e.id',
+                    'filter_display' => 'department',
+                    'preload_query' => "SELECT id,name as value from department where type = 'academic' order by value asc",
                 ),
-                'transaction_custom' => array(
-                    array(
-                        'filter_label' => 'payment_id',
-                        'filter_display' => 'category', // to be used on the client side
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'payment_status',
-                        'filter_display' => 'payment_status',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'f.id',
+                    'filter_display' => 'faculty',
+                    'preload_query' => "SELECT id,name as value from faculty order by value asc",
                 ),
-                'transaction_archive' => array(
-                    array(
-                        'filter_label' => 'payment_id',
-                        'filter_display' => 'payment_type', // to be used on the client side
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'rrr_code',
-                        'filter_display' => 'rrr',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'd.id',
+                    'filter_display' => 'programme',
+                    'preload_query' => "SELECT id,name as value from programme order by value asc",
                 ),
-                'transaction_outflow' => array(
-                    array(
-                        'filter_label' => 'approval_status',
-                        'filter_display' => 'approval_status',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'payment_status',
-                        'filter_display' => 'payment_status',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'b.current_level',
+                    'filter_display' => 'levels',
+                    'preload_query' => null,
                 ),
-                'student_verification_fee' => array(
-                    array(
-                        'filter_label' => 'document_verification',
-                        'filter_display' => 'verify_status',
-                        'preload_query' => null,
-                    ),
+            ),
+            'transaction_custom' => array(
+                array(
+                    'filter_label' => 'payment_id',
+                    'filter_display' => 'category', // to be used on the client side
+                    'preload_query' => null,
                 ),
-                'student_transaction_change_programme' => array(
-                    array(
-                        'filter_label' => 'payment_status',
-                        'filter_display' => 'payment_status',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'payment_status',
+                    'filter_display' => 'payment_status',
+                    'preload_query' => null,
                 ),
-                'sundry_finance_transaction' => array(
-                    array(
-                        'filter_label' => 'payment_status',
-                        'filter_display' => 'payment_status',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'a.session',
-                        'filter_display' => 'payment_session',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'd.year_of_entry',
-                        'filter_display' => 'entry_year',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'b.code',
-                        'filter_display' => 'sundry_type',
-                        'preload_query' => null,
-                    ),
+            ),
+            'transaction_archive' => array(
+                array(
+                    'filter_label' => 'payment_id',
+                    'filter_display' => 'payment_type', // to be used on the client side
+                    'preload_query' => null,
                 ),
-                'verification_cards' => array(
-                    array(
-                        'filter_label' => 'card_type',
-                        'filter_display' => 'type',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'rrr_code',
+                    'filter_display' => 'rrr',
+                    'preload_query' => null,
                 ),
-                'projects' => array(
-                    array(
-                        'filter_label' => 'project_status',
-                        'filter_display' => 'project_status',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'b.assign_to',
-                        'filter_display' => 'contractor_user_id',
-                        'preload_query' => null,
-                    ),
+            ),
+            'transaction_outflow' => array(
+                array(
+                    'filter_label' => 'approval_status',
+                    'filter_display' => 'approval_status',
+                    'preload_query' => null,
                 ),
-                'project_tasks' => array(
-                    array(
-                        'filter_label' => 'project_id',
-                        'filter_display' => 'project_id',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'c.id',
-                        'filter_display' => 'contractor_user_id',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'a.task_status',
-                        'filter_display' => 'status',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'payment_status',
+                    'filter_display' => 'payment_status',
+                    'preload_query' => null,
                 ),
-                'user_requests' => array(
-                    array(
-                        'filter_label' => 'project_task_id',
-                        'filter_display' => 'project_task_id',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'user_id',
-                        'filter_display' => 'user_id',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'request_status',
-                        'filter_display' => 'request_status',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'request_from',
-                        'filter_display' => 'request_type',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'e.assign_to',
-                        'filter_display' => 'assignee_user_id',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'e.status',
-                        'filter_display' => 'assignee_status',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'e.request_type',
-                        'filter_display' => 'assignee_request_type',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'd.is_auditable',
-                        'filter_display' => 'request_auditable',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'a.stage',
-                        'filter_display' => 'request_stage',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'a.id',
-                        'filter_display' => 'user_request_id',
-                        'preload_query' => null,
-                    ),
-                    array(
-                        'filter_label' => 'a.rejected_by',
-                        'filter_display' => 'rejected_by',
-                        'preload_query' => null,
-                    ),
+            ),
+            'student_verification_fee' => array(
+                array(
+                    'filter_label' => 'document_verification',
+                    'filter_display' => 'verify_status',
+                    'preload_query' => null,
                 ),
-                'contractors' => array(
-                    array(
-                        'filter_label' => 'a.active',
-                        'filter_display' => 'status',
-                        'preload_query' => null,
-                    ),
+            ),
+            'student_transaction_change_programme' => array(
+                array(
+                    'filter_label' => 'payment_status',
+                    'filter_display' => 'payment_status',
+                    'preload_query' => null,
                 ),
-                'course_manager' => array(
-                    array(
-                        'filter_label' => 'a.session_id',
-                        'filter_display' => 'session',
-                        'preload_query' => null,
-                    ),
+            ),
+            'sundry_finance_transaction' => array(
+                array(
+                    'filter_label' => 'payment_status',
+                    'filter_display' => 'payment_status',
+                    'preload_query' => null,
                 ),
-                'examination_courses' => array(
-                    array(
-                        'filter_label' => 'a.session_id',
-                        'filter_display' => 'session',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'a.session',
+                    'filter_display' => 'payment_session',
+                    'preload_query' => null,
                 ),
-                'course_request_claims' => array(
-                    array(
-                        'filter_label' => 'a.request_status',
-                        'filter_display' => 'status',
-                        'preload_query' => null,
-                    ),
+                array(
+                    'filter_label' => 'd.year_of_entry',
+                    'filter_display' => 'entry_year',
+                    'preload_query' => null,
                 ),
-                'courses' => array(
-                    array(
-                        'filter_label' => 'a.department_id',
-                        'filter_display' => 'department',
-                        'preload_query' => null,
-                    ),
-                )
-            );
-        } else {
-            $result = [];
-        }
-
+                array(
+                    'filter_label' => 'b.code',
+                    'filter_display' => 'sundry_type',
+                    'preload_query' => null,
+                ),
+            ),
+            'verification_cards' => array(
+                array(
+                    'filter_label' => 'card_type',
+                    'filter_display' => 'type',
+                    'preload_query' => null,
+                ),
+            ),
+            'projects' => array(
+                array(
+                    'filter_label' => 'project_status',
+                    'filter_display' => 'project_status',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'b.assign_to',
+                    'filter_display' => 'contractor_user_id',
+                    'preload_query' => null,
+                ),
+            ),
+            'project_tasks' => array(
+                array(
+                    'filter_label' => 'project_id',
+                    'filter_display' => 'project_id',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'c.id',
+                    'filter_display' => 'contractor_user_id',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'a.task_status',
+                    'filter_display' => 'status',
+                    'preload_query' => null,
+                ),
+            ),
+            'user_requests' => array(
+                array(
+                    'filter_label' => 'project_task_id',
+                    'filter_display' => 'project_task_id',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'user_id',
+                    'filter_display' => 'user_id',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'request_status',
+                    'filter_display' => 'request_status',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'request_from',
+                    'filter_display' => 'request_type',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'e.assign_to',
+                    'filter_display' => 'assignee_user_id',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'e.status',
+                    'filter_display' => 'assignee_status',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'e.request_type',
+                    'filter_display' => 'assignee_request_type',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'd.is_auditable',
+                    'filter_display' => 'request_auditable',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'a.stage',
+                    'filter_display' => 'request_stage',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'a.id',
+                    'filter_display' => 'user_request_id',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'a.rejected_by',
+                    'filter_display' => 'rejected_by',
+                    'preload_query' => null,
+                ),
+            ),
+            'contractors' => array(
+                array(
+                    'filter_label' => 'a.active',
+                    'filter_display' => 'status',
+                    'preload_query' => null,
+                ),
+            ),
+            'course_manager' => array(
+                array(
+                    'filter_label' => 'a.session_id',
+                    'filter_display' => 'session',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'api_department',
+                    'filter_display' => 'api_department',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'f.id',
+                    'filter_display' => 'department',
+                    'preload_query' => null,
+                ),
+            ),
+            'examination_courses' => array(
+                array(
+                    'filter_label' => 'a.session_id',
+                    'filter_display' => 'session',
+                    'preload_query' => null,
+                ),
+            ),
+            'course_request_claims' => array(
+                array(
+                    'filter_label' => 'a.request_status',
+                    'filter_display' => 'status',
+                    'preload_query' => null,
+                ),
+            ),
+            'courses' => array(
+                array(
+                    'filter_label' => 'department_id',
+                    'filter_display' => 'department',
+                    'preload_query' => null,
+                ),
+            ),
+            'staffs' => array(
+                array(
+                    'filter_label' => 'c.id',
+                    'filter_display' => 'department_id',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'd.id',
+                    'filter_display' => 'unit_id',
+                    'preload_query' => null,
+                ),
+            ),
+            'course_mapping' => array(
+                array(
+                    'filter_label' => 'semester',
+                    'filter_display' => 'semester',
+                    'preload_query' => null,
+                ),
+            ),
+            'course_configuration' => array(
+                array(
+                    'filter_label' => 'semester',
+                    'filter_display' => 'semester',
+                    'preload_query' => null,
+                ),
+                array(
+                    'filter_label' => 'programme_id',
+                    'filter_display' => 'programme',
+                    'preload_query' => null,
+                ),
+            ),
+        );
         if (array_key_exists($tablename, $result)) {
             return $result[$tablename];
         }
-        return null;
+        return false;
     }
 
     /**

@@ -38,6 +38,12 @@ $routes->group('v1/web/', [
     ]);
     $routes->post('courses_mapping/bulk_course_mapping_upload', 'CourseMappingController::import');
 
+    $routes->resource('course_config', [
+        'controller' => 'CourseConfigController',
+        'only' => ['index', 'show', 'create', 'update', 'delete']
+    ]);
+    $routes->post('course_configuration/bulk_course_config_upload', 'CourseConfigController::import');
+
     // webinar management
     $routes->get('courses/(:num)/webinars', 'Webinars::index/$1');
     $routes->get('webinars/(:num)/recordings', 'Webinars::getRecordings/$1');

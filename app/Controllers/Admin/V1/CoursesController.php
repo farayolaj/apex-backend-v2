@@ -143,7 +143,13 @@ class CoursesController extends BaseController
                 'batchSize'        => 1000,
                 'preprocessRow'    => $preprocessRow,
                 'finder'           => $finder,
-                'errorLogPath'     => $logPath,
+                'processLogPath'     => $logPath,
+                'processLogMessage' => function (array $row){
+                    return [
+                        'insert' => "New Record has been inserted for Course Code {$row['code']}",
+                        'update' => "Course Code {$row['code']} has been updated "
+                    ];
+                }
             ]
         );
         $result['process_log_link'] = generateDownloadLink($logPath, 'temp/logs', 'logs');

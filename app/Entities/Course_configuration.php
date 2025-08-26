@@ -4,6 +4,8 @@ namespace App\Entities;
 
 use App\Models\Crud;
 use App\Models\WebSessionManager;
+use App\Support\DTO\ApiListParams;
+use CodeIgniter\Database\BaseBuilder;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the course_configuration table.
@@ -31,97 +33,15 @@ class Course_configuration extends Crud
     );
     static $tableAction = array('delete' => 'delete/course_configuration', 'edit' => 'edit/course_configuration');
 
+    protected ?string $hooksEntity = 'Course_configuration';
+
+    protected ?string $updatedField = null;
+
+    protected array $searchable = ['b.name'];
+
     function __construct($array = array())
     {
         parent::__construct($array);
-    }
-
-    function getProgramme_idFormField($value = '')
-    {
-        $fk = null;//change the value of this variable to array('table'=>'programme','display'=>'programme_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
-
-        if (is_null($fk)) {
-            return $result = "<input type='hidden' value='$value' name='programme_id' id='programme_id' class='form-control' />
-			";
-        }
-        if (is_array($fk)) {
-            $result = "<div class='form-group'>
-		<label for='programme_id'>Programme Id</label>";
-            $option = $this->loadOption($fk, $value);
-            //load the value from the given table given the name of the table to load and the display field
-            $result .= "<select name='programme_id' id='programme_id' class='form-control'>
-			$option
-		</select>";
-        }
-        $result .= "</div>";
-        return $result;
-
-    }
-
-    function getSemesterFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='semester' >Semester</label><input type='number' name='semester' id='semester' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getLevelFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='level' >Level</label><input type='number' name='level' id='level' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getEntry_modeFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='entry_mode' >Entry Mode</label>
-		<input type='text' name='entry_mode' id='entry_mode' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getMin_unitFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='min_unit' >Min Unit</label><input type='number' name='min_unit' id='min_unit' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getMax_unitFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='max_unit' >Max Unit</label><input type='number' name='max_unit' id='max_unit' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getEnable_regFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Enable Reg</label>
-	<select class='form-control' id='enable_reg' name='enable_reg' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-
-    }
-
-    function getDate_createdFormField($value = '')
-    {
-
-        return " ";
-
     }
 
     protected function getSemesters()
@@ -208,36 +128,20 @@ class Course_configuration extends Crud
         return false;
     }
 
-    public function APIList($filterList, $queryString, $start, $len, $orderBy)
+    protected function baseBuilder(): BaseBuilder
     {
-        $temp = getFilterQueryFromDict($filterList);
-        $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
-        $filterValues = $temp[1];
-
-        if (isset($_GET['sortBy']) && $orderBy) {
-            $filterQuery .= " order by $orderBy ";
-        } else {
-            $filterQuery .= " order by b.name asc ";
-        }
-
-        if (isset($_GET['start']) && $len) {
-            $start = $this->db->escapeString($start);
-            $len = $this->db->escapeString($len);
-            $filterQuery .= " limit $start, $len";
-        }
-        if (!$filterValues) {
-            $filterValues = [];
-        }
-
-        $query = "SELECT SQL_CALC_FOUND_ROWS a.*, b.name as programme_name from course_configuration a 
-                join programme b on b.id = a.programme_id $filterQuery";
-        $query2 = "SELECT FOUND_ROWS() as totalCount";
-        $res = $this->db->query($query, $filterValues);
-        $res = $res->getResultArray();
-        $res2 = $this->db->query($query2);
-        $res2 = $res2->getResultArray();
-        return [$res, $res2];
+        return $this->db->table('course_configuration a')
+            ->join('programme b', 'b.id = a.programme_id');
     }
 
+    public function defaultSelect(): string|array
+    {
+        return "a.*, b.name as programme_name";
+    }
+
+    protected function applyDefaultOrder(BaseBuilder $builder): void
+    {
+        $builder->orderBy('b.name', 'asc');
+    }
 
 }

@@ -59,7 +59,10 @@ final class {$studly} implements Observer
 
     // ---- DELETE FLOW ----
     public function beforeDeleting(int \$id, array \$extra): void {}
-    public function afterDeleted(int \$id, array \$extra): void {}
+    public function afterDeleted(int \$id, array \$extra): void {
+        \$record = json_encode(\$extra['__record__'] ?? []);
+        logAction('{$studly}' . '_delete', \$extra['current_user']->user_login, \$id, \$record);
+    }
 }
 PHP;
 
