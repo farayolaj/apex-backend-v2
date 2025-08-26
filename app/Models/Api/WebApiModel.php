@@ -34,7 +34,7 @@ class WebApiModel extends Model
 
     protected $db;
 
-    public function __construct(RequestInterface $request = null, ResponseInterface $response = null)
+    public function __construct(?RequestInterface $request = null, ?ResponseInterface $response = null)
     {
         parent::__construct();
         $this->db = db_connect();
@@ -46,7 +46,7 @@ class WebApiModel extends Model
 
     public function profile()
     {
-       return $this->accountProfile();
+        return $this->accountProfile();
     }
 
     public function activity_logs()
@@ -215,12 +215,12 @@ class WebApiModel extends Model
 
             $fullname = strtoupper($applicant['lastname']) . ", " . ucwords(strtolower($applicant['firstname'])) . "" . ucwords(strtolower($applicant['othernames']));
             $programme = fetchSingleField($this->db, 'programme', 'id', $programme, 'name');
-//			$variables = array(
-//				'firstname' => $applicant['lastname'],
-//				'fullname' => $fullname,
-//				'institution_name' => get_setting('institution_name'),
-//				'programme' => $programme,
-//			);
+            //			$variables = array(
+            //				'firstname' => $applicant['lastname'],
+            //				'fullname' => $fullname,
+            //				'institution_name' => get_setting('institution_name'),
+            //				'programme' => $programme,
+            //			);
 
             // send email
             // $this->mailer->send_new_mail('admission-notice', $applicant['email'], $variables);
@@ -256,7 +256,6 @@ class WebApiModel extends Model
         } catch (Exception $e) {
             return sendAPiResponse(false, $e->getMessage());
         }
-
     }
 
     /**
@@ -424,9 +423,16 @@ class WebApiModel extends Model
      * @param mixed $duration
      * @param mixed $teachingSubject
      */
-    private function moveApplicantAcademicRecord($student_id, $applicant_id, $programme_id, $admittedLevel, $duration,
-                                                 $teachingSubject = null, $entryMode = null, $entity = 'applicants')
-    {
+    private function moveApplicantAcademicRecord(
+        $student_id,
+        $applicant_id,
+        $programme_id,
+        $admittedLevel,
+        $duration,
+        $teachingSubject = null,
+        $entryMode = null,
+        $entity = 'applicants'
+    ) {
         $minDuration = $duration * 12;
         $maxDuration = $duration * 12;
         $entryMode = $this->db->escapeString($entryMode);
@@ -470,7 +476,6 @@ class WebApiModel extends Model
         } else {
             return sendAPiResponse(false, 'Filter result is empty', []);
         }
-
     }
 
     /**
@@ -500,7 +505,6 @@ class WebApiModel extends Model
             return [file_get_contents($path), $path];
         }
         return file_get_contents($_FILES[$name]['tmp_name']);
-
     }
 
     /**
@@ -551,7 +555,6 @@ class WebApiModel extends Model
                 continue;
             }
             $result[] = [$student_id, $reg_num, $course_id, 'C', $semester, $session_id, $level, $caScore, $examScore, $totalScore, 0, date('Y-m-d h:i:s'), date('Y-m-d h:i:s')];
-
         }
         return $result;
     }
@@ -597,7 +600,6 @@ class WebApiModel extends Model
                 continue;
             }
             $result[] = [$student_id, $course_id, $session_id, $caScore, $examScore, $totalScore, date('Y-m-d h:i:s'), date('Y-m-d h:i:s')];
-
         }
         return $result;
     }
@@ -960,7 +962,6 @@ class WebApiModel extends Model
                         }
                     }
                 }
-
             }
         }
 
@@ -1342,7 +1343,6 @@ class WebApiModel extends Model
         // 	return sendApiResponse(false, "Unable to send the invoice via email, please try again");
         // }
         return sendAPiResponse(true, 'You have successfully created the invoice');
-
     }
 
     /**
@@ -1732,7 +1732,6 @@ class WebApiModel extends Model
             logAction($this, 'changed_student_programme', $currentUser->user_login);
         }
         return sendAPiResponse(true, "You have successfully updated student record");
-
     }
 
     /**
@@ -1981,7 +1980,6 @@ class WebApiModel extends Model
         } else if ($type == 'custom_trans') {
             return $this->verifyCustomTransaction($rrrCode);
         }
-
     }
 
     /**
@@ -2644,7 +2642,8 @@ class WebApiModel extends Model
         if (($academicRecord['current_level'] == '1' && $academicRecord['entry_mode'] == CommonSlug::O_LEVEL) ||
             ($academicRecord['current_level'] == '1' && $academicRecord['entry_mode'] == CommonSlug::O_LEVEL_PUTME) ||
             ($academicRecord['current_level'] == '2' && $academicRecord['entry_mode'] == CommonSlug::DIRECT_ENTRY) ||
-            ($academicRecord['current_level'] == '2' && $academicRecord['entry_mode'] == CommonSlug::FAST_TRACK)) {
+            ($academicRecord['current_level'] == '2' && $academicRecord['entry_mode'] == CommonSlug::FAST_TRACK)
+        ) {
             ($programme) ? $academicData['programme_id'] = $programme : null;
         }
 
@@ -4260,5 +4259,4 @@ class WebApiModel extends Model
         echo hashids_decrypt('N0kO3DBAX6GPR6xqg479');
         exit;
     }
-
 }
