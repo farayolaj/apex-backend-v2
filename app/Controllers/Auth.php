@@ -31,10 +31,11 @@ class Auth extends BaseController
         $username = $this->request->getPost($usernameField);
         $password = $this->request->getPost($passwordField);
         if (!($username || $password)) {
-            return sendApiResponse(false, 'Invalid entry data');
+            return [false, 'Invalid entry data'];
         }
 
         $tableObj = loadClass($table);
+        $user = null;
         $param = [
             $ruser => $username,
         ];
@@ -59,7 +60,7 @@ class Auth extends BaseController
         }
 
         if (!$user) {
-            return sendApiResponse(false, 'Invalid username or password');
+            return [false, 'Invalid username or password'];
         }
 
         $user = $user[0];
@@ -70,9 +71,9 @@ class Auth extends BaseController
         }
 
         if (!decode_password($password, $user->$rpass)) {
-            return ApiResponse::error('Invalid username or password');
+            return [false, 'Invalid username or password'];
         }
-        return $user;
+        return [true, $user];
     }
 
     /**
@@ -83,9 +84,10 @@ class Auth extends BaseController
     public function web()
     {
         $user = $this->getUser('users_new', 'user_login', 'password', 'username', 'password');
-        if (!$user) {
-            return false;
+        if (!$user[0]) {
+            return ApiResponse::error($user[1]);
         }
+        $user = $user[1];
         $userDetails = $this->getUserDetails($user);
         $payload = $user->toArray() ?? null;
         $payload['user_department'] = null;
@@ -147,9 +149,10 @@ class Auth extends BaseController
     public function student()
     {
         $student = $this->getUser('students', $ruser = 'user_login', $rpass = 'password');
-        if (!$student) {
-            return sendApiResponse(false, 'Invalid username or password');
+        if (!$student[0]) {
+            return ApiResponse::error($student[1]);
         }
+        $student = $student[1];
         $payload = [
             'id' => $student->id,
             'type' => AuthType::STUDENT->value,
@@ -186,9 +189,10 @@ class Auth extends BaseController
     public function financeAuth()
     {
         $user = $this->getUser('users_new', 'user_login', 'password', 'username', 'password');
-        if (!$user) {
-            return false;
+        if (!$user[0]) {
+            return ApiResponse::error($user[1]);
         }
+        $user = $user[1];
         $userDetails = $this->getUserDetails($user);
         $payload = $user->toArray() ?? null;
         $userID = $user->id;
@@ -228,6 +232,10 @@ class Auth extends BaseController
     public function contractorAuth(string $entity)
     {
         $user = $this->getUser('users_new', 'user_login', 'password', 'username', 'password');
+        if (!$user[0]) {
+            return ApiResponse::error($user[1]);
+        }
+        $user = $user[1];
         $baseurl = base_url();
 
         $arr['status'] = true;
