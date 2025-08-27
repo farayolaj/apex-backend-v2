@@ -42,7 +42,7 @@ class WebinarCommentController extends BaseController
 
   public function newComment(int $webinarId)
   {
-    $data = $this->request->getPost();
+    $data = $this->request->getJSON(true);
 
     $rules = [
       'content' => 'required|string|max_length[255]',
