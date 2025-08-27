@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Student\v1;
+namespace App\Controllers\Student\V1;
 
 use App\Controllers\BaseController;
 use App\Entities\Webinars as EntitiesWebinars;

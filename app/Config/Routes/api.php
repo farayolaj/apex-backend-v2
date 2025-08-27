@@ -8,7 +8,7 @@ use CodeIgniter\Router\RouteCollection;
 
 $routes->group('v1/api/', [
     'filter' => ['apiValidation:student'],
-    'namespace' => 'App\Controllers\Student\v1'
+    'namespace' => 'App\Controllers\Student\V1'
 ], function ($routes) {
     // webinars
     $routes->get('courses/(:num)/(:num)/webinars', 'WebinarController::listWebinars/$1/$2');
