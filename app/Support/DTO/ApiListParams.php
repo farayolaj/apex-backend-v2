@@ -18,6 +18,9 @@ final class ApiListParams
      */
     public array $filters = [];
 
+    public ?string $groupBy = null;
+    public ?string $having = null;
+
     public static function fromArray(array $input, array $defaults=[]): self
     {
         $p = new self();
@@ -40,6 +43,8 @@ final class ApiListParams
         }
 
         $p->filters = (array)($input['filters'] ?? []); // you can overwrite this later with repo mapping
+        $p->groupBy = isset($input['groupBy']) ? trim((string)$input['groupBy']) : null;
+        $p->having = isset($input['$having']) ? trim((string)$input['$having']) : null;
         return $p;
     }
 

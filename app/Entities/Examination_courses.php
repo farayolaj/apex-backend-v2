@@ -7,6 +7,8 @@ use App\Enums\SettingSlugEnum as SettingSlug;
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
 use App\Models\WebSessionManager;
+use App\Support\DTO\ApiListParams;
+use CodeIgniter\Database\BaseBuilder;
 
 /**
  * This class queries those who have paid for both RuS and SuS
@@ -17,13 +19,10 @@ class Examination_courses extends Crud
 
     static $apiSelectClause = [];
 
+    protected array  $searchable = ['b.code','b.title'];
+
     public function getSingleExaminationCourse($course, $session)
     {
-//		$query = "SELECT a.course_id, a.session_id as session,ANY_VALUE(b.code) as code, ANY_VALUE(b.title) as title,
-//			ANY_VALUE(a.course_unit) as course_unit, COUNT(a.student_id) as enrollment,count(total_score) as scored,
-//			ANY_VALUE(a.student_level) as student_level,ANY_VALUE(a.is_approved) as is_approved,b.type as course_type from course_enrollment a join
-//			courses b on b.id = a.course_id where a.course_id = ? and a.session_id = ? group by a.course_id, a.session_id";
-
         $sessionCondition = SettingSlug::SESSION_GRADED_START->value;
         $query = "SELECT b.id AS course_id, 
        		MAX(a.session_id) as session, b.code, b.title, 
@@ -46,12 +45,6 @@ class Examination_courses extends Crud
 
     public function getLecturersAssignCourses($session, $currentUser): array
     {
-//		$query = "SELECT distinct a.course_id, a.session_id as session,ANY_VALUE(b.code) as code, ANY_VALUE(b.title) as title,
-//		ANY_VALUE(a.course_unit) as course_unit, COUNT(a.student_id) as enrollment,count(total_score) as scored,
-//		ANY_VALUE(a.student_level) as student_level,ANY_VALUE(a.is_approved) as is_approved,b.type as course_type from course_enrollment a join
-//		courses b on b.id = a.course_id join course_manager c on c.course_id = a.course_id where a.session_id = c.session_id and
-//		a.session_id = ? and (c.course_manager_id = ? or JSON_SEARCH(c.course_lecturer_id,'one',?) is not null) group by a.course_id, a.session_id";
-
         $sessionCondition = SettingSlug::SESSION_GRADED_START->value;
         $query = "SELECT 
 			c.course_id, c.session_id as session, 
@@ -85,6 +78,56 @@ class Examination_courses extends Crud
         return $this->processList($result);
     }
 
+    protected function baseBuilder(): BaseBuilder
+    {
+        $sessionCondition = SettingSlug::SESSION_GRADED_START->value;
+        return $this->db->table('course_enrollment a')
+            ->join('courses b', 'b.id = a.course_id')
+            ->join('course_manager c', 'c.course_id = a.course_id AND c.session_id = a.session_id', 'left')
+            ->select("a.course_id, a.session_id as session,
+			max(b.code) as code, 
+			max(b.title) as title,
+ 			max(a.course_unit) as course_unit, COUNT(a.course_id) as enrollment,
+ 			CASE
+ 				WHEN a.session_id >= $sessionCondition THEN
+					COALESCE(max(c.total_graded), 0)
+				ELSE
+					count(DISTINCT CASE WHEN a.total_score IS NOT NULL THEN a.student_id END) 
+			END AS scored,
+ 			max(a.student_level) as student_level,
+			max(a.is_approved) as is_approved, 
+ 			b.type as course_type");
+    }
+
+    protected function defaultSelect(): string|array
+    {
+        return '';
+    }
+
+    protected function applyDefaultOrder(BaseBuilder $builder): void
+    {
+        $builder->orderBy('b.code', 'asc');
+    }
+
+    protected function postProcess(array $rows): array
+    {
+        return $this->processList($rows);
+    }
+
+    public function APIList($request, $filterList){
+        $params = ApiListParams::fromArray($request, [
+            'start'    => 1,
+            'len' => 20,
+        ]);
+
+        $params->filters = $filterList;
+        $params->groupBy = " a.course_id, a.session_id, b.type ";
+
+        return $this->listApi(null,
+            $params
+        );
+    }
+
     /**
      * @param mixed $filterList
      * @param mixed $queryString
@@ -93,7 +136,7 @@ class Examination_courses extends Crud
      * @param mixed $orderBy
      * @return array
      */
-    public function APIList($filterList, $queryString, $start, $len, $orderBy): array
+    public function APIListOld($filterList, $queryString, $start, $len, $orderBy): array
     {
         $temp = getFilterQueryFromDict($filterList);
         $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
@@ -146,14 +189,20 @@ class Examination_courses extends Crud
         EntityLoader::loadClass($this, 'users_new');
         EntityLoader::loadClass($this, 'sessions');
         $currentUser = WebSessionManager::currentAPIUser();
-        for ($i = 0; $i < count($items); $i++) {
-            $items[$i] = $this->loadExtras($items[$i], $currentUser);
+        $payload = [];
+        foreach(useGenerators($items) as $item) {
+            $payload[] = $this->loadExtras($item, $currentUser);
         }
-        return $items;
+        return $payload;
     }
 
     public function loadExtras($item, $currentUser)
     {
+        if($this->users_new === null || $this->sessions === null) {
+            EntityLoader::loadClass($this, 'users_new');
+            EntityLoader::loadClass($this, 'sessions');
+        }
+
         if ($item['course_id']) {
             $courseManager = $this->getCourseManagerName($item['course_id'], $item['session']);
             if ($courseManager) {
@@ -176,7 +225,7 @@ class Examination_courses extends Crud
                     $item['can_upload'] = true;
                 }
                 foreach ($lecturers as $lecturer) {
-                    $lecturer = $this->users_new->getRealUserInfo($lecturer, 'staffs', 'staff');
+                    $lecturer = $this->users_new->getRealUserInfo($lecturer, 'staffs');
                     if ($lecturer) {
                         $fullname[] = $lecturer['title'] . ' ' . $lecturer['lastname'] . ' ' . $lecturer['firstname'];
                     }
@@ -193,16 +242,16 @@ class Examination_courses extends Crud
         }
 
         $item['action_url'] = [
-            'view_scores' => site_url('web/examination_scores_list/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['student_level']) . '/' . hashids_encrypt($item['course_manager_id'])),
+            'view_scores' => base_url('v1/web/result_manager/examination_scores_list/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
         ];
 
         if ($item['course_manager_id'] == $currentUser->id || $item['can_upload']) {
             $item['can_upload'] = true;
             $item['action_url'] = [
-                'view_scores' => site_url('web/examination_scores_list/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['student_level']) . '/' . hashids_encrypt($item['course_manager_id'])),
-                'enter_scores' => site_url('web/examination_scores/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['student_level']) . '/' . hashids_encrypt($item['course_manager_id'])),
-                'bulk_upload' => site_url('web/examination_scores/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['student_level']) . '/' . hashids_encrypt($item['course_manager_id'])),
-                'bulk_sample_upload' => site_url('web/download_result_sample/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['student_level']) . '/' . hashids_encrypt($item['course_manager_id'])),
+                'view_scores' => base_url('v1/web/result_manager/examination_scores_list/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
+                'enter_scores' => base_url('v1/web/result_manager/examination_scores/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
+                'bulk_upload' => base_url('v1/web/result_manager/examination_scores/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
+                'bulk_sample_upload' => base_url('v1/web/result_manager/download_result_sample/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
             ];
         }
 

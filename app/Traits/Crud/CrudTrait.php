@@ -112,6 +112,34 @@ trait CrudTrait {
         }
     }
 
+    protected function applyGroupBy(BaseBuilder $b, $groupBy): void
+    {
+        if (empty($groupBy)) return;
+        $b->groupBy($groupBy);
+    }
+
+    /**
+     * HAVING helper:
+     * - string: raw (e.g. "COUNT(a.id) > 0")
+     * - array:  ['SUM(a.score) >' => 50, 'AVG(a.x) >' => 1.2] OR ['raw having', 'another raw']
+     * - callable: function (BaseBuilder $b) { $b->having('...'); ... }
+     */
+    protected function applyHaving(BaseBuilder $b, $having): void
+    {
+        if (empty($having)) return;
+
+        if (is_callable($having)) { $having($b); return; }
+
+        if (is_string($having))   { $b->having($having, null, false); return; }
+
+        if (is_array($having)) {
+            foreach ($having as $k => $v) {
+                if (is_int($k))  $b->having($v, null, false); // raw string
+                else             $b->having($k, $v);          // key/value
+            }
+        }
+    }
+
     /**
      * Override if you need to post-process rows (like the former processList)
      */
@@ -142,7 +170,16 @@ trait CrudTrait {
         $this->applySearch($builder, $p->q);
         $this->applyCustomFilters($builder, $p->filters);
 
-        $total = (int) (clone $builder)->countAllResults();
+        $this->applyGroupBy($builder, $p->groupBy);
+        $this->applyHaving($builder, $p->having);
+
+        if (!empty($groupBy)) {
+            $countSql = (clone $builder)->select('1', false)->getCompiledSelect();
+            $totalRow = $this->db->query("SELECT COUNT(*) AS total FROM ({$countSql}) t")->getRowArray();
+            $total    = (int)($totalRow['total'] ?? 0);
+        } else {
+            $total = (int) (clone $builder)->countAllResults();
+        }
 
         $this->applySort($builder, $p);
         if ($p->isPaging()) {
@@ -153,7 +190,7 @@ trait CrudTrait {
         if (is_array($select)) {
             $builder->select(implode(',', $select), $escape);
         } else {
-            $builder->select($select, $escape); // pass $escape=false for raw functions/aliases
+            if ($select !== '') $builder->select($select, $escape); // pass $escape=false for raw functions/aliases
         }
         $rows = $builder->get()->getResultArray();
         $rows = $this->postProcess($rows);

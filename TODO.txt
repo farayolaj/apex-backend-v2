@@ -4,4 +4,5 @@
 [] - I need to generate the entity files too using spark commands
 [] - i need to write test for each core automation files using PEST in CI4 if possible
 [] - I want to catch RouteNotFound exception to pretty format
+[] - I need to apply index to course_manager on column course_id and session_id
 [] - The frontend have to made some changes on their end for update/delete/sample_csv/bulk_upload_action using their respective verbs

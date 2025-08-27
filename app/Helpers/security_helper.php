@@ -220,9 +220,6 @@ if (!function_exists('hashids_createobject')) {
  * @return  string  hashid
  */
 if (!function_exists('hashids_encrypt')) {
-    /**
-     * @throws Exception
-     */
     function hashids_encrypt($input, $salt = NULL, $min_hash_length = NULL, $alphabet = NULL)
     {
         if (!is_array($input)) {

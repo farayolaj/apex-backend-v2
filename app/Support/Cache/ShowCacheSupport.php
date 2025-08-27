@@ -81,10 +81,44 @@ final class ShowCacheSupport
         return Key::make(...$parts);
     }
 
+    public static function buildCacheKey(
+        string $ns,
+        string $prefix = 'cache',
+        ?string $selectTag = null
+    ): string {
+        $cache  = self::cache();
+        $id = 11;
+        $entVer = self::getVersion($cache, self::verKeyEntity($ns));
+        $idVer  = self::getVersion($cache, self::verKeyId($ns, $id));
+
+        // select signature: prefer caller-provided tag; else crc32 base36
+        if ($selectTag !== null && $selectTag !== '') {
+            $selSig = Key::clean($selectTag);
+        } else {
+            $selectStr = 'str';
+            $crc   = sprintf('%u', crc32($selectStr . '|' . '0'));
+            $selSig = base_convert($crc, 10, 36); // e.g. "k1z8d0"
+        }
+
+        $parts = [
+            $prefix, 'show', $ns,
+            'ev'.(string)$entVer, 'iv'.(string)$idVer, (string)$id,
+            'sel', $selSig,
+        ];
+
+        return Key::make(...$parts);
+    }
+
     public static function invalidateById(string $ns, int $id): void
     {
         $cache = self::cache();
         self::bumpVersion($cache, self::verKeyId($ns, $id));
+    }
+
+    public static function invalidateByKey(string $ns): void
+    {
+        $cache = self::cache();
+        self::bumpVersion($cache, self::verKeyId($ns, 11));
     }
 
     public static function invalidateAll(string $ns): void

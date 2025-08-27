@@ -2,8 +2,10 @@
 
 namespace App\Entities;
 
+use App\Enums\CacheEnum;
 use App\Models\Crud;
 use App\Models\WebSessionManager;
+use App\Support\Cache\ShowCacheSupport;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the sessions table.
@@ -106,11 +108,22 @@ class Sessions extends Crud
 
     public function getSessionsWithResult(): array
     {
-        $query = "select distinct b.id, b.date as value from course_enrollment a join sessions b on b.id=a.session_id order by value desc";
+        $cache = ShowCacheSupport::cache();
+        $cacheTtl = 3600;
+        $key = ShowCacheSupport::buildCacheKey(
+            CacheEnum::SESSION_WITH_RESULT->value
+        );
+        $cached = $cache->get($key);
+        if ($cached !== null) return $cached ?: [];
+
+        $query = "SELECT distinct b.id, b.date as value from course_enrollment a 
+            join sessions b on b.id=a.session_id order by value desc";
         $result = $this->query($query);
         if (!$result) {
             return [];
         }
+
+        $cache->save($key, $result, $cacheTtl);
         return $result;
     }
 
