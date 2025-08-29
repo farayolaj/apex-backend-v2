@@ -3,6 +3,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use CodeIgniter\Database\BaseBuilder;
 use Config\Services;
 
 /**
@@ -30,68 +31,30 @@ class Templates extends Crud
     static $relation = array();
     static $tableAction = array('delete' => 'delete/templates', 'edit' => 'edit/templates');
 
+    protected ?string $createdField = 'date_added';
+    protected ?string $updatedField = null;
+    protected array $searchable = ['a.name', 'a.slug'];
+
     function __construct($array = array())
     {
         parent::__construct($array);
     }
 
-    function getNameFormField($value = '')
+    public function defaultSelect(): string|array
     {
-
-        return "<div class='form-group'>
-	<label for='name' >Name</label>
-		<input type='text' name='name' id='name' value='$value' class='form-control' required />
-</div> ";
-
+        return ['a.name', 'a.slug', 'a.type', 'a.active'];
     }
 
-    function getSlugFormField($value = '')
+    protected function applyDefaultOrder(BaseBuilder $builder): void
     {
-
-        return "<div class='form-group'>
-	<label for='slug' >Slug</label>
-		<input type='text' name='slug' id='slug' value='$value' class='form-control' required />
-</div> ";
-
+        $builder->orderBy('a.name', 'asc');
     }
 
-    function getTypeFormField($value = '')
+    protected function postProcessOne(array $row): array
     {
+        $row['content'] = base64_decode($row['content']);
 
-        return "<div class='form-group'>
-	<label for='type' >Type</label>
-		<input type='text' name='type' id='type' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getContentFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='content' >Content</label>
-</div> ";
-
-    }
-
-    function getActiveFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Active</label>
-	<select class='form-control' id='active' name='active' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-
-    }
-
-    function getDate_addedFormField($value = '')
-    {
-
-        return " ";
-
+        return $row;
     }
 
     public function getMessagingTemplate(string $template, array $variables)

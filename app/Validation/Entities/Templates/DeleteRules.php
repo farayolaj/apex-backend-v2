@@ -1,18 +1,18 @@
 <?php
-namespace App\Validation\Entities\Document_templates;
+namespace App\Validation\Entities\Templates;
 
 use App\Validation\Support\Contracts\RulesProvider;
 /**
- * Validation rules for Document_templates (create).
+ * Validation rules for Templates (delete).
  * Methods are static to work with your ValidationAuto runner.
  * Keep authorize fast (no heavy I/O); use precheck for DB lookups.
  */
-final class CreateRules implements RulesProvider
+final class DeleteRules implements RulesProvider
 {
     /** Gate the action using roles/permissions/tenant context from $ctx. */
     public static function authorize(array $data, array $ctx): bool
     {
-        return permissionAuthorize($ctx['__authorize__'] ?? 'document_template_create');
+        return permissionAuthorize($ctx['__authorize__'] ?? 'message_template_delete');
     }
 
     /** Message returned if authorize() returns false. */
@@ -35,14 +35,8 @@ final class CreateRules implements RulesProvider
     /** CodeIgniter rules array. Keep it minimal and explicit. */
     public static function rules(): array
     {
-        $templateCategory = request()->getPost('category');
         return [
-            'name'     => ['label' => 'name',        'rules' => 'required'],
-            'slug'     => ['label' => 'slug',        'rules' => 'required|is_unique[document_templates.slug]'],
-            'category' => ['label' => 'category',    'rules' => 'required'],
-            'printable'=> ['label' => 'printable by','rules' => ($templateCategory === 'general' ? 'required' : 'permit_empty')],
-            'session'  => ['label' => 'session',     'rules' => ($templateCategory === 'general' ? 'required' : 'permit_empty')],
-            'content'  => ['label' => 'content',     'rules' => 'required'],
+            // 'code'  => 'required|max_length[50]',
         ];
     }
 

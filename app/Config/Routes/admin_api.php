@@ -50,6 +50,10 @@ $routes->group('v1/web/', [
         'controller' => 'DocumentTemplatesController',
         'only' => ['index', 'show', 'create', 'update', 'delete']
     ]);
+    $routes->resource('templates', [
+        'controller' => 'TemplatesController',
+        'only' => ['index', 'show', 'create', 'update', 'delete']
+    ]);
 
     $routes::get('common/prerequisites_fee', 'PaymentController::prerequisitesFee');
 
