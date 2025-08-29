@@ -68,4 +68,9 @@ final class BatchProcessLogger
 
         return "{$i}. row {$row}: {$msg}" . PHP_EOL;
     }
+
+    public function __destruct()
+    {
+        $this->close();
+    }
 }

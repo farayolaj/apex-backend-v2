@@ -632,7 +632,6 @@ class Crud extends BaseCrud
                 }
                 $summary['total']++;
 
-                // Defaults (do not overwrite explicitly provided values)
                 foreach ($static as $k => $v) {
                     if (!array_key_exists($k, $row)) $row[$k] = $v;
                 }
@@ -640,10 +639,10 @@ class Crud extends BaseCrud
                 $logMessage = null;
                 if(is_callable($processLogMessage)) $logMessage = $processLogMessage($row);
 
-                // Preprocess (normalize, derive, FK, type-cast); may throw ValidationFailedException
-                if (is_callable($preprocess)) $row = (array)$preprocess($row);
-
                 try {
+                    // Preprocess (normalize, derive, FK, type-cast); may throw ValidationFailedException
+                    if (is_callable($preprocess)) $row = (array)$preprocess($row);
+
                     // Per-row options handed to insert/update
                     $rowOptions = [
                         'context' => [
@@ -741,7 +740,10 @@ class Crud extends BaseCrud
             $err = ['row' => 0, 'messages' => $this->toErrorBag($e)];
             if (is_callable($onError)) $onError($err);
             if (count($summary['errors']) < $maxErrorSamples) $summary['errors'][] = $err;
-            if ($processLogger) $processLogger->close();
+            if ($processLogger){
+                $processLogger->add($err['row'], $err['messages']);
+                $processLogger->close();
+            }
             return $summary;
         }
     }

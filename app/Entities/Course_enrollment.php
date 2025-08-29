@@ -31,6 +31,8 @@ class Course_enrollment extends Crud
     );
     static $tableAction = array('delete' => 'delete/course_enrollment', 'edit' => 'edit/course_enrollment');
 
+    protected ?string $updatedField = null;
+
     function __construct($array = array())
     {
         parent::__construct($array);

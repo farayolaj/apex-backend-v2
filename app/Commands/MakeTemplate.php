@@ -37,7 +37,7 @@ class MakeTemplate extends BaseCommand
         $request = new CLIRequest(new App());
 
         $studly   = Gen::studly($entity);
-        $kebab    = Gen::kebab($studly);
+        $kebab    = str_replace('-', '_', Gen::kebab($studly));
         $force    = CLI::getOption('force') !== null;
         $dryRun   = CLI::getOption('dry-run') !== null;
         $columns  = Gen::parseColumnsOption(Gen::option('columns'));
