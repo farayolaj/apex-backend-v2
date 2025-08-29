@@ -20,6 +20,10 @@ class Webinars extends Crud
         "scheduled_for",
         "presentation_id",
         "presentation_name",
+        "enable_comments",
+        "send_notifications",
+        "join_count",
+        "playback_count",
         "updated_at",
         "created_at"
     ];

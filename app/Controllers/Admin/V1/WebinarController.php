@@ -39,6 +39,11 @@ class WebinarController extends BaseController
         unset($webinar['course_id']);
         unset($webinar['room_id']);
 
+        $webinar['enable_comments'] = $webinar['enable_comments'] ? true : false;
+        $webinar['send_notifications'] = $webinar['send_notifications'] ? true : false;
+        $webinar['join_count'] = (int) $webinar['join_count'];
+        $webinar['playback_count'] = (int) $webinar['playback_count'];
+
         return $webinar;
     }
 
@@ -92,6 +97,7 @@ class WebinarController extends BaseController
             'description' => 'permit_empty|string',
             'course_id' => 'required|integer',
             'scheduled_for' => 'required|valid_datetime[scheduled_for]',
+            'enable_comments' => 'permit_empty|in_list[0,1]',
             'presentation' => [
                 'label' => 'Presentation file',
                 'rules' => [
@@ -151,6 +157,7 @@ class WebinarController extends BaseController
         $rules = [
             'title' => 'permit_empty|string|max_length[255]',
             'description' => 'permit_empty|string',
+            'enable_comments' => 'permit_empty|in_list[0,1]',
             'scheduled_for' => 'permit_empty|valid_datetime[scheduled_for]',
         ];
 

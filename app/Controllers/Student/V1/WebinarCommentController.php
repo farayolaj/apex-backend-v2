@@ -53,8 +53,14 @@ class WebinarCommentController extends BaseController
       return ApiResponse::error(message: implode(", ", $errors), code: ResponseInterface::HTTP_UNPROCESSABLE_ENTITY);
     }
 
-    if (!$this->webinars->webinarExists($webinarId)) {
+    $webinar = $this->webinars->getDetails($webinarId);
+
+    if (!$webinar) {
       return ApiResponse::error(message: 'Webinar not found.', code: ResponseInterface::HTTP_NOT_FOUND);
+    }
+
+    if (!$webinar['enable_comments']) {
+      return ApiResponse::error(message: 'Comments are disabled for this webinar.', code: ResponseInterface::HTTP_FORBIDDEN);
     }
 
     $authorId = WebSessionManager::currentAPIUser()->id;
