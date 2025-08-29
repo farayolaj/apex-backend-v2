@@ -173,7 +173,10 @@ class WebinarController extends BaseController
         }
 
         // if new scheduled_for has passed or old scheduled_for has passed, prevent update
-        if (isset($data['scheduled_for'])) {
+        if (
+            isset($data['scheduled_for']) &&
+            !Time::parse($data['scheduled_for'])->equals(Time::parse($webinar['scheduled_for']))
+        ) {
             if (\DateTime::createFromFormat(
                 "Y-m-d H:i:s",
                 Time::parse($data['scheduled_for'])->toDateTimeString()
