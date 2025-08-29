@@ -11,6 +11,7 @@ use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
 use App\Models\WebSessionManager;
 use CodeIgniter\Exceptions\PageNotFoundException;
+use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\I18n\Time;
 
 class WebinarController extends BaseController
@@ -193,6 +194,14 @@ class WebinarController extends BaseController
 
         if (!$this->canAccessCourse($webinar['course_id'])) {
             return ApiResponse::error('User does not have access to delete webinar', code: 403);
+        }
+
+        $recordingsList = $this->bbbModel->getRecordings($webinar['room_id']);
+        if (!empty($recordingsList)) { // if there are recordings, prevent webinar deletion.
+            return ApiResponse::error(
+                message: 'Cannot delete webinar. There are existing recordings for this webinar.',
+                code: ResponseInterface::HTTP_FORBIDDEN
+            );
         }
 
         if ($webinar['presentation_id']) {
