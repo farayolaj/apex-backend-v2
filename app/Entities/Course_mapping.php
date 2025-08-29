@@ -139,7 +139,7 @@ class Course_mapping extends Crud
             ->join('programme c', 'c.id = a.programme_id');
     }
 
-    protected function defaultSelect(): string|array
+    public function defaultSelect(): string|array
     {
         return 'a.*, c.name, b.code as course_code';
     }

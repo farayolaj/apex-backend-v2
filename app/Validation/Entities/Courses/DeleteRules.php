@@ -14,17 +14,6 @@ final class DeleteRules implements RulesProvider
 
     public static function precheck(array $data): void
     {
-        // optional: ensure row exists
-        if (!empty($data['id'])) {
-            $entity = $data['__entity__'];
-            $exists = (bool) db_connect()->table($entity)
-                ->select('id')
-                ->where('id', (int)$data['id'])
-                ->get()->getFirstRow();
-            if (!$exists) {
-                throw new ValidationFailedException("Course not found");
-            }
-        }
     }
 
     public static function rules(): array

@@ -46,7 +46,7 @@ trait CrudTrait {
     /**
      * Array of columns OR a raw select string
      */
-    protected function defaultSelect():string|array
+    public function defaultSelect():string|array
     {
         return ['a.*'];
     }
@@ -149,7 +149,7 @@ trait CrudTrait {
     }
 
     /**
-     * Normalize single record for API
+     * Normalize a single record for API
      */
     protected function postProcessOne(array $row): array
     {

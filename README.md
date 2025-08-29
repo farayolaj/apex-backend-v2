@@ -503,7 +503,7 @@ final class CourseManagerRepository extends BaseListRepository
             ->join('department f','f.id = b.department_id', 'left');
     }
 
-    protected function defaultSelect()
+    public function defaultSelect()
     {
         return '
             a.id,

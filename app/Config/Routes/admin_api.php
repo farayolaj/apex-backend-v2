@@ -45,6 +45,14 @@ $routes->group('v1/web/', [
     ]);
     $routes->post('course_configuration/bulk_course_config_upload', 'CourseConfigController::import');
 
+    // document management
+    $routes->resource('document_templates', [
+        'controller' => 'DocumentTemplatesController',
+        'only' => ['index', 'show', 'create', 'update', 'delete']
+    ]);
+
+    $routes::get('common/prerequisites_fee', 'PaymentController::prerequisitesFee');
+
     // webinar management
     $routes->get('courses/(:num)/(:num)/webinars', 'WebinarController::index/$1/$2');
     $routes->get('webinars/(:num)/recordings', 'WebinarController::getRecordings/$1');

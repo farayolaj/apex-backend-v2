@@ -5,4 +5,6 @@
 [] - i need to write test for each core automation files using PEST in CI4 if possible
 [] - I want to catch RouteNotFound exception to pretty format
 [] - I need to apply index to course_manager on column course_id and session_id
+[] - I need to implement event/dispatch method likes i did for CI3.
+[] - I need to attach mail sending for the processlog for bulk course enrollment upload
 [] - The frontend have to made some changes on their end for update/delete/sample_csv/bulk_upload_action using their respective verbs

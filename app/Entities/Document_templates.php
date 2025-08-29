@@ -3,6 +3,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use CodeIgniter\Database\BaseBuilder;
 
 /**
  * This class  is automatically generated based on the structure of the table. And it represent the model of the document_templates table.
@@ -29,106 +30,31 @@ class Document_templates extends Crud
     static $relation = array();
     static $tableAction = array('delete' => 'delete/document_templates', 'edit' => 'edit/document_templates');
 
-    function __construct($array = array())
+    protected ?string $createdField = 'date_added';
+    protected ?string $updatedField = null;
+    protected array $searchable = ['a.name', 'a.slug'];
+
+    protected function baseBuilder(): BaseBuilder
     {
-        parent::__construct($array);
+        return $this->db->table('document_templates a')
+            ->join('sessions b', 'b.id = a.session', 'left')
+            ->select("a.name, a.slug, a.category, a.active, a.date_added, b.date as session");
     }
 
-    function getNameFormField($value = '')
+    public function defaultSelect(): string|array
     {
-
-        return "<div class='form-group'>
-	<label for='name' >Name</label>
-		<input type='text' name='name' id='name' value='$value' class='form-control' required />
-</div> ";
-
+        return '';
     }
 
-    function getSlugFormField($value = '')
+    protected function applyDefaultOrder(BaseBuilder $builder): void
     {
-
-        return "<div class='form-group'>
-	<label for='slug' >Slug</label>
-		<input type='text' name='slug' id='slug' value='$value' class='form-control' required />
-</div> ";
-
+        $builder->orderBy('b.date', 'desc');
     }
 
-    function getCategoryFormField($value = '')
+    protected function postProcessOne(array $row): array
     {
-
-        return "<div class='form-group'>
-	<label for='category' >Category</label>
-		<input type='text' name='category' id='category' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getPrintableFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='printable' >Printable</label>
-		<input type='text' name='printable' id='printable' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getSessionFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='session' >Session</label>
-</div> ";
-
-    }
-
-    function getPrerequisite_feeFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='prerequisite_fee' >Prerequisite Fee</label><input type='number' name='prerequisite_fee' id='prerequisite_fee' value='$value' class='form-control' required />
-</div> ";
-
-    }
-
-    function getBarcode_contentFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='barcode_content' >Barcode Content</label>
-<textarea id='barcode_content' name='barcode_content' class='form-control' required>$value</textarea>
-</div> ";
-
-    }
-
-    function getContentFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='content' >Content</label>
-</div> ";
-
-    }
-
-    function getActiveFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Active</label>
-	<select class='form-control' id='active' name='active' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-
-    }
-
-    function getDate_addedFormField($value = '')
-    {
-
-        return " ";
-
+        if($row['content']) $row['content'] = base64_decode($row['content']);
+        return $row;
     }
 
     public function getDocuments($entryYear, $session)
