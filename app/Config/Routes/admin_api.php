@@ -64,6 +64,7 @@ $routes->group('v1/web/', [
     $routes->patch('webinars/(:num)', 'WebinarController::update/$1');
     $routes->delete('webinars/(:num)', 'WebinarController::delete/$1');
     $routes->get('webinars/(:num)/join_url', 'WebinarController::getJoinUrl/$1');
+    $routes->delete('webinars/(:num)/recordings', 'WebinarController::deleteRecordings/$1');
 
     // webinar comments
     $routes->get('webinars/(:num)/comments', 'WebinarCommentController::getComments/$1');

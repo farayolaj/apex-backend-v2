@@ -192,8 +192,18 @@ class WebinarController extends BaseController
     {
         $webinar = $this->webinars->getDetails($webinarId);
 
+        if (!$webinar) {
+            return ApiResponse::error(
+                message: 'Webinar not found',
+                code: ResponseInterface::HTTP_NOT_FOUND
+            );
+        }
+
         if (!$this->canAccessCourse($webinar['course_id'])) {
-            return ApiResponse::error('User does not have access to delete webinar', code: 403);
+            return ApiResponse::error(
+                message: 'User does not have access to delete webinar',
+                code: ResponseInterface::HTTP_FORBIDDEN
+            );
         }
 
         $recordingsList = $this->bbbModel->getRecordings($webinar['room_id']);
@@ -210,6 +220,47 @@ class WebinarController extends BaseController
 
         $this->webinars->delete($webinarId);
         return ApiResponse::success();
+    }
+
+    /**
+     * Delete webinar recordings.
+     * 
+     */
+    public function deleteRecordings(int $webinarId)
+    {
+        $recordingIds = $this->request->getGet('ids');
+
+        if (empty($recordingIds)) {
+            return ApiResponse::error(
+                message: 'No recording IDs provided.',
+                code: ResponseInterface::HTTP_BAD_REQUEST
+            );
+        }
+
+        $webinar = $this->webinars->getDetails($webinarId);
+
+        if (!$webinar) {
+            return ApiResponse::error(
+                message: 'Webinar not found',
+                code: ResponseInterface::HTTP_NOT_FOUND
+            );
+        }
+
+        if (!$this->canAccessCourse($webinar['course_id'])) {
+            return ApiResponse::error(
+                message: 'User does not have access to delete webinar recordings',
+                code: ResponseInterface::HTTP_FORBIDDEN
+            );
+        }
+
+        if ($this->bbbModel->deleteRecordings(explode(',', $recordingIds))) {
+            return ApiResponse::success();
+        }
+
+        return ApiResponse::error(
+            message: 'Failed to delete recordings',
+            code: ResponseInterface::HTTP_INTERNAL_SERVER_ERROR
+        );
     }
 
     public function getPresentation(string $webinarId)
