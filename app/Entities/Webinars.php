@@ -15,6 +15,7 @@ class Webinars extends Crud
     static $apiSelectClause = [
         'w.id',
         'w.course_id',
+        'w.session_id',
         'w.room_id',
         'w.title',
         'w.description',

@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Libraries\Notifications\NotificationManager;
 use CodeIgniter\Config\BaseService;
 use Config\Redis;
 
@@ -31,11 +32,21 @@ class Services extends BaseService
      * }
      */
 
-    public static function redis($getShared = true){
+    public static function redis($getShared = true)
+    {
         if ($getShared) {
             return static::getSharedInstance('redis');
         }
 
         return new \App\Libraries\RealRedis(new Redis());
+    }
+
+    public static function notificationManager($getShared = true): NotificationManager
+    {
+        if ($getShared) {
+            return static::getSharedInstance('notificationManager');
+        }
+
+        return new NotificationManager();
     }
 }
