@@ -43,6 +43,7 @@ class WebinarController extends BaseController
         $webinar['send_notifications'] = $webinar['send_notifications'] ? true : false;
         $webinar['join_count'] = (int) $webinar['join_count'];
         $webinar['playback_count'] = (int) $webinar['playback_count'];
+        $webinar['comment_count'] = (int) ($webinar['comment_count'] ?? 0);
 
         return $webinar;
     }
@@ -55,7 +56,7 @@ class WebinarController extends BaseController
      */
     public function index(int $sessionId, int $courseId)
     {
-        $payload = $this->webinars->list($sessionId, $courseId);
+        $payload = $this->webinars->listWithCommentCount($sessionId, $courseId);
         $payload = array_map([$this, 'processWebinar'], $payload);
 
         return ApiResponse::success(data: $payload);

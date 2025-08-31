@@ -13,20 +13,20 @@ class Webinars extends Crud
     protected static $tablename = 'webinars';
 
     static $apiSelectClause = [
-        'id',
-        'course_id',
-        'room_id',
-        'title',
-        'description',
-        'scheduled_for',
-        'presentation_id',
-        'presentation_name',
-        'enable_comments',
-        'send_notifications',
-        'join_count',
-        'playback_count',
-        'updated_at',
-        'created_at'
+        'w.id',
+        'w.course_id',
+        'w.room_id',
+        'w.title',
+        'w.description',
+        'w.scheduled_for',
+        'w.presentation_id',
+        'w.presentation_name',
+        'w.enable_comments',
+        'w.send_notifications',
+        'w.join_count',
+        'w.playback_count',
+        'w.updated_at',
+        'w.created_at'
     ];
 
     public function webinarExists(int $webinarId): bool
@@ -44,7 +44,7 @@ class Webinars extends Crud
     public function list(int $sessionId, int $courseId)
     {
         try {
-            return $this->db->table('webinars')->select(self::$apiSelectClause)
+            return $this->db->table('webinars w')->select(self::$apiSelectClause)
                 ->where('session_id', $sessionId)
                 ->where('course_id', $courseId)
                 ->orderBy('scheduled_for', 'DESC')
@@ -58,11 +58,31 @@ class Webinars extends Crud
         }
     }
 
+    public function listWithCommentCount(int $sessionId, int $courseId)
+    {
+        try {
+            return $this->db->table('webinars w')
+                ->select(array_merge(self::$apiSelectClause, ['COUNT(wc.id) AS comment_count']))
+                ->join('webinar_comments wc', 'w.id = wc.webinar_id', 'left')
+                ->where('w.session_id', $sessionId)
+                ->where('w.course_id', $courseId)
+                ->groupBy('w.id')
+                ->orderBy('w.scheduled_for', 'DESC')
+                ->get()
+                ->getResultArray();
+        } catch (\Exception $e) {
+            log_message('error', 'Error Listing Webinars with Comments: ' . $e->getMessage(), [
+                'stack' => $e->getTraceAsString()
+            ]);
+            return [];
+        }
+    }
+
     public function getDetails(int $webinarId)
     {
         try {
-            return $this->db->table('webinars')->select(self::$apiSelectClause)
-                ->where('id', $webinarId)
+            return $this->db->table('webinars w')->select(self::$apiSelectClause)
+                ->where('w.id', $webinarId)
                 ->get()
                 ->getRowArray();
         } catch (\Exception $e) {
