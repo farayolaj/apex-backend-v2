@@ -109,6 +109,9 @@ class WebinarController extends BaseController
         $redirectURL = $this->request->getGet('redirect_url') ??
             $this->request->header('origin')->getValue();
 
+        // Increment join_count for webinar
+        $this->webinars->incrementJoinCount($webinar['id']);
+
         return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
             meetingId: $webinar['room_id'],
             fullName: $fullName,
@@ -116,5 +119,11 @@ class WebinarController extends BaseController
             userId: $currentUser->id,
             isStudent: true
         ));
+    }
+
+    public function logPlayback(int $webinarId)
+    {
+        $this->webinars->incrementPlaybackCount($webinarId);
+        return ApiResponse::success();
     }
 }

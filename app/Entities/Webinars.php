@@ -67,4 +67,18 @@ class Webinars extends Crud
         $this->db->query($query);
         return $this->db->affectedRows() > 0;
     }
+
+    public function incrementJoinCount(int $webinarId): bool
+    {
+        $query = "UPDATE webinars SET join_count = join_count + 1 WHERE id = $webinarId";
+        $this->db->query($query);
+        return $this->db->affectedRows() > 0;
+    }
+
+    public function incrementPlaybackCount(int $webinarId): bool
+    {
+        $query = "UPDATE webinars SET playback_count = playback_count + 1 WHERE id = $webinarId";
+        $this->db->query($query);
+        return $this->db->affectedRows() > 0;
+    }
 }
