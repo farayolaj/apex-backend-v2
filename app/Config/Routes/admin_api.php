@@ -71,6 +71,11 @@ $routes->group('v1/web/', [
     $routes->post('webinars/(:num)/comments', 'WebinarCommentController::newComment/$1');
     $routes->delete('webinars/comments/(:num)', 'WebinarCommentController::deleteComment/$1');
 
+    // notifications
+    $routes->get('notifications', 'NotificationController::getNotifications');
+    $routes->get('notifications/count', 'NotificationController::getNotificationCount');
+    $routes->post('notifications/read', 'NotificationController::markAsRead');
+
     // handle CORS preflight requests
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});

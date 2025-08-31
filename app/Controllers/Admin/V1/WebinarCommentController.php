@@ -7,8 +7,10 @@ use App\Entities\Webinar_comments;
 use App\Entities\Webinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Libraries\Notifications\Events\Webinar\NewWebinarCommentEvent;
 use App\Models\WebSessionManager;
 use CodeIgniter\HTTP\ResponseInterface;
+use Config\Services;
 
 class WebinarCommentController extends BaseController
 {
@@ -63,9 +65,14 @@ class WebinarCommentController extends BaseController
             return ApiResponse::error(message: 'Comments are disabled for this webinar.', code: ResponseInterface::HTTP_FORBIDDEN);
         }
 
-        $authorId = WebSessionManager::currentAPIUser()->user_table_id;
+        $currentUser = WebSessionManager::currentAPIUser();
+        $authorId = $currentUser->user_table_id;
+        $userFullname = $currentUser->firstname . ' ' . $currentUser->lastname;
 
         if ($this->webinarComments->newComment($webinarId, $data['content'], $authorId, 'staffs')) {
+            Services::notificationManager()->sendNotifications(
+                new NewWebinarCommentEvent($webinarId, $data['content'], $userFullname)
+            );
             return ApiResponse::success();
         }
 
