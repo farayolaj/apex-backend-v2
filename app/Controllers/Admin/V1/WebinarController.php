@@ -7,12 +7,14 @@ use App\Entities\Course_manager;
 use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Libraries\Notifications\Events\Webinar\NewWebinarEvent;
 use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
 use App\Models\WebSessionManager;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\I18n\Time;
+use Config\Services;
 
 class WebinarController extends BaseController
 {
@@ -142,7 +144,18 @@ class WebinarController extends BaseController
         // Generate random room id for the webinar
         $data['room_id'] = bin2hex(random_bytes(16));
 
-        $this->webinars->create($data);
+        $webinarId = $this->webinars->create($data);
+
+        if ($data['send_notifications']) {
+            Services::notificationManager()->sendNotifications(
+                new NewWebinarEvent(
+                    $webinarId,
+                    $data['title'],
+                    $data['scheduled_for'],
+                    $data['course_id']
+                )
+            );
+        }
 
         return ApiResponse::success(message: "Webinar created.");
     }
