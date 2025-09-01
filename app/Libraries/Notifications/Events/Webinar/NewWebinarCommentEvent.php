@@ -15,8 +15,13 @@ class NewWebinarCommentEvent implements EventInterface
   private Course_manager $courseManager;
   private Course_enrollment $courseEnrollment;
 
-  public function __construct(private string $webinarId, private string $content, private string $author)
-  {
+  public function __construct(
+    private string $webinarId,
+    private string $webinarTitle,
+    private string $courseId,
+    private string $content,
+    private string $author
+  ) {
     $this->webinars = EntityLoader::loadClass(null, 'webinars');
     $this->courseManager = EntityLoader::loadClass(null, 'course_manager');
     $this->courseEnrollment = EntityLoader::loadClass(null, 'course_enrollment');
@@ -31,6 +36,8 @@ class NewWebinarCommentEvent implements EventInterface
   {
     return [
       'webinarId' => $this->webinarId,
+      'webinarTitle' => $this->webinarTitle,
+      'courseId' => $this->courseId,
       'content' => $this->content,
       'author' => $this->author,
     ];

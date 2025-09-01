@@ -70,9 +70,17 @@ class WebinarCommentController extends BaseController
     $userFullname = $currentUser->firstname . ' ' . $currentUser->lastname;
 
     if ($this->webinarComments->newComment($webinarId, $data['content'], $authorId, 'students')) {
-      Services::notificationManager()->sendNotifications(
-        new NewWebinarCommentEvent($webinarId, $data['content'], $userFullname)
-      );
+      if ($webinar['send_notifications']) {
+        Services::notificationManager()->sendNotifications(
+          new NewWebinarCommentEvent(
+            $webinarId,
+            $webinar['title'],
+            $webinar['course_id'],
+            $data['content'],
+            $userFullname
+          )
+        );
+      }
       return ApiResponse::success();
     }
 
