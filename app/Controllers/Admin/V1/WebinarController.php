@@ -101,6 +101,7 @@ class WebinarController extends BaseController
             'course_id' => 'required|integer',
             'scheduled_for' => 'required|valid_datetime[scheduled_for]',
             'enable_comments' => 'permit_empty|in_list[0,1]',
+            'send_notifications' => 'permit_empty|in_list[0,1]',
             'presentation' => [
                 'label' => 'Presentation file',
                 'rules' => [
@@ -172,6 +173,7 @@ class WebinarController extends BaseController
             'title' => 'permit_empty|string|max_length[255]',
             'description' => 'permit_empty|string',
             'enable_comments' => 'permit_empty|in_list[0,1]',
+            'send_notifications' => 'permit_empty|in_list[0,1]',
             'scheduled_for' => 'permit_empty|valid_datetime[scheduled_for]',
         ];
 
