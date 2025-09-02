@@ -32,7 +32,9 @@ class NotificationManager
         $this->notifications->createMany(array_map(fn($recipient) => [
             'recipient_table' => $recipient->tableName,
             'recipient_id' => $recipient->id,
-            'type' => $event->getName(),
+	    'type' => $event->getName(),
+	    'title' => $event->getTitle(),
+	    'message' => $event->getMessage(),
             'data' => $data,
         ], $recipients));
     }
