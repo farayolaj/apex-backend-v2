@@ -228,7 +228,8 @@ class WebinarController extends BaseController
         $this->webinars->delete($webinarId);
         Services::notificationManager()->sendNotifications(
             new WebinarCancelledEvent(
-                $webinarId,
+                $webinar['course_id'],
+                $webinar['session_id'],
                 $webinar['title'],
                 $webinar['scheduled_for'],
             )

@@ -12,8 +12,9 @@ use CodeIgniter\I18n\Time;
 class WebinarCancelledEvent implements EventInterface
 {
     public function __construct(
-        private string $webinarId,
-        private string $title,
+        private string $courseId,
+        private string $sessionId,
+        private string $webinarTitle,
         private string $scheduledFor,
     ) {}
 
@@ -31,14 +32,15 @@ class WebinarCancelledEvent implements EventInterface
     {
         $scheduledFor = new Time($this->scheduledFor);
         $formattedDate = $scheduledFor->format('l, jS F Y \a\t g:ia');
-        return "Webinar ({$this->title}) previously scheduled for {$formattedDate} has been cancelled.";
+        return "Webinar ({$this->webinarTitle}) previously scheduled for {$formattedDate} has been cancelled.";
     }
 
     public function getMetadata(): array
     {
         return [
-            'webinarId' => $this->webinarId,
-            'title' => $this->title,
+            'courseId' => $this->courseId,
+            'sessionId' => $this->sessionId,
+            'webinarTitle' => $this->webinarTitle,
         ];
     }
 
@@ -49,13 +51,8 @@ class WebinarCancelledEvent implements EventInterface
         /** @var Course_enrollment */
         $courseEnrollment = EntityLoader::loadClass(null, 'course_enrollment');
 
-        // Get the id of the course the webinar belongs to, and the session id;
-        $webinar = $webinars->getDetails($this->webinarId);
-        $courseId = $webinar['course_id'];
-        $sessionId = $webinar['session_id'];
-
         // Get the students taking the course
-        $studentIds = $courseEnrollment->getEnrolledStudents($courseId, $sessionId) ?? [];
+        $studentIds = $courseEnrollment->getEnrolledStudents($this->courseId, $this->sessionId) ?? [];
 
         $recipients = [];
 
