@@ -90,8 +90,8 @@ class WebinarController extends BaseController
                     $webinar['presentation_name']
                 ) : null;
 
-            $meetingEndedUrl = base_url('/v1/webinars/' . encryptData($webinar['room_id']) . '/end');
-            $recordingReadyUrl = base_url('/v1/webinars/recordings');
+            $meetingEndedUrl = getMeetingEndedUrl(encodeRoomId($webinar['room_id']));
+            $recordingReadyUrl = getRecordingReadyUrl();
 
             if (!$this->bbbModel->createMeeting(
                 $webinar['room_id'],
