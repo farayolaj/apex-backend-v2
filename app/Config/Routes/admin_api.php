@@ -63,12 +63,10 @@ $routes->group('v1/web/', [
 
     // webinar management
     $routes->get('courses/(:num)/(:num)/webinars', 'WebinarController::index/$1/$2');
-    $routes->get('webinars/(:num)/recordings', 'WebinarController::getRecordings/$1');
     $routes->post('webinars', 'WebinarController::create');
     $routes->patch('webinars/(:num)', 'WebinarController::update/$1');
     $routes->delete('webinars/(:num)', 'WebinarController::delete/$1');
     $routes->get('webinars/(:num)/join_url', 'WebinarController::getJoinUrl/$1');
-    $routes->delete('webinars/(:num)/recordings', 'WebinarController::deleteRecordings/$1');
 
     // webinar comments
     $routes->get('webinars/(:num)/comments', 'WebinarCommentController::getComments/$1');

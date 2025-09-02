@@ -8,7 +8,6 @@ use BigBlueButton\Enum\GuestPolicy;
 use BigBlueButton\Enum\Role;
 use BigBlueButton\Parameters\Config\DocumentOptionsStore;
 use BigBlueButton\Parameters\CreateMeetingParameters;
-use BigBlueButton\Parameters\DeleteRecordingsParameters;
 use BigBlueButton\Parameters\GetMeetingInfoParameters;
 use BigBlueButton\Parameters\GetRecordingsParameters;
 use BigBlueButton\Parameters\JoinMeetingParameters;
@@ -95,22 +94,6 @@ class BBBModel
   }
 
   /**
-   * Get recordings for a meeting.
-   */
-  public function getRecordings(string $meetingId)
-  {
-    $getRecordingsParams = new GetRecordingsParameters();
-    $getRecordingsParams->setMeetingID($meetingId);
-    $getRecordingsResponse = $this->bbb->getRecordings($getRecordingsParams);
-
-    if ($getRecordingsResponse->success()) {
-      return $getRecordingsResponse->getRecords();
-    }
-
-    return [];
-  }
-
-  /**
    * Get a particular recording
    */
   public function getRecording(string $id): ?string
@@ -127,18 +110,6 @@ class BBBModel
     }
 
     return null;
-  }
-
-  /**
-   * Delete recordings
-   * @param string[] $recordIngIds
-   */
-  public function deleteRecordings(array $recordIngIds)
-  {
-    $deleteRecordingsParams = new DeleteRecordingsParameters(implode(',', $recordIngIds));
-    $deleteRecordingsResponse = $this->bbb->deleteRecordings($deleteRecordingsParams);
-
-    return $deleteRecordingsResponse->success();
   }
 
   /**

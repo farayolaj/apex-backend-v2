@@ -8,13 +8,13 @@ use App\Entities\Webinars;
 use App\Libraries\EntityLoader;
 use App\Libraries\Notifications\Events\EventInterface;
 use App\Libraries\Notifications\Events\Recipient;
-use CodeIgniter\I18n\Time;
 
 class RecordingReadyEvent implements EventInterface
 {
     public function __construct(
         private string $webinarId,
         private string $title,
+        private string $recordingUrl,
     ) {}
 
     public function getName(): string
@@ -36,6 +36,7 @@ class RecordingReadyEvent implements EventInterface
     {
         return [
             'webinarId' => $this->webinarId,
+            'recordingUrl' => $this->recordingUrl,
         ];
     }
 

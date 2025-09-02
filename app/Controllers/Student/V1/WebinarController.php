@@ -56,9 +56,7 @@ class WebinarController extends BaseController
     }
 
     /**
-     * Get recordings for a specific webinar
-     *
-     * @param int $webinarId The id of the webinar to get recordings for
+     * Get the details for a given webinar.
      */
     public function getWebinar(int $webinarId)
     {
@@ -68,15 +66,7 @@ class WebinarController extends BaseController
             return ApiResponse::error('Webinar not found', code: 404);
         }
 
-        $recordings = array_map(fn($record) => [
-            'id' => $record->getRecordId(),
-            'date_recorded' => Time::createFromTimestamp($record->getStartTime() / 1000)->toDateTimeString(),
-            'duration' => (int) (($record->getEndTime() - $record->getStartTime()) / 1000),
-            'recording_url' => $record->getFormats()[0]->getUrl(),
-        ], $this->bbbModel->getRecordings($webinar['room_id']));
-
         $webinar = $this->processWebinar($webinar);
-        $webinar['recordings'] = $recordings;
 
         return ApiResponse::success(data: $webinar);
     }
