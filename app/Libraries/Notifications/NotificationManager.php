@@ -24,6 +24,10 @@ class NotificationManager
         }
         $recipients = $event->getRecipients();
 
+        if (empty($recipients)) {
+            return;
+        }
+
         // Todo: Run in background
         $this->notifications->createMany(array_map(fn($recipient) => [
             'recipient_table' => $recipient->tableName,
