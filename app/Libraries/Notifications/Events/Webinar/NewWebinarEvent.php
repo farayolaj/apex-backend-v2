@@ -7,25 +7,32 @@ use App\Entities\Webinars;
 use App\Libraries\EntityLoader;
 use App\Libraries\Notifications\Events\EventInterface;
 use App\Libraries\Notifications\Events\Recipient;
+use CodeIgniter\I18n\Time;
 
 class NewWebinarEvent implements EventInterface
 {
-  private Webinars $webinars;
-  private Course_enrollment $courseEnrollment;
-
   public function __construct(
     private string $webinarId,
     private string $title,
     private string $scheduledFor,
     private string $courseId
-  ) {
-    $this->webinars = EntityLoader::loadClass(null, 'webinars');
-    $this->courseEnrollment = EntityLoader::loadClass(null, 'course_enrollment');
-  }
+  ) {}
 
   public function getName(): string
   {
     return 'webinar.new';
+  }
+
+  public function getTitle(): string
+  {
+    return "New Webinar Scheduled";
+  }
+
+  public function getMessage(): string
+  {
+    $scheduledFor = new Time($this->scheduledFor);
+    $formattedDate = $scheduledFor->format('l, jS F Y \a\t g:ia');
+    return "{$this->title} has been scheduled for {$formattedDate}.";
   }
 
   public function getMetadata(): array
@@ -40,13 +47,18 @@ class NewWebinarEvent implements EventInterface
 
   public function getRecipients(): array
   {
+    /** @var Webinars */
+    $webinars = EntityLoader::loadClass(null, 'webinars');
+    /** @var Course_enrollment */
+    $courseEnrollment = EntityLoader::loadClass(null, 'course_enrollment');
+
     // Get the id of the course the webinar belongs to, and the session id;
-    $webinar = $this->webinars->getDetails($this->webinarId);
+    $webinar = $webinars->getDetails($this->webinarId);
     $courseId = $webinar['course_id'];
     $sessionId = $webinar['session_id'];
 
     // Get the students taking the course
-    $studentIds = $this->courseEnrollment->getEnrolledStudents($courseId, $sessionId) ?? [];
+    $studentIds = $courseEnrollment->getEnrolledStudents($courseId, $sessionId) ?? [];
 
     $recipients = [];
 

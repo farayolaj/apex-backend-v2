@@ -7,7 +7,16 @@ use App\Models\Crud;
 class Notifications extends Crud
 {
     protected $table = 'notifications';
-    static $apiSelectClause = ['id', 'recipient_table', 'recipient_id', 'type', 'data', 'created_at'];
+    static $apiSelectClause = [
+        'id',
+        'recipient_table',
+        'recipient_id',
+        'type',
+        'title',
+        'message',
+        'data',
+        'created_at'
+    ];
 
     public function createMany(array $notifications): bool
     {

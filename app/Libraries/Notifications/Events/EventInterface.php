@@ -11,10 +11,20 @@ interface EventInterface
     public function getName(): string;
 
     /**
+     * Get the title of the event.
+     */
+    public function getTitle(): string;
+
+    /**
+     * Get the message of the event.
+     */
+    public function getMessage(): string;
+
+    /**
      * Get the metadata associated with the event.
      * This will be serialised into the database as a JSON object.
      */
-    public function getMetadata(): array;
+    public function getMetadata(): array | null;
 
     /**
      * Get the recipients of the event.
