@@ -9,6 +9,7 @@ use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Libraries\Notifications\Events\Webinar\NewWebinarEvent;
 use App\Libraries\Notifications\Events\Webinar\RecordingReadyEvent;
+use App\Libraries\Notifications\Events\Webinar\WebinarCancelledEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarStartedEvent;
 use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
@@ -225,6 +226,14 @@ class WebinarController extends BaseController
         }
 
         $this->webinars->delete($webinarId);
+        Services::notificationManager()->sendNotifications(
+            new WebinarCancelledEvent(
+                $webinarId,
+                $webinar['title'],
+                $webinar['scheduled_for'],
+            )
+        );
+
         return ApiResponse::success();
     }
 
