@@ -111,6 +111,25 @@ class BBBModel
   }
 
   /**
+   * Get a particular recording
+   */
+  public function getRecording(string $id): ?string
+  {
+    $getRecordingsParams = new GetRecordingsParameters();
+    $getRecordingsParams->setRecordId($id);
+    $getRecordingsResponse = $this->bbb->getRecordings($getRecordingsParams);
+
+    if ($getRecordingsResponse->success() && !empty($getRecordingsResponse->getRecords())) {
+      $formats = $getRecordingsResponse->getRecords()[0]->getFormats();
+      if (!empty($formats)) {
+        return $formats[0]->getUrl();
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Delete recordings
    * @param string[] $recordIngIds
    */

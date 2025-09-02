@@ -28,6 +28,8 @@ class Webinars extends Crud
         'w.send_notifications',
         'w.join_count',
         'w.playback_count',
+        'w.recording_id',
+        'w.recording_url',
         'w.updated_at',
         'w.created_at'
     ];

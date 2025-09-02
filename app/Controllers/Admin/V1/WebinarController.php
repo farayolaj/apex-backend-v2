@@ -8,6 +8,7 @@ use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Libraries\Notifications\Events\Webinar\NewWebinarEvent;
+use App\Libraries\Notifications\Events\Webinar\RecordingReadyEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarStartedEvent;
 use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
@@ -16,6 +17,9 @@ use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\I18n\Time;
 use Config\Services;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Firebase\JWT\SignatureInvalidException;
 
 class WebinarController extends BaseController
 {
@@ -41,6 +45,7 @@ class WebinarController extends BaseController
         unset($webinar['presentation_id']);
         unset($webinar['course_id']);
         unset($webinar['room_id']);
+        unset($webinar['recording_id']);
 
         $webinar['enable_comments'] = $webinar['enable_comments'] ? true : false;
         $webinar['send_notifications'] = $webinar['send_notifications'] ? true : false;
@@ -382,6 +387,41 @@ class WebinarController extends BaseController
         }
 
         $this->webinars->updateWebinar($webinar['id'], ['end_time' => date('Y-m-d H:i:s')]);
+
+        return ApiResponse::success();
+    }
+
+    public function recordingReadyCallback()
+    {
+        $signedParams = $this->request->getPost('signed_parameters');
+
+        try {
+            $params = JWT::decode($signedParams, new Key(env('BBB_SECRET'), 'HS256'));
+        } catch (SignatureInvalidException $e) {
+            return ApiResponse::error('Invalid signed parameters', code: ResponseInterface::HTTP_UNAUTHORIZED);
+        }
+
+        $roomId = $params->meeting_id;
+        $recordId = $params->record_id;
+
+        // If webinar not found, return 410
+        $webinar = $this->webinars->getDetailsByRoomId($roomId);
+        if (!$webinar) {
+            return ApiResponse::error(code: ResponseInterface::HTTP_GONE);
+        }
+
+        // Store recording id and url
+        $recording_url = $this->bbbModel->getRecording($recordId);
+
+        $this->webinars->updateWebinar($webinar['id'], [
+            'recording_id' => $recordId,
+            'recording_url' => $recording_url
+        ]);
+
+        // Send notifications
+        Services::notificationManager()->sendNotifications(
+            new RecordingReadyEvent($webinar['id'], $webinar['title'])
+        );
 
         return ApiResponse::success();
     }
