@@ -330,7 +330,7 @@ class WebinarController extends BaseController
                     $webinar['presentation_name']
                 ) : null;
 
-            $meetingEndedUrl = base_url('/v1/webinars/' . encryptData($webinar['room_id']) . '/end');
+            $meetingEndedUrl = base_url('/v1/webinars/' . base64_encode(encryptData($webinar['room_id'])) . '/end');
             $recordingReadyUrl = base_url('/v1/webinars/recordings');
 
             if (!$this->bbbModel->createMeeting(
@@ -368,7 +368,7 @@ class WebinarController extends BaseController
 
     public function endWebinar(string $hash)
     {
-        $decodedRoomId = encryptData($hash);
+        $decodedRoomId = decryptData(base64_decode($hash));
         $roomId = $this->request->getGet('meetingID');
 
         if ($decodedRoomId !== $roomId) {
