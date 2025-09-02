@@ -20,6 +20,8 @@ class Webinars extends Crud
         'w.title',
         'w.description',
         'w.scheduled_for',
+        'w.start_time',
+        'w.end_time',
         'w.presentation_id',
         'w.presentation_name',
         'w.enable_comments',
@@ -91,6 +93,21 @@ class Webinars extends Crud
                 'stack' => $e->getTraceAsString()
             ]);
             return [];
+        }
+    }
+
+    public function getDetailsByRoomId(string $roomId)
+    {
+        try {
+            return $this->db->table('webinars w')->select(self::$apiSelectClause)
+                ->where('w.room_id', $roomId)
+                ->get()
+                ->getRowArray();
+        } catch (\Exception $e) {
+            log_message('error', 'Error Getting Webinar Details by Room ID: ' . $e->getMessage(), [
+                'stack' => $e->getTraceAsString()
+            ]);
+            return null;
         }
     }
 

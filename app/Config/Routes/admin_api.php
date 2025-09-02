@@ -20,6 +20,10 @@ $routes->group('v1/web/', [
     $routes->options('(:any)/(:num)', static function () {});
 });
 
+$routes->get('v1/webinars/(:any)/presentations', '\App\Controllers\Admin\V1\WebinarController::getPresentation/$1');
+$routes->get('v1/webinars/(:any)/end', '\App\Controllers\Admin\V1\WebinarController::endWebinar/$1');
+$routes->post('v1/webinars/recordings', '\App\Controllers\Admin\V1\WebinarController::recordingReadyCallback');
+
 $routes->group('v1/web/', [
     'filter' => ['apiValidation:admin'],
     'namespace' => 'App\Controllers\Admin\V1'
@@ -81,8 +85,6 @@ $routes->group('v1/web/', [
     $routes->options('(:any)/(:num)', static function () {});
     $routes->options('(:any)/(:any)/(:any)', static function () {});
 });
-
-$routes->get('v1/webinars/(:any)/presentations', '\App\Controllers\Admin\V1\WebinarController::getPresentation/$1');
 
 $routes->group('v1/web/email_builder', [
     'filter' => ['apiValidation:admin'],

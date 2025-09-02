@@ -99,7 +99,16 @@ class WebinarController extends BaseController
                     $webinar['presentation_name']
                 ) : null;
 
-            if (!$this->bbbModel->createMeeting($webinar['room_id'], $webinar['title'], $bbbPresentation)) {
+            $meetingEndedUrl = base_url('/v1/webinars/' . encryptData($webinar['room_id']) . '/end');
+            $recordingReadyUrl = base_url('/v1/webinars/recordings');
+
+            if (!$this->bbbModel->createMeeting(
+                $webinar['room_id'],
+                $webinar['title'],
+                $meetingEndedUrl,
+                $recordingReadyUrl,
+                $bbbPresentation
+            )) {
                 return ApiResponse::error('Unable to get meeting url', code: 502);
             }
         }

@@ -8,6 +8,7 @@ use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Libraries\Notifications\Events\Webinar\NewWebinarEvent;
+use App\Libraries\Notifications\Events\Webinar\WebinarStartedEvent;
 use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
 use App\Models\WebSessionManager;
@@ -318,6 +319,10 @@ class WebinarController extends BaseController
             return ApiResponse::error('Webinar has not started yet', code: 403);
         }
 
+        if (!empty($webinar['end_time']) && time() > \DateTime::createFromFormat('Y-m-d H:i:s', $webinar['end_time'])->format('U')) {
+            return ApiResponse::error('Webinar has already ended', code: 403);
+        }
+
         if (!$this->bbbModel->meetingExists($webinar['room_id'])) {
             $bbbPresentation = $webinar['presentation_id'] ?
                 $this->bbbModel->createPresentation(
@@ -325,7 +330,16 @@ class WebinarController extends BaseController
                     $webinar['presentation_name']
                 ) : null;
 
-            if (!$this->bbbModel->createMeeting($webinar['room_id'], $webinar['title'], $bbbPresentation)) {
+            $meetingEndedUrl = base_url('/v1/webinars/' . encryptData($webinar['room_id']) . '/end');
+            $recordingReadyUrl = base_url('/v1/webinars/recordings');
+
+            if (!$this->bbbModel->createMeeting(
+                $webinar['room_id'],
+                $webinar['title'],
+                $meetingEndedUrl,
+                $recordingReadyUrl,
+                $bbbPresentation
+            )) {
                 return ApiResponse::error('Unable to get meeting url', code: 502);
             }
         }
@@ -335,12 +349,41 @@ class WebinarController extends BaseController
         $redirectURL = $this->request->getGet('redirect_url') ??
             $this->request->header('origin')->getValue();
 
+        if (!$webinar['start_time']) { // Set webinar startTime
+            $this->webinars->updateWebinar($webinarId, ['start_time' => date('Y-m-d H:i:s')]);
+
+            // Send webinar started notification
+            Services::notificationManager()->sendNotifications(
+                new WebinarStartedEvent($webinar['id'], $webinar['title'])
+            );
+        }
+
         return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
             meetingId: $webinar['room_id'],
             fullName: $fullName,
             logoutURL: $redirectURL,
             userId: $currentUser->id,
         ));
+    }
+
+    public function endWebinar(string $hash)
+    {
+        $decodedRoomId = encryptData($hash);
+        $roomId = $this->request->getGet('meetingID');
+
+        if ($decodedRoomId !== $roomId) {
+            return ApiResponse::error('Unauthorised access', code: ResponseInterface::HTTP_UNAUTHORIZED);
+        }
+
+        $webinar = $this->webinars->getDetailsByRoomId($roomId);
+
+        if (!$webinar) {
+            return ApiResponse::error('Webinar not found', code: ResponseInterface::HTTP_NOT_FOUND);
+        }
+
+        $this->webinars->updateWebinar($webinar['id'], ['end_time' => date('Y-m-d H:i:s')]);
+
+        return ApiResponse::success();
     }
 
     /**

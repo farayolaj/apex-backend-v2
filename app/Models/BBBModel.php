@@ -64,7 +64,7 @@ class BBBModel
    *
    * @return bool Returns true if meeting was created successfully, else returns false.
    */
-  public function createMeeting(string $meetingId, string $meetingName, ?BBBPresentation $presentation = null)
+  public function createMeeting(string $meetingId, string $meetingName, string $meetingEndedUrl, string $recordingReadyUrl, ?BBBPresentation $presentation = null)
   {
     $createParams = new CreateMeetingParameters($meetingId, $meetingName);
     $createParams->setAutoStartRecording(true);
@@ -74,6 +74,8 @@ class BBBModel
     $createParams->setGuestPolicy(GuestPolicy::ASK_MODERATOR);
     $createParams->setEndWhenNoModerator(true);
     $createParams->setEndWhenNoModeratorDelayInMinutes(120);
+    $createParams->setMeetingEndedURL($meetingEndedUrl);
+    $createParams->setRecordingReadyCallbackUrl($recordingReadyUrl);
 
     if ($presentation) {
       $documentOptionStore = new DocumentOptionsStore();
