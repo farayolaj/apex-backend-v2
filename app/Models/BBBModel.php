@@ -72,6 +72,8 @@ class BBBModel
     $createParams->setAllowStartStopRecording(false);
     $createParams->setAllowModsToUnmuteUsers(true);
     $createParams->setGuestPolicy(GuestPolicy::ASK_MODERATOR);
+    $createParams->setEndWhenNoModerator(true);
+    $createParams->setEndWhenNoModeratorDelayInMinutes(120);
 
     if ($presentation) {
       $documentOptionStore = new DocumentOptionsStore();
