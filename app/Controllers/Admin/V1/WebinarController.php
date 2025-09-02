@@ -316,13 +316,8 @@ class WebinarController extends BaseController
     public function endWebinar(string $hash)
     {
         $decodedRoomId = decodeRoomId($hash);
-        $roomId = $this->request->getGet('meetingID');
 
-        if ($decodedRoomId !== $roomId) {
-            return ApiResponse::error('Unauthorised access', code: ResponseInterface::HTTP_UNAUTHORIZED);
-        }
-
-        $webinar = $this->webinars->getDetailsByRoomId($roomId);
+        $webinar = $this->webinars->getDetailsByRoomId($decodedRoomId);
 
         if (!$webinar) {
             return ApiResponse::error('Webinar not found', code: ResponseInterface::HTTP_NOT_FOUND);
