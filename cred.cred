@@ -1,0 +1,42 @@
+
+php index.php cron cronJob export-course
+
+--- every 2 hours
+0 */2 * * * /usr/bin/php /var/www/apex/public_html/index.php cron cronJob export-course
+
+-- every 7 minutes
+*/7 * * * * /usr/bin/php /var/www/apex/public_html/index.php cron cronJob export-course
+
+-- every 1 hours
+0 */1 * * * /usr/bin/php /var/www/apex/public_html/index.php cron cronJob sync-users
+
+-- every 1 hours
+0 */1 * * * /usr/bin/php /var/www/apex/public_html/index.php cron cronJob bulk-fund-transaction
+
+-- every weekend(Saturday and Sunday)
+0 0 * * 6,7 /usr/bin/php /var/www/apex/public_html/index.php cron cronJob sync-banklists
+
+-- every 9am, 12noon, 3pm of the day
+0 9,12,15 * * * /usr/bin/php /var/www/apex/public_html/index.php cron cronJob applicant-putme
+
+-- every 24hrs
+0 0 * * * /usr/bin/php /var/www/apex/public_html/index.php cron cronJob bookstore-transaction
+
+-- every 12am, 3am, 6am
+0 0,3,6 * * * /usr/bin/php /var/www/apex/public_html/index.php cron cronJob bookstore-transaction
+
+-- every 1am, 4am, 5am
+0 1,4,6 * * * /usr/bin/php /var/www/apex/public_html/index.php cron cronJob pending-transaction
+
+-- Every 2 minutes; no overlapping runs per container name
+*/2 * * * * docker exec -t <php_container_name> php /var/www/html/spark relayq:sweep --stale=30 --vt=60 --limit=200 >/dev/null 2>&1
+
+
+
+------ to track places where scored was updated to graded
+Examination_courses.php [getSingleExaminationCourse]
+Examination_courses.php [getLecturersAssignCourses]
+Examination_courses.php [APIList]
+AdminModel.php [loadAvgCourseScoreBySession]
+AdminModel.php [loadScoreAnalysis]
+AdminModel.php [course_score_distribution]

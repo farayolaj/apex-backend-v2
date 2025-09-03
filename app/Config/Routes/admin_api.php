@@ -7,6 +7,16 @@ use App\Controllers\Admin\V1\EmailBuilderController;
  * @var RouteCollection $routes
  */
 
+$routes->group('v1/web/', [
+    'namespace' => 'App\Controllers\Admin\V1'
+], function ($routes) {
+
+    $routes->post('_relayq/run', '\Alatise\RelayQ\Controllers\RunController::runOne');
+
+    $routes->options('(:segment)', static function () {});
+    $routes->options('(:segment)/(:segment)', static function () {});
+});
+
 // this routes handle things that their content-type shouldn't be application/json
 $routes->group('v1/web/', [
     'filter' => ['apiValidation:admin,no-json'],

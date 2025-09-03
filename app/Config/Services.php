@@ -3,7 +3,6 @@
 namespace Config;
 
 use CodeIgniter\Config\BaseService;
-use Config\Redis;
 
 /**
  * Services Configuration file.
@@ -31,11 +30,25 @@ class Services extends BaseService
      * }
      */
 
-    public static function redis($getShared = true){
+    public static function redis($getShared = true)
+    {
         if ($getShared) {
             return static::getSharedInstance('redis');
         }
 
         return new \App\Libraries\RealRedis(new Redis());
+    }
+
+    public static function relayq(bool $getShared = true): \Alatise\RelayQ\Services\RelayQ
+    {
+        if ($getShared) return static::getSharedInstance('relayq');
+
+        $config = config(\Alatise\RelayQ\Config\RelayQ::class);
+        $repo = new \Alatise\RelayQ\Repositories\JobRepository(db_connect());
+        $bg = new \Alatise\RelayQ\Services\BackgroundDispatcher($config);
+        $http = new \Alatise\RelayQ\Services\HttpDispatcher($config);
+        $redis = new \Alatise\RelayQ\Services\RedisAdapter($config); // optional; no-op if disabled
+
+        return new \Alatise\RelayQ\Services\RelayQ($config, $repo, $bg, $http, $redis);
     }
 }

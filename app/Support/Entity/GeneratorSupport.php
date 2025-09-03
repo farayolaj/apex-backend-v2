@@ -16,13 +16,11 @@ class GeneratorSupport
 
     public static function option(string $key): ?string
     {
-        // 1) CI4 normal path (works for --key=value or some shells)
         $val = \CodeIgniter\CLI\CLI::getOption($key);
         if (is_string($val) && $val !== '') {
             return $val;
         }
 
-        // 2) Fallback: parse raw argv to support "--key value" and "--key=value"
         $argv = $_SERVER['argv'] ?? [];
         $needleEq = "--{$key}=";
         for ($i = 0, $n = count($argv); $i < $n; $i++) {

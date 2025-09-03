@@ -79,12 +79,21 @@ class Tester extends BaseController
         return ApiResponse::success("Email sent successfully");
     }
 
-    private function testFactory(){
-        $currentSession = ENVIRONMENT === 'development' ? 'YES' : 'NO';
-        dddump($currentSession);
+    public function backgroundWorker(): void
+    {
+        print('Before dispatching');
+        relayQDispatch(
+            (new \App\Jobs\SendNotification(1, 'Welcome', 'Thanks for joining'))
+                ->onQueue('notifications')
+                ->delay(15)
+                ->maxAttempts(3)
+                ->backoff([30,120,600])
+                ->unique("welcome:1", 60) // unique per 5-minute bucket
+        );
+        dddump('Running after dispatch');
     }
 
     public function test(){
-        $this->testFactory();
+        $this->backgroundWorker();
     }
 }
