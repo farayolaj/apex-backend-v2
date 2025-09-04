@@ -226,14 +226,16 @@ class WebinarController extends BaseController
         }
 
         $this->webinars->delete($webinarId);
-        Services::notificationManager()->sendNotifications(
-            new WebinarCancelledEvent(
-                $webinar['course_id'],
-                $webinar['session_id'],
-                $webinar['title'],
-                $webinar['scheduled_for'],
-            )
-        );
+        if ($webinar['send_notifications']) {
+            Services::notificationManager()->sendNotifications(
+                new WebinarCancelledEvent(
+                    $webinar['course_id'],
+                    $webinar['session_id'],
+                    $webinar['title'],
+                    $webinar['scheduled_for'],
+                )
+            );
+        }
 
         return ApiResponse::success();
     }
@@ -301,9 +303,11 @@ class WebinarController extends BaseController
             $this->webinars->updateWebinar($webinarId, ['start_time' => date('Y-m-d H:i:s')]);
 
             // Send webinar started notification
-            Services::notificationManager()->sendNotifications(
-                new WebinarStartedEvent($webinar['id'], $webinar['title'])
-            );
+            if ($webinar['send_notifications']) {
+                Services::notificationManager()->sendNotifications(
+                    new WebinarStartedEvent($webinar['id'], $webinar['title'])
+                );
+            }
         }
 
         return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
@@ -357,9 +361,11 @@ class WebinarController extends BaseController
         ]);
 
         // Send notifications
-        Services::notificationManager()->sendNotifications(
-            new RecordingReadyEvent($webinar['id'], $webinar['title'], $recording_url)
-        );
+        if ($webinar['send_notifications']) {
+            Services::notificationManager()->sendNotifications(
+                new RecordingReadyEvent($webinar['id'], $webinar['title'], $recording_url)
+            );
+        }
 
         return ApiResponse::success();
     }
