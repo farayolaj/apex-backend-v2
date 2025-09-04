@@ -11,6 +11,7 @@ use App\Libraries\Notifications\Events\Sender;
 use App\Libraries\Notifications\Events\Webinar\NewWebinarEvent;
 use App\Libraries\Notifications\Events\Webinar\RecordingReadyEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarCancelledEvent;
+use App\Libraries\Notifications\Events\Webinar\WebinarRescheduledEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarStartedEvent;
 use App\Libraries\WebinarPresentation;
 use App\Models\BBBModel;
@@ -189,6 +190,25 @@ class WebinarController extends BaseController
         }
 
         $this->webinars->updateWebinar($webinarId, $data);
+
+        // If send_notifications is being enabled and scheduled_for is changed to a future date, send notification
+        $toSendNotification = $data['send_notifications'] ?? $webinar['send_notifications'];
+        if (
+            $toSendNotification && (
+                isset($data['scheduled_for']) &&
+                !Time::parse($data['scheduled_for'])->equals(Time::parse($webinar['scheduled_for']))
+            )
+        ) {
+            Services::notificationManager()->sendNotifications(
+                new WebinarRescheduledEvent(
+                    $webinarId,
+                    $data['title'] ?? $webinar['title'],
+                    $data['scheduled_for'],
+                    $webinar['course_id']
+                )
+            );
+        }
+
         return ApiResponse::success();
     }
 
