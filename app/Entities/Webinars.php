@@ -6,7 +6,7 @@ use App\Models\Crud;
 use CodeIgniter\Database\RawSql;
 
 /**
- * This class queries those who have paid for both RuS and SuS
+ * Class Webinars
  */
 class Webinars extends Crud
 {
