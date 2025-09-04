@@ -23,6 +23,15 @@ class NotificationManager
             throw new \RuntimeException('Failed to encode notification metadata to JSON: ' . json_last_error_msg());
         }
         $recipients = $event->getRecipients();
+        $sender = $event->getSender();
+
+        // Do not send notification to self
+        if ($sender) {
+            $recipients = array_filter(
+                $recipients,
+                fn($recipient) => !($recipient->tableName === $sender->tableName && $recipient->id === $sender->id)
+            );
+        }
 
         if (empty($recipients)) {
             return;
@@ -32,9 +41,9 @@ class NotificationManager
         $this->notifications->createMany(array_map(fn($recipient) => [
             'recipient_table' => $recipient->tableName,
             'recipient_id' => $recipient->id,
-	    'type' => $event->getName(),
-	    'title' => $event->getTitle(),
-	    'message' => $event->getMessage(),
+            'type' => $event->getName(),
+            'title' => $event->getTitle(),
+            'message' => $event->getMessage(),
             'data' => $data,
         ], $recipients));
     }

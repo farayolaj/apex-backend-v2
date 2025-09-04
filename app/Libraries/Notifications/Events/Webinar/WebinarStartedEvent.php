@@ -7,6 +7,7 @@ use App\Entities\Webinars;
 use App\Libraries\EntityLoader;
 use App\Libraries\Notifications\Events\EventInterface;
 use App\Libraries\Notifications\Events\Recipient;
+use App\Libraries\Notifications\Events\Sender;
 
 class WebinarStartedEvent implements EventInterface
 {
@@ -59,5 +60,10 @@ class WebinarStartedEvent implements EventInterface
         }
 
         return $recipients;
+    }
+
+    public function getSender(): ?Sender
+    {
+        return null;
     }
 }

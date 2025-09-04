@@ -7,6 +7,7 @@ use App\Entities\Course_manager;
 use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Libraries\Notifications\Events\Sender;
 use App\Libraries\Notifications\Events\Webinar\NewWebinarEvent;
 use App\Libraries\Notifications\Events\Webinar\RecordingReadyEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarCancelledEvent;

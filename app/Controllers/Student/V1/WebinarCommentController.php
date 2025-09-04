@@ -7,6 +7,7 @@ use App\Entities\Webinar_comments;
 use App\Entities\Webinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Libraries\Notifications\Events\Sender;
 use App\Libraries\Notifications\Events\Webinar\NewWebinarCommentEvent;
 use App\Models\WebSessionManager;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -77,7 +78,8 @@ class WebinarCommentController extends BaseController
             $webinar['title'],
             $webinar['course_id'],
             $data['content'],
-            $userFullname
+            $userFullname,
+            new Sender('students', $authorId)
           )
         );
       }

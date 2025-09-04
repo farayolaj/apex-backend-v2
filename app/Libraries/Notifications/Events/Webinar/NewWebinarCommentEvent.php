@@ -8,6 +8,7 @@ use App\Entities\Webinars;
 use App\Libraries\EntityLoader;
 use App\Libraries\Notifications\Events\EventInterface;
 use App\Libraries\Notifications\Events\Recipient;
+use App\Libraries\Notifications\Events\Sender;
 
 class NewWebinarCommentEvent implements EventInterface
 {
@@ -16,7 +17,8 @@ class NewWebinarCommentEvent implements EventInterface
     private string $webinarTitle,
     private string $courseId,
     private string $content,
-    private string $author
+    private string $author,
+    private Sender $sender,
   ) {}
 
   public function getName(): string
@@ -77,5 +79,10 @@ class NewWebinarCommentEvent implements EventInterface
     }
 
     return $recipients;
+  }
+
+  public function getSender(): ?Sender
+  {
+    return $this->sender;
   }
 }

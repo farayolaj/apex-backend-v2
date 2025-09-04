@@ -31,4 +31,10 @@ interface EventInterface
      * @return Recipient[]
      */
     public function getRecipients(): array;
+
+    /**
+     * Get the sender of the event.
+     * Return null if the event initiator is not a user.
+     */
+    public function getSender(): ?Sender;
 }

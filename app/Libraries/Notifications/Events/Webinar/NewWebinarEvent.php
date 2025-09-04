@@ -7,6 +7,7 @@ use App\Entities\Webinars;
 use App\Libraries\EntityLoader;
 use App\Libraries\Notifications\Events\EventInterface;
 use App\Libraries\Notifications\Events\Recipient;
+use App\Libraries\Notifications\Events\Sender;
 use CodeIgniter\I18n\Time;
 
 class NewWebinarEvent implements EventInterface
@@ -15,7 +16,7 @@ class NewWebinarEvent implements EventInterface
     private string $webinarId,
     private string $title,
     private string $scheduledFor,
-    private string $courseId
+    private string $courseId,
   ) {}
 
   public function getName(): string
@@ -67,5 +68,10 @@ class NewWebinarEvent implements EventInterface
     }
 
     return $recipients;
+  }
+
+  public function getSender(): ?Sender
+  {
+    return null;
   }
 }
