@@ -81,7 +81,7 @@ class WebinarController extends BaseController
             'title' => 'required|string|max_length[255]',
             'description' => 'permit_empty|string',
             'course_id' => 'required|integer',
-            'scheduled_for' => 'required|valid_datetime[scheduled_for]',
+            'scheduled_for' => 'required|future_datetime[scheduled_for]',
             'enable_comments' => 'permit_empty|in_list[0,1]',
             'send_notifications' => 'permit_empty|in_list[0,1]',
             'presentation' => [
