@@ -46,7 +46,15 @@ class Webinar_comments extends Crud
     }
   }
 
-  public function getComments(int $webinarId, int $limit = 10, int $offset = 0)
+  /**
+   * Fetch comments for a specific webinar with pagination and sorting.
+   * @param int $webinarId
+   * @param int $limit
+   * @param int $offset
+   * @param string|null $sortDir 'ASC' or 'DESC'
+   * @return array{comments: array, totalCount: int}
+   */
+  public function getComments(int $webinarId, int $limit = 10, int $offset = 0, ?string $sortDir = 'DESC'): array
   {
     try {
       $builder = $this->db->table(self::$tablename . ' wc');
@@ -54,7 +62,7 @@ class Webinar_comments extends Crud
       $builder->join('students s', 'wc.author_id = s.id AND wc.author_table = "students"', 'left');
       $builder->join('staffs st', 'wc.author_id = st.id AND wc.author_table = "staffs"', 'left');
       $builder->where('wc.webinar_id', $webinarId);
-      $builder->orderBy('wc.created_at', 'DESC');
+      $builder->orderBy('wc.created_at', $sortDir === 'ASC' ? 'ASC' : 'DESC');
       $builder->limit($limit, $offset);
       $res = $builder->get();
       $comments = $res->getResultArray();

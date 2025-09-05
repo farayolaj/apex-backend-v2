@@ -28,8 +28,13 @@ class WebinarCommentController extends BaseController
   {
     $page = (int) $this->request->getGet('page') ?: 1;
     $perPage = (int) $this->request->getGet('perPage') ?: 10;
+    $sortDir = strtoupper($this->request->getGet('sortDir'));
+    if ($sortDir !== 'ASC' && $sortDir !== 'DESC') {
+      $sortDir = 'DESC';
+    }
 
-    ['comments' => $comments, 'totalCount' => $totalCount] = $this->webinarComments->getComments($webinarId, $perPage, ($page - 1) * $perPage);
+    ['comments' => $comments, 'totalCount' => $totalCount] =
+      $this->webinarComments->getComments($webinarId, $perPage, ($page - 1) * $perPage, $sortDir);
 
 
     return ApiResponse::success(data: [
