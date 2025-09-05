@@ -37,7 +37,10 @@ class Webinars extends Crud
     public function webinarExists(int $webinarId): bool
     {
         try {
-            return $this->db->table('webinars')->where('id', $webinarId)->countAllResults() === 1;
+            return $this->db->table('webinars')
+                ->where('id', $webinarId)
+                ->where('deletion_date IS NULL')
+                ->countAllResults() === 1;
         } catch (\Exception $e) {
             log_message('error', 'Error Checking Webinar Existence: ' . $e->getMessage(), [
                 'stack' => $e->getTraceAsString()
@@ -52,6 +55,7 @@ class Webinars extends Crud
             return $this->db->table('webinars w')->select(self::$apiSelectClause)
                 ->where('session_id', $sessionId)
                 ->where('course_id', $courseId)
+                ->where('deletion_date IS NULL')
                 ->orderBy('scheduled_for', 'DESC')
                 ->get()
                 ->getResultArray();
@@ -71,6 +75,7 @@ class Webinars extends Crud
                 ->join('webinar_comments wc', 'w.id = wc.webinar_id', 'left')
                 ->where('w.session_id', $sessionId)
                 ->where('w.course_id', $courseId)
+                ->where('w.deletion_date IS NULL')
                 ->groupBy('w.id')
                 ->orderBy('w.scheduled_for', 'DESC')
                 ->get()
@@ -88,6 +93,7 @@ class Webinars extends Crud
         try {
             return $this->db->table('webinars w')->select(self::$apiSelectClause)
                 ->where('w.id', $webinarId)
+                ->where('w.deletion_date IS NULL')
                 ->get()
                 ->getRowArray();
         } catch (\Exception $e) {
@@ -103,6 +109,7 @@ class Webinars extends Crud
         try {
             return $this->db->table('webinars w')->select(self::$apiSelectClause)
                 ->where('w.room_id', $roomId)
+                ->where('w.deletion_date IS NULL')
                 ->get()
                 ->getRowArray();
         } catch (\Exception $e) {
@@ -129,7 +136,10 @@ class Webinars extends Crud
     public function updateWebinar(int $webinarId, array $data): bool
     {
         try {
-            $this->db->table('webinars')->where('id', $webinarId)->update($data);
+            $this->db->table('webinars')
+                ->where('id', $webinarId)
+                ->where('deletion_date IS NULL')
+                ->update($data);
             return $this->db->affectedRows() > 0;
         } catch (\Exception $e) {
             log_message('error', 'Error Updating Webinar: ' . $e->getMessage(), [
@@ -142,7 +152,10 @@ class Webinars extends Crud
     public function incrementJoinCount(int $webinarId): bool
     {
         try {
-            return $this->db->table('webinars')->where('id', $webinarId)->update(['join_count' => new RawSql('join_count + 1')]) > 0;
+            return $this->db->table('webinars')
+                ->where('id', $webinarId)
+                ->where('deletion_date IS NULL')
+                ->update(['join_count' => new RawSql('join_count + 1')]) > 0;
         } catch (\Exception $e) {
             log_message('error', 'Error Incrementing Join Count: ' . $e->getMessage(), [
                 'stack' => $e->getTraceAsString()
@@ -154,9 +167,32 @@ class Webinars extends Crud
     public function incrementPlaybackCount(int $webinarId): bool
     {
         try {
-            return $this->db->table('webinars')->where('id', $webinarId)->update(['playback_count' => new RawSql('playback_count + 1')]) > 0;
+            return $this->db->table('webinars')
+                ->where('id', $webinarId)
+                ->where('deletion_date IS NULL')
+                ->update(['playback_count' => new RawSql('playback_count + 1')]) > 0;
         } catch (\Exception $e) {
             log_message('error', 'Error Incrementing Playback Count: ' . $e->getMessage(), [
+                'stack' => $e->getTraceAsString()
+            ]);
+            return false;
+        }
+    }
+
+    public function markAsDeleted(int $webinarId, int $deletedBy): bool
+    {
+        try {
+            $data = [
+                'deleted_by' => $deletedBy,
+                'deletion_date' => new RawSql('CURRENT_TIMESTAMP')
+            ];
+            $this->db->table('webinars')
+                ->where('id', $webinarId)
+                ->where('deletion_date IS NULL')
+                ->update($data);
+            return $this->db->affectedRows() > 0;
+        } catch (\Exception $e) {
+            log_message('error', 'Error Marking Webinar as Deleted: ' . $e->getMessage(), [
                 'stack' => $e->getTraceAsString()
             ]);
             return false;

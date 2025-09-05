@@ -213,7 +213,7 @@ class WebinarController extends BaseController
     }
 
     /**
-     * Delete a specific webinar
+     * Marks a webinar as deleted, recording the deletion date and the user (from the staffs table) who deleted it.
      *
      * @param int $webinarId The id of the webinar to delete
      */
@@ -235,19 +235,11 @@ class WebinarController extends BaseController
             );
         }
 
-        if ($webinar['recording_id']) { // if there is a recording, prevent webinar deletion.
-            return ApiResponse::error(
-                message: 'Cannot delete a webinar that has ended with recordings.',
-                code: ResponseInterface::HTTP_FORBIDDEN
-            );
-        }
-
-        if ($webinar['presentation_id']) {
-            WebinarPresentation::deletePresentation($webinar['presentation_id']);
-        }
-
-        $this->webinars->delete($webinarId);
-        if ($webinar['send_notifications']) {
+        $this->webinars->markAsDeleted($webinarId, WebSessionManager::currentAPIUser()->user_table_id);
+        if (
+            $webinar['send_notifications'] &&
+            ($scheduledDate = \DateTime::createFromFormat('Y-m-d H:i:s', $webinar['scheduled_for'])) && time() < $scheduledDate->format('U')
+        ) {
             Services::notificationManager()->sendNotifications(
                 new WebinarCancelledEvent(
                     $webinar['course_id'],
