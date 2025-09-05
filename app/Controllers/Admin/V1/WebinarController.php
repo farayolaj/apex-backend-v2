@@ -30,6 +30,15 @@ class WebinarController extends BaseController
     private Course_manager $courseManager;
     private BBBModel $bbbModel;
 
+    const presentationRules = [
+        'label' => 'Presentation file',
+        'rules' => [
+            'permit_empty',
+            'ext_in[presentation,pdf,doc,docx,ppt,pptx,xls,xlsx]',
+            'max_size[presentation,10240]', // 10 MB
+        ]
+    ];
+
     public function __construct()
     {
         $this->webinars = EntityLoader::loadClass(null, 'webinars');
@@ -86,14 +95,7 @@ class WebinarController extends BaseController
             'scheduled_for' => 'required|future_datetime[scheduled_for]',
             'enable_comments' => 'permit_empty|in_list[0,1]',
             'send_notifications' => 'permit_empty|in_list[0,1]',
-            'presentation' => [
-                'label' => 'Presentation file',
-                'rules' => [
-                    'permit_empty',
-                    'ext_in[presentation,pdf,doc,docx,ppt,pptx,xls,xlsx]',
-                    'max_size[presentation,10240]', // 10 MB
-                ],
-            ],
+            'presentation' => self::presentationRules,
         ];
 
         if (!$this->validateData($data, $rules)) {
@@ -210,6 +212,91 @@ class WebinarController extends BaseController
         }
 
         return ApiResponse::success();
+    }
+
+    /**
+     * Update the presentation file for a specific webinar
+     *
+     * @param int $webinarId The id of the webinar to update
+     */
+    public function updatePresentation(int $webinarId)
+    {
+        $webinar = $this->webinars->getDetails($webinarId);
+
+        $rules = [
+            'presentation' => self::presentationRules,
+        ];
+
+        if (!$this->validateData($this->request->getPost(), $rules)) {
+            $errors = $this->validator->getErrors();
+            return ApiResponse::error(implode(' ', $errors), code: 400);
+        }
+
+        if (!$webinar) {
+            return ApiResponse::error('Webinar not found', code: 404);
+        }
+
+        if (!$this->canAccessCourse($webinar['course_id'])) {
+            return ApiResponse::error('User does not have access to update webinar', code: 403);
+        }
+
+        $presentationFile = $this->request->getFile('presentation');
+        if ($presentationFile && $presentationFile->isValid()) {
+            $presentation = new WebinarPresentation($presentationFile);
+            $data = [
+                'presentation_id' => $presentation->getId(),
+                'presentation_name' => $presentation->getName()
+            ];
+
+            if ($webinar['presentation_id']) {
+                WebinarPresentation::deletePresentation($webinar['presentation_id']);
+            }
+
+            $this->webinars->updateWebinar($webinarId, $data);
+
+            return ApiResponse::success(message: "Webinar presentation updated.");
+        } else {
+            return ApiResponse::error('No valid presentation file uploaded', code: 400);
+        }
+
+        if ($webinar['presentation_id']) {
+            WebinarPresentation::deletePresentation($webinar['presentation_id']);
+        }
+
+        $this->webinars->updateWebinar($webinarId, $data);
+
+        return ApiResponse::success(message: "Webinar presentation updated.");
+    }
+
+    /**
+     * Delete the presentation file for a specific webinar
+     *
+     * @param int $webinarId The id of the webinar to update
+     */
+    public function deletePresentation(int $webinarId)
+    {
+        $webinar = $this->webinars->getDetails($webinarId);
+
+        if (!$webinar) {
+            return ApiResponse::error('Webinar not found', code: 404);
+        }
+
+        if (!$this->canAccessCourse($webinar['course_id'])) {
+            return ApiResponse::error('User does not have access to update webinar', code: 403);
+        }
+
+        if (!$webinar['presentation_id']) {
+            return ApiResponse::error('No presentation file to delete', code: 400);
+        }
+
+        WebinarPresentation::deletePresentation($webinar['presentation_id']);
+
+        $this->webinars->updateWebinar($webinarId, [
+            'presentation_id' => null,
+            'presentation_name' => null
+        ]);
+
+        return ApiResponse::success(message: "Webinar presentation deleted.");
     }
 
     /**
