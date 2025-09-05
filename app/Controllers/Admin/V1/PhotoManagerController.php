@@ -22,6 +22,7 @@ class PhotoManagerController extends BaseController
         $offset   = max(0, $start);
 
         $filters = [
+            'target'     => $this->request->getGet('target') ?? 'student',
             'session'    => $this->request->getGet('session'),
             'level'      => $this->request->getGet('level'),
             'programme'  => $this->request->getGet('programme'),
@@ -32,7 +33,7 @@ class PhotoManagerController extends BaseController
         ];
 
         $model = model('Admin/PhotoModel');
-        $result = $model->getStudentPhotos($filters, $offset, $pageSize, true);
+        $result = $model->getPhotos($filters, $offset, $pageSize, true);
 
         return ApiResponse::success('success', [
             'paging'     => $result['total'],
@@ -44,13 +45,14 @@ class PhotoManagerController extends BaseController
         $data  = $this->request->getJSON(true) ?? [];
         $filters = $data['filter'] ?? [];
         $selected = $data['selected'] ?? [];
+        $target   = strtolower((string) ($data['target'] ?? 'student'));
 
         $model = model('Admin/PhotoModel');
 
         if (is_array($selected) && count($selected) > 0) {
-            $paths = $model->listFilesByMatric($selected);
+            $paths = $model->listFilesByMatric($selected, $target);
         } elseif (is_array($filters) && count($filters) > 0) {
-            $paths = $model->listFilesByFilter($filters);
+            $paths = $model->listFilesByFilter(array_merge($filters, ['target' => $target]));
         } else {
             $paths = [];
         }

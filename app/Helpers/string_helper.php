@@ -672,6 +672,12 @@ if (!function_exists('applicantImagePath')) {
     }
 }
 
+if(!function_exists('applicantImagePathDirectory')){
+    function applicantImagePathDirectory($passport): string{
+        return returnFormalDirectory('applicants') . $passport;
+    }
+}
+
 if (!function_exists('studentImagePath')) {
     function studentImagePath($passport): string
     {

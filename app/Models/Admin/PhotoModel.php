@@ -7,6 +7,14 @@ use CodeIgniter\Database\BaseBuilder;
 
 class PhotoModel extends Model
 {
+    public function getPhotos(array $f, int $offset = 0, int $limit = 50, bool $withPaths = true): array
+    {
+        $target = strtolower((string) ($f['target'] ?? 'student'));
+        return $target === 'applicant'
+            ? $this->getApplicantPhotos($f, $offset, $limit, $withPaths)
+            : $this->getStudentPhotos($f, $offset, $limit, $withPaths);
+    }
+
     private function baseQueryForFilters(array $f): BaseBuilder
     {
         $db      = $this->db;
@@ -93,7 +101,72 @@ class PhotoModel extends Model
             ->get()->getResultArray();
 
         if ($withPaths) {
-            $rows = $this->attachPassportPaths($rows);
+            $rows = $this->attachPassportPaths($rows, 'student');;
+        }
+
+        return ['total' => $total, 'data' => $rows];
+    }
+
+    private function baseApplicantQuery(array $f): BaseBuilder
+    {
+        $db      = $this->db;
+        $session = $f['session']    ?? null;
+        $level   = $f['level']      ?? null;
+        $dept    = $f['department'] ?? null;
+        $program = $f['programme']  ?? null;
+        $search  = $f['q']          ?? null;
+
+        $base = $db->table('applicants ap');
+
+        if ($dept) {
+            $base->join('programme d', 'd.id = ap.programme_id', 'left')
+                ->join('department f', 'f.id = d.department_id', 'left')
+                ->where('f.id', $dept);
+        }
+
+        if ($program) { $base->where('ap.programme_id', $program); }
+        if ($session) { $base->where('ap.session_id', $session); }
+        if ($level)   { $base->where('ap.admitted_level', $level); }
+
+        if ($search) {
+            $base->groupStart()
+                ->like('ap.firstname', $search)
+                ->orLike('ap.othernames', $search)
+                ->orLike('ap.lastname', $search)
+                ->orLike('ap.applicant_id', $search)
+                ->orLike('ap.email', $search)
+                ->groupEnd();
+        }
+
+        return $base;
+    }
+
+    public function getApplicantPhotos(array $f, int $offset = 0, int $limit = 50, bool $withPaths = true): array
+    {
+        $base         = $this->baseApplicantQuery($f);
+        $countBuilder = clone $base;
+        $dataBuilder  = clone $base;
+
+        $total = (int) $countBuilder
+            ->select('COUNT(DISTINCT ap.id) AS total', false)
+            ->get()->getRow('total');
+
+        $rows = $dataBuilder
+            ->distinct()
+            ->select([
+                'ap.id AS student_id',
+                'ap.applicant_id AS matric_number',
+                'ap.passport',
+                'ap.email',
+                'ap.admitted_level AS level',
+            ])
+            ->select("CONCAT_WS(' ', ap.firstname, ap.othernames, ap.lastname) AS fullname", false)
+            ->orderBy('ap.applicant_id', 'ASC')
+            ->limit(max(1, $limit), max(0, $offset))
+            ->get()->getResultArray();
+
+        if ($withPaths) {
+            $rows = $this->attachPassportPaths($rows, 'applicant');
         }
 
         return ['total' => $total, 'data' => $rows];
@@ -102,11 +175,18 @@ class PhotoModel extends Model
     /**
      * NEW: return just matric_number + passport for explicit selections.
      */
-    public function listFilesByMatric(array $matrics): array
+    public function listFilesByMatric(array $matrics, string $target = 'student'): array
     {
-        if (empty($matrics)) {
-            return [];
+        if (empty($matrics)) return [];
+
+        if (strtolower($target) === 'applicant') {
+            return $this->db->table('applicants ap')
+                ->distinct()
+                ->select(['ap.applicant_id AS matric_number', 'ap.passport'])
+                ->whereIn('ap.applicant_id', $matrics)
+                ->get()->getResultArray();
         }
+
         return $this->db->table('students a')
             ->distinct()
             ->select(['b.matric_number', 'a.passport'])
@@ -121,13 +201,21 @@ class PhotoModel extends Model
      */
     public function listFilesByFilter(array $f): array
     {
+        $target = strtolower((string) ($f['target'] ?? 'student'));
+        if ($target === 'applicant') {
+            return $this->baseApplicantQuery($f)
+                ->distinct()
+                ->select(['ap.applicant_id AS matric_number', 'ap.passport'])
+                ->get()->getResultArray();
+        }
+
         return $this->baseQueryForFilters($f)
             ->distinct()
             ->select(['b.matric_number', 'a.passport'])
             ->get()->getResultArray();
     }
 
-    private function attachPassportPaths(array $rows): array
+    private function attachPassportPaths(array $rows, string $target): array
     {
         foreach ($rows as &$r) {
             $filename = trim((string) ($r['passport'] ?? ''));
@@ -135,12 +223,12 @@ class PhotoModel extends Model
                 $r['passport'] = '';
                 continue;
             }
-            $imagePath = studentImagePathDirectory($filename);
+            $imagePath = $target === 'applicant' ? applicantImagePathDirectory($filename) : studentImagePathDirectory($filename);
             if (!is_file($imagePath)) {
                 $r['passport'] = '';
                 continue;
             }
-            $r['passport'] = studentImagePath($filename);
+            $r['passport'] = $target === 'applicant' ? applicantImagePath($filename) : studentImagePath($filename);
         }
         unset($r);
         return $rows;
