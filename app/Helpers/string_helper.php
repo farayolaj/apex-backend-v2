@@ -1797,7 +1797,7 @@ if (!function_exists('isTimePassed')) {
         $expiration = "+$limit minutes";
         $expTime = strtotime($expiration, $end);
         if ($start <= $expTime) {
-            return false; // means the first is less than the second
+            return false;
         }
         return true;
     }

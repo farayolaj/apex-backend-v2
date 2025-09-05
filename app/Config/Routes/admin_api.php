@@ -7,6 +7,7 @@ use App\Controllers\Admin\V1\EmailBuilderController;
  * @var RouteCollection $routes
  */
 
+// no filter routes
 $routes->group('v1/web/', [
     'namespace' => 'App\Controllers\Admin\V1'
 ], function ($routes) {
@@ -64,6 +65,10 @@ $routes->group('v1/web/', [
         'controller' => 'TemplatesController',
         'only' => ['index', 'show', 'create', 'update', 'delete']
     ]);
+
+    // student management
+    $routes->get('students/photos', 'PhotoManagerController::photos');
+    $routes->post('students/photo/download', 'PhotoManagerController::photoDownload');
 
     $routes::get('common/prerequisites_fee', 'PaymentController::prerequisitesFee');
 

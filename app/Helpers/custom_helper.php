@@ -17,9 +17,9 @@ if(!function_exists('generateDownloadLink')){
         $key = uniqid(time() . '-key', TRUE);
 
         if ($removeOldFiles) {
-            removeOldExportFiles(FCPATH . $folder);
+            removeOldExportFiles(WRITEPATH . $folder);
         }
-        return base_url("download/{$downloadRoute}?fid={$fid}&ex={$ex}&hid={$hid}&key={$key}");
+        return generateBaseUrl("download/{$downloadRoute}?fid={$fid}&ex={$ex}&hid={$hid}&key={$key}");
     }
 }
 

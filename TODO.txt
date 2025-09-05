@@ -8,3 +8,4 @@
 [] - I need to implement event/dispatch method likes i did for CI3.
 [] - I need to attach mail sending for the processlog for bulk course enrollment upload
 [] - The frontend have to made some changes on their end for update/delete/sample_csv/bulk_upload_action using their respective verbs
+[] - I want to bump/flush the cache in CI4 on entity changes that I'm using cache [course,course_mapping,course_config,document,messaging]

@@ -242,16 +242,16 @@ class Examination_courses extends Crud
         }
 
         $item['action_url'] = [
-            'view_scores' => base_url('v1/web/result_manager/examination_scores_list/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
+            'view_scores' => generateBaseUrl('result_manager/examination_scores_list/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
         ];
 
         if ($item['course_manager_id'] == $currentUser->id || $item['can_upload']) {
             $item['can_upload'] = true;
             $item['action_url'] = [
-                'view_scores' => base_url('v1/web/result_manager/examination_scores_list/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
-                'enter_scores' => base_url('v1/web/result_manager/examination_scores/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
-                'bulk_upload' => base_url('v1/web/result_manager/examination_scores/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
-                'bulk_sample_upload' => base_url('v1/web/result_manager/download_result_sample/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
+                'view_scores' => generateBaseUrl('result_manager/examination_scores_list/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
+                'enter_scores' => generateBaseUrl('result_manager/examination_scores/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
+                'bulk_upload' => generateBaseUrl('result_manager/examination_scores/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
+                'bulk_sample_upload' => generateBaseUrl('result_manager/download_result_sample/' . hashids_encrypt($item['course_id']) . '/' . hashids_encrypt($item['session']) . '/' . hashids_encrypt($item['course_manager_id'])),
             ];
         }
 
