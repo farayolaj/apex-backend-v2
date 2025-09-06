@@ -61,4 +61,13 @@ class Services extends BaseService
 
         return new NotificationManager();
     }
+
+    public static function gDriveStorage($getShared = true): \App\Services\GoogleDriveStorageService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('gDriveStorage');
+        }
+
+        return new \App\Services\GoogleDriveStorageService();
+    }
 }
