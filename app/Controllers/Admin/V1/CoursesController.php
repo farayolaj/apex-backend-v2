@@ -5,6 +5,7 @@ namespace App\Controllers\Admin\V1;
 use App\Controllers\BaseController;
 use App\Exceptions\ValidationFailedException;
 use App\Libraries\ApiResponse;
+use App\Libraries\EntityLoader;
 use App\Traits\Crud\EntityListTrait;
 use App\Traits\ExportTrait;
 use Throwable;
@@ -304,6 +305,12 @@ class CoursesController extends BaseController
         $result['process_log_link'] = generateDownloadLink($logPath, 'temp/logs', 'logs');
 
         return ApiResponse::success('Courses enrollment imported successfully. Please click the link for full process log', $result);
+    }
+
+    public function stats(){
+        EntityLoader::loadClass($this, 'courses');
+        $result = $this->courses->getCourseStats();
+        return ApiResponse::success('Course stats', $result);
     }
 
 }

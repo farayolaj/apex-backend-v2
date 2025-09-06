@@ -47,6 +47,7 @@ $routes->group('v1/web/', [
     $routes->delete('courses/(:num)', 'CoursesController::delete/$1');
     $routes->post('courses/bulk_course_upload', 'CoursesController::import');
     $routes->post('courses/bulk_course_enrollment_upload', 'CoursesController::importCourseEnrollment');
+    $routes->get('courses/stats', 'CoursesController::stats');
 
     $routes->resource('course_mapping', [
         'controller' => 'CourseMappingController',
