@@ -19,6 +19,9 @@ class BBBModel
 {
   private BigBlueButton $bbb;
 
+  // Delay in minutes before ending meeting when no moderator is present
+  public const END_WHEN_NO_MODERATOR_DELAY_MINUTES = 1;
+
   public function __construct()
   {
     $this->bbb = new BigBlueButton();
@@ -72,7 +75,7 @@ class BBBModel
     $createParams->setAllowModsToUnmuteUsers(true);
     $createParams->setGuestPolicy(GuestPolicy::ASK_MODERATOR);
     $createParams->setEndWhenNoModerator(true);
-    $createParams->setEndWhenNoModeratorDelayInMinutes(120);
+    $createParams->setEndWhenNoModeratorDelayInMinutes(self::END_WHEN_NO_MODERATOR_DELAY_MINUTES);
     $createParams->setMeetingEndedURL($meetingEndedUrl);
     $createParams->setRecordingReadyCallbackUrl($recordingReadyUrl);
 
