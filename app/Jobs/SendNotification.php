@@ -4,26 +4,27 @@ namespace App\Jobs;
 
 use Alatise\RelayQ\Contracts\JobInterface;
 use Alatise\RelayQ\Traits\Queueable;
+use App\Entities\Courses;
+use CodeIgniter\CLI\CLI;
 
 class SendNotification implements JobInterface
 {
     use Queueable;
 
     public function __construct(
-        public int    $userId,
-        public string $title,
-        public string $body
-    )
+    ){}
+
+    public function toArray(): array
     {
+        return [];
     }
 
     public function handle(): void
     {
-        log_message('info', "RELAYQ::RUN:SUCCESS - RelayQ notify {$this->userId}: {$this->title}");
+        $course = new Courses();
+        $course->insertDummyData();
+        CLI::write('RELAYQ::RUN:SUCCESS - RelayQ insertion');
+        log_message('info', "RELAYQ::RUN:SUCCESS - RelayQ insertion");
     }
 
-    public function toArray(): array
-    {
-        return ['userId' => $this->userId, 'title' => $this->title, 'body' => $this->body];
-    }
 }

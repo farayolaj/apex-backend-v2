@@ -21,6 +21,41 @@ class RelayQ
     {
     }
 
+    private function assertPayloadMatchesConstructor(object $job, array $payload): void
+    {
+        // If the job offers fromArray(), we trust the job to rebuild itself.
+        if (method_exists($job, 'fromArray')) {
+            return;
+        }
+
+        $ref  = new \ReflectionClass($job);
+        $ctor = $ref->getConstructor();
+        if (!$ctor) {
+            return;
+        }
+
+        $missing = [];
+        foreach ($ctor->getParameters() as $p) {
+            if ($p->isOptional()) {
+                continue;
+            }
+            $name = $p->getName();
+            // require a payload key with the same name
+            if (!array_key_exists($name, $payload)) {
+                $missing[] = $name;
+            }
+        }
+
+        if ($missing) {
+            $cls = $ref->getName();
+            throw new \InvalidArgumentException(
+                "RelayQ: Missing constructor data for {$cls}. " .
+                "Required parameter(s) not provided: " . implode(', ', $missing) . ". " .
+                "Fix: make them public scalar properties, or implement toArray()/fromArray()."
+            );
+        }
+    }
+
     /**
      * @throws \Throwable
      */
@@ -30,6 +65,7 @@ class RelayQ
         $class = $job::class;
 
         $payload = method_exists($job, 'toArray') ? $job->toArray() : get_object_vars($job);
+        $this->assertPayloadMatchesConstructor($job, $payload);
         $queue = method_exists($job, '_queueName') && $job->_queueName() ? $job->_queueName() : $this->config->defaultQueue;
         $delay = method_exists($job, '_delay') ? (int)($job->_delay() ?? 0) : 0;
         $availableAt = Time::now($this->config->clock)->addSeconds($delay)->toDateTimeString();
@@ -168,13 +204,37 @@ class RelayQ
      */
     private function rehydrate(string $class, array $payload): object
     {
-        $ref = new \ReflectionClass($class);
+        if (method_exists($class, 'fromArray')) {
+            return $class::fromArray($payload);
+        }
+
+        $ref  = new \ReflectionClass($class);
         $ctor = $ref->getConstructor();
+
         if ($ctor && $ctor->getNumberOfParameters() > 0) {
             $args = [];
-            foreach ($ctor->getParameters() as $p) $args[] = $payload[$p->getName()] ?? null;
+            $missing = [];
+            foreach ($ctor->getParameters() as $p) {
+                $name = $p->getName();
+                if (array_key_exists($name, $payload)) {
+                    $args[] = $payload[$name];
+                } elseif ($p->isDefaultValueAvailable()) {
+                    $args[] = $p->getDefaultValue();
+                } else {
+                    $missing[] = $name;
+                    $args[] = null;
+                }
+            }
+            if ($missing) {
+                throw new \InvalidArgumentException(
+                    "RelayQ: Cannot rehydrate {$class}. Missing constructor parameter(s): " .
+                    implode(', ', $missing) . ". Payload keys: [" . implode(', ', array_keys($payload)) . "]. " .
+                    "Fix: pass these as public scalars, or implement toArray()/fromArray()."
+                );
+            }
             return $ref->newInstanceArgs($args);
         }
+
         $obj = $ref->newInstance();
         foreach ($payload as $k => $v) if (property_exists($obj, $k)) $obj->$k = $v;
         return $obj;

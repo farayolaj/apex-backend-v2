@@ -624,4 +624,16 @@ class Courses extends Crud
         return $this->query($query)[0];
     }
 
+    public function insertDummyData(){
+        $this->db->table('courses')->insert([
+            'code' => 'TEST305',
+            'title' => 'Test case',
+            'description' => 'Test case',
+            'course_guide_url' => 'https://www.google.com',
+            'active' => '1',
+            'type' => 'written',
+            'department_id' => '1',
+        ]);
+    }
+
 }

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Entities\Courses;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Models\Mailer;
@@ -82,10 +83,11 @@ class Tester extends BaseController
     public function backgroundWorker(): void
     {
         print('Before dispatching');
+        $course = new Courses();
         relayQDispatch(
-            (new \App\Jobs\SendNotification(1, 'Welcome', 'Thanks for joining'))
+            (new \App\Jobs\SendNotification())
                 ->onQueue('notifications')
-                ->delay(15)
+                ->delay(5)
                 ->maxAttempts(3)
                 ->backoff([30,120,600])
                 ->unique("welcome:1", 60) // unique per 5-minute bucket
