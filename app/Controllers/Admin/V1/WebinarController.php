@@ -30,6 +30,9 @@ class WebinarController extends BaseController
     private Course_manager $courseManager;
     private BBBModel $bbbModel;
 
+    // Duration in seconds to delay webinar end time (2 hours)
+    const WEBINAR_END_DELAY_SECONDS = 7200;
+
     const presentationRules = [
         'label' => 'Presentation file',
         'rules' => [
@@ -410,6 +413,8 @@ class WebinarController extends BaseController
             }
         }
 
+        $this->webinars->updateWebinar($webinarId, ['end_time' => null]);
+
         return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
             meetingId: $webinar['room_id'],
             fullName: $fullName,
@@ -428,7 +433,8 @@ class WebinarController extends BaseController
             return ApiResponse::error('Webinar not found', code: ResponseInterface::HTTP_NOT_FOUND);
         }
 
-        $this->webinars->updateWebinar($webinar['id'], ['end_time' => date('Y-m-d H:i:s')]);
+        $endTimeTimestamp = time() + self::WEBINAR_END_DELAY_SECONDS;
+        $this->webinars->updateWebinar($webinar['id'], ['end_time' => date('Y-m-d H:i:s', $endTimeTimestamp)]);
 
         return ApiResponse::success();
     }
