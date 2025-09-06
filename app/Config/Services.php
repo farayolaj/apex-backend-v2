@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Libraries\Notifications\NotificationManager;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -39,7 +40,7 @@ class Services extends BaseService
         return new \App\Libraries\RealRedis(new Redis());
     }
 
-    public static function relayq(bool $getShared = true): \Alatise\RelayQ\Services\RelayQ
+    public static function relayq(bool $getShared = true)
     {
         if ($getShared) return static::getSharedInstance('relayq');
 
@@ -50,5 +51,14 @@ class Services extends BaseService
         $redis = new \Alatise\RelayQ\Services\RedisAdapter($config); // optional; no-op if disabled
 
         return new \Alatise\RelayQ\Services\RelayQ($config, $repo, $bg, $http, $redis);
+    }
+
+    public static function notificationManager($getShared = true): NotificationManager
+    {
+        if ($getShared) {
+            return static::getSharedInstance('notificationManager');
+        }
+
+        return new NotificationManager();
     }
 }

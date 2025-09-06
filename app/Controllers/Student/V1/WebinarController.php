@@ -33,6 +33,10 @@ class WebinarController extends BaseController
         unset($webinar['presentation_id']);
         unset($webinar['course_id']);
         unset($webinar['room_id']);
+        unset($webinar['recording_id']);
+
+        $webinar['enable_comments'] = $webinar['enable_comments'] ? true : false;
+        $webinar['send_notifications'] = $webinar['send_notifications'] ? true : false;
 
         return $webinar;
     }
@@ -52,9 +56,7 @@ class WebinarController extends BaseController
     }
 
     /**
-     * Get recordings for a specific webinar
-     *
-     * @param int $webinarId The id of the webinar to get recordings for
+     * Get the details for a given webinar.
      */
     public function getWebinar(int $webinarId)
     {
@@ -64,15 +66,7 @@ class WebinarController extends BaseController
             return ApiResponse::error('Webinar not found', code: 404);
         }
 
-        $recordings = array_map(fn($record) => [
-            'id' => $record->getRecordId(),
-            'date_recorded' => Time::createFromTimestamp($record->getStartTime() / 1000)->toDateTimeString(),
-            'duration' => (int) (($record->getEndTime() - $record->getStartTime()) / 1000),
-            'recording_url' => $record->getFormats()[0]->getUrl(),
-        ], $this->bbbModel->getRecordings($webinar['room_id']));
-
         $webinar = $this->processWebinar($webinar);
-        $webinar['recordings'] = $recordings;
 
         return ApiResponse::success(data: $webinar);
     }
@@ -96,7 +90,16 @@ class WebinarController extends BaseController
                     $webinar['presentation_name']
                 ) : null;
 
-            if (!$this->bbbModel->createMeeting($webinar['room_id'], $webinar['title'], $bbbPresentation)) {
+            $meetingEndedUrl = getMeetingEndedUrl(encodeRoomId($webinar['room_id']));
+            $recordingReadyUrl = getRecordingReadyUrl();
+
+            if (!$this->bbbModel->createMeeting(
+                $webinar['room_id'],
+                $webinar['title'],
+                $meetingEndedUrl,
+                $recordingReadyUrl,
+                $bbbPresentation
+            )) {
                 return ApiResponse::error('Unable to get meeting url', code: 502);
             }
         }
@@ -106,6 +109,9 @@ class WebinarController extends BaseController
         $redirectURL = $this->request->getGet('redirect_url') ??
             $this->request->header('origin')->getValue();
 
+        // Increment join_count for webinar
+        $this->webinars->incrementJoinCount($webinar['id']);
+
         return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
             meetingId: $webinar['room_id'],
             fullName: $fullName,
@@ -113,5 +119,11 @@ class WebinarController extends BaseController
             userId: $currentUser->id,
             isStudent: true
         ));
+    }
+
+    public function logPlayback(int $webinarId)
+    {
+        $this->webinars->incrementPlaybackCount($webinarId);
+        return ApiResponse::success();
     }
 }

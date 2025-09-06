@@ -7,8 +7,11 @@ use App\Entities\Webinar_comments;
 use App\Entities\Webinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Libraries\Notifications\Events\Sender;
+use App\Libraries\Notifications\Events\Webinar\NewWebinarCommentEvent;
 use App\Models\WebSessionManager;
 use CodeIgniter\HTTP\ResponseInterface;
+use Config\Services;
 
 class WebinarCommentController extends BaseController
 {
@@ -25,8 +28,13 @@ class WebinarCommentController extends BaseController
   {
     $page = (int) $this->request->getGet('page') ?: 1;
     $perPage = (int) $this->request->getGet('perPage') ?: 10;
+    $sortDir = strtoupper($this->request->getGet('sortDir'));
+    if ($sortDir !== 'ASC' && $sortDir !== 'DESC') {
+      $sortDir = 'DESC';
+    }
 
-    ['comments' => $comments, 'totalCount' => $totalCount] = $this->webinarComments->getComments($webinarId, $perPage, ($page - 1) * $perPage);
+    ['comments' => $comments, 'totalCount' => $totalCount] =
+      $this->webinarComments->getComments($webinarId, $perPage, ($page - 1) * $perPage, $sortDir);
 
 
     return ApiResponse::success(data: [
@@ -53,13 +61,33 @@ class WebinarCommentController extends BaseController
       return ApiResponse::error(message: implode(", ", $errors), code: ResponseInterface::HTTP_UNPROCESSABLE_ENTITY);
     }
 
-    if (!$this->webinars->webinarExists($webinarId)) {
+    $webinar = $this->webinars->getDetails($webinarId);
+
+    if (!$webinar) {
       return ApiResponse::error(message: 'Webinar not found.', code: ResponseInterface::HTTP_NOT_FOUND);
     }
 
-    $authorId = WebSessionManager::currentAPIUser()->id;
+    if (!$webinar['enable_comments']) {
+      return ApiResponse::error(message: 'Comments are disabled for this webinar.', code: ResponseInterface::HTTP_FORBIDDEN);
+    }
+
+    $currentUser = WebSessionManager::currentAPIUser();
+    $authorId = $currentUser->id;
+    $userFullname = $currentUser->firstname . ' ' . $currentUser->lastname;
 
     if ($this->webinarComments->newComment($webinarId, $data['content'], $authorId, 'students')) {
+      if ($webinar['send_notifications']) {
+        Services::notificationManager()->sendNotifications(
+          new NewWebinarCommentEvent(
+            $webinarId,
+            $webinar['title'],
+            $webinar['course_id'],
+            $data['content'],
+            $userFullname,
+            new Sender('students', $authorId)
+          )
+        );
+      }
       return ApiResponse::success();
     }
 

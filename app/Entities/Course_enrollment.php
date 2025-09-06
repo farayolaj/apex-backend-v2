@@ -23,11 +23,12 @@ class Course_enrollment extends Crud
     static $labelArray = array('id' => '', 'student_id' => '', 'course_id' => '', 'course_unit' => '', 'course_status' => '', 'semester' => '', 'session_id' => '', 'student_level' => '', 'ca_score' => '', 'exam_score' => '', 'total_score' => '', 'is_approved' => '', 'date_last_update' => '', 'date_created' => '');
     /*associative array of fields that have default value*/
     static $defaultArray = array();
-//populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
-//the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
-    static $documentField = array();//array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
+    //populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
+    //the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
+    static $documentField = array(); //array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
 
-    static $relation = array('course' => array('course_id', 'ID')
+    static $relation = array(
+        'course' => array('course_id', 'ID')
     );
     static $tableAction = array('delete' => 'delete/course_enrollment', 'edit' => 'edit/course_enrollment');
 
@@ -40,7 +41,7 @@ class Course_enrollment extends Crud
 
     function getStudent_idFormField($value = '')
     {
-        $fk = null;//change the value of this variable to array('table'=>'student','display'=>'student_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
+        $fk = null; //change the value of this variable to array('table'=>'student','display'=>'student_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
 
         if (is_null($fk)) {
             return $result = "<input type='hidden' value='$value' name='student_id' id='student_id' class='form-control' />
@@ -57,12 +58,11 @@ class Course_enrollment extends Crud
         }
         $result .= "</div>";
         return $result;
-
     }
 
     function getCourse_idFormField($value = '')
     {
-        $fk = null;//change the value of this variable to array('table'=>'course','display'=>'course_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
+        $fk = null; //change the value of this variable to array('table'=>'course','display'=>'course_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
 
         if (is_null($fk)) {
             return $result = "<input type='hidden' value='$value' name='course_id' id='course_id' class='form-control' />
@@ -79,7 +79,6 @@ class Course_enrollment extends Crud
         }
         $result .= "</div>";
         return $result;
-
     }
 
     function getCourse_unitFormField($value = '')
@@ -88,7 +87,6 @@ class Course_enrollment extends Crud
         return "<div class='form-group'>
 	<label for='course_unit' >Course Unit</label><input type='number' name='course_unit' id='course_unit' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     function getCourse_statusFormField($value = '')
@@ -98,7 +96,6 @@ class Course_enrollment extends Crud
 	<label for='course_status' >Course Status</label>
 		<input type='text' name='course_status' id='course_status' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     function getSemesterFormField($value = '')
@@ -107,12 +104,11 @@ class Course_enrollment extends Crud
         return "<div class='form-group'>
 	<label for='semester' >Semester</label><input type='number' name='semester' id='semester' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     function getSession_idFormField($value = '')
     {
-        $fk = null;//change the value of this variable to array('table'=>'session','display'=>'session_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
+        $fk = null; //change the value of this variable to array('table'=>'session','display'=>'session_name'); if you want to preload the value from the database where the display key is the name of the field to use for display in the table.
 
         if (is_null($fk)) {
             return $result = "<input type='hidden' value='$value' name='session_id' id='session_id' class='form-control' />
@@ -129,7 +125,6 @@ class Course_enrollment extends Crud
         }
         $result .= "</div>";
         return $result;
-
     }
 
     function getStudent_levelFormField($value = '')
@@ -138,7 +133,6 @@ class Course_enrollment extends Crud
         return "<div class='form-group'>
 	<label for='student_level' >Student Level</label><input type='number' name='student_level' id='student_level' value='$value' class='form-control' required />
 </div> ";
-
     }
 
     function getCa_scoreFormField($value = '')
@@ -147,7 +141,6 @@ class Course_enrollment extends Crud
         return "<div class='form-group'>
 	<label for='ca_score' >Ca Score</label><input type='number' name='ca_score' id='ca_score' value='$value' class='form-control'  />
 </div> ";
-
     }
 
     function getExam_scoreFormField($value = '')
@@ -156,7 +149,6 @@ class Course_enrollment extends Crud
         return "<div class='form-group'>
 	<label for='exam_score' >Exam Score</label><input type='number' name='exam_score' id='exam_score' value='$value' class='form-control'  />
 </div> ";
-
     }
 
     function getTotal_scoreFormField($value = '')
@@ -165,7 +157,6 @@ class Course_enrollment extends Crud
         return "<div class='form-group'>
 	<label for='total_score' >Total Score</label><input type='number' name='total_score' id='total_score' value='$value' class='form-control'  />
 </div> ";
-
     }
 
     function getIs_approvedFormField($value = '')
@@ -178,21 +169,18 @@ class Course_enrollment extends Crud
 		<option value='0' selected='selected'>No</option>
 	</select>
 	</div> ";
-
     }
 
     function getDate_last_updateFormField($value = '')
     {
 
         return " ";
-
     }
 
     function getDate_createdFormField($value = '')
     {
 
         return " ";
-
     }
 
     protected function getCourse()
@@ -277,4 +265,10 @@ class Course_enrollment extends Crud
         return $this->query($query, $param);
     }
 
+    public function getEnrolledStudents($course, $session)
+    {
+        $query = "SELECT student_id FROM course_enrollment WHERE course_id = ? AND session_id = ?";
+        $result = $this->query($query, [$course, $session]);
+        return array_column($result, 'student_id');
+    }
 }

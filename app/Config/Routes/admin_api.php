@@ -31,6 +31,10 @@ $routes->group('v1/web/', [
     $routes->options('(:any)/(:num)', static function () {});
 });
 
+$routes->get('v1/webinars/(:any)/presentations', '\App\Controllers\Admin\V1\WebinarController::getPresentation/$1');
+$routes->get('v1/webinars/(:any)/end', '\App\Controllers\Admin\V1\WebinarController::endWebinar/$1');
+$routes->post('v1/webinars/recordings', '\App\Controllers\Admin\V1\WebinarController::recordingReadyCallback');
+
 $routes->group('v1/web/', [
     'filter' => ['apiValidation:admin'],
     'namespace' => 'App\Controllers\Admin\V1'
@@ -74,24 +78,28 @@ $routes->group('v1/web/', [
 
     // webinar management
     $routes->get('courses/(:num)/(:num)/webinars', 'WebinarController::index/$1/$2');
-    $routes->get('webinars/(:num)/recordings', 'WebinarController::getRecordings/$1');
     $routes->post('webinars', 'WebinarController::create');
     $routes->patch('webinars/(:num)', 'WebinarController::update/$1');
     $routes->delete('webinars/(:num)', 'WebinarController::delete/$1');
     $routes->get('webinars/(:num)/join_url', 'WebinarController::getJoinUrl/$1');
+    $routes->post('webinars/(:num)/presentation', 'WebinarController::updatePresentation/$1');
+    $routes->delete('webinars/(:num)/presentation', 'WebinarController::deletePresentation/$1');
 
     // webinar comments
     $routes->get('webinars/(:num)/comments', 'WebinarCommentController::getComments/$1');
     $routes->post('webinars/(:num)/comments', 'WebinarCommentController::newComment/$1');
     $routes->delete('webinars/comments/(:num)', 'WebinarCommentController::deleteComment/$1');
 
+    // notifications
+    $routes->get('notifications', 'NotificationController::getNotifications');
+    $routes->get('notifications/count', 'NotificationController::getNotificationCount');
+    $routes->post('notifications/read', 'NotificationController::markAsRead');
+
     // handle CORS preflight requests
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});
     $routes->options('(:any)/(:any)/(:any)', static function () {});
 });
-
-$routes->get('v1/webinars/(:any)/presentations', '\App\Controllers\Admin\V1\WebinarController::getPresentation/$1');
 
 $routes->group('v1/web/email_builder', [
     'filter' => ['apiValidation:admin'],

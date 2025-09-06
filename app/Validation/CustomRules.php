@@ -41,4 +41,34 @@ class CustomRules
         $error = "The {$field} field must contain a valid datetime.";
         return false;
     }
+
+    /**
+     * Validates that the value is a future datetime
+     *
+     * @param string $value
+     * @param string $params
+     * @param array $data
+     * @param string|null &$error
+     * @return bool
+     */
+    public function future_datetime(string $value, string $params, array $data, ?string &$error = null): bool
+    {
+        $paramsArr = explode(',', $params);
+        $field = $paramsArr[0];
+
+        // First validate it's a valid datetime
+        if (!$this->valid_datetime($value, $params, $data, $error)) {
+            return false;
+        }
+
+        $inputTimestamp = strtotime($value);
+        $currentTimestamp = time();
+
+        if ($inputTimestamp <= $currentTimestamp) {
+            $error = "The {$field} field must be a datetime in the future.";
+            return false;
+        }
+
+        return true;
+    }
 }

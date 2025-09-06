@@ -15,10 +15,18 @@ $routes->group('v1/api/', [
     $routes->get('webinars/(:num)', 'WebinarController::getWebinar/$1');
     $routes->get('webinars/(:num)/join_url', 'WebinarController::getJoinUrl/$1');
 
+    // webinar logs
+    $routes->post('webinars/(:num)/log_playback', 'WebinarController::logPlayback/$1');
+
     // webinar comments
     $routes->get('webinars/(:num)/comments', 'WebinarCommentController::getComments/$1');
     $routes->post('webinars/(:num)/comments', 'WebinarCommentController::newComment/$1');
     $routes->delete('webinars/comments/(:num)', 'WebinarCommentController::deleteComment/$1');
+
+    // notifications
+    $routes->get('notifications', 'NotificationController::getNotifications');
+    $routes->get('notifications/count', 'NotificationController::getNotificationCount');
+    $routes->post('notifications/read', 'NotificationController::markAsRead');
 
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});

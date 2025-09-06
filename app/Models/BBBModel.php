@@ -63,7 +63,7 @@ class BBBModel
    *
    * @return bool Returns true if meeting was created successfully, else returns false.
    */
-  public function createMeeting(string $meetingId, string $meetingName, ?BBBPresentation $presentation = null)
+  public function createMeeting(string $meetingId, string $meetingName, string $meetingEndedUrl, string $recordingReadyUrl, ?BBBPresentation $presentation = null)
   {
     $createParams = new CreateMeetingParameters($meetingId, $meetingName);
     $createParams->setAutoStartRecording(true);
@@ -71,6 +71,10 @@ class BBBModel
     $createParams->setAllowStartStopRecording(false);
     $createParams->setAllowModsToUnmuteUsers(true);
     $createParams->setGuestPolicy(GuestPolicy::ASK_MODERATOR);
+    $createParams->setEndWhenNoModerator(true);
+    $createParams->setEndWhenNoModeratorDelayInMinutes(120);
+    $createParams->setMeetingEndedURL($meetingEndedUrl);
+    $createParams->setRecordingReadyCallbackUrl($recordingReadyUrl);
 
     if ($presentation) {
       $documentOptionStore = new DocumentOptionsStore();
@@ -90,19 +94,22 @@ class BBBModel
   }
 
   /**
-   * Get recordings for a meeting.
+   * Get a particular recording
    */
-  public function getRecordings(string $meetingId)
+  public function getRecording(string $id): ?string
   {
     $getRecordingsParams = new GetRecordingsParameters();
-    $getRecordingsParams->setMeetingID($meetingId);
+    $getRecordingsParams->setRecordId($id);
     $getRecordingsResponse = $this->bbb->getRecordings($getRecordingsParams);
 
-    if ($getRecordingsResponse->success()) {
-      return $getRecordingsResponse->getRecords();
+    if ($getRecordingsResponse->success() && !empty($getRecordingsResponse->getRecords())) {
+      $formats = $getRecordingsResponse->getRecords()[0]->getFormats();
+      if (!empty($formats)) {
+        return $formats[0]->getUrl();
+      }
     }
 
-    return [];
+    return null;
   }
 
   /**
