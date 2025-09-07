@@ -50,6 +50,7 @@ class Examination_courses extends Crud
 			c.course_id, c.session_id as session, 
 			MAX(b.code) as code, 
 			MAX(b.title) as title,
+            MAX(b.course_guide_id) as course_guide_id,
     		MAX(a.course_unit) as course_unit, 
     		COUNT(distinct a.student_id) as enrollment,
     		CASE
