@@ -14,12 +14,14 @@ class CoursesController extends BaseController
 {
     use EntityListTrait, ExportTrait;
 
-    public function index(){
+    public function index()
+    {
         $payload = $this->listApiEntity('courses');
         return ApiResponse::success(data: $payload);
     }
 
-    public function show(int $id){
+    public function show(int $id)
+    {
         $payload = $this->showListEntity('courses', $id);
         return ApiResponse::success(data: $payload);
     }
@@ -27,7 +29,8 @@ class CoursesController extends BaseController
     /**
      * @throws Throwable
      */
-    public function store(){
+    public function store()
+    {
         $course = new \App\Entities\Courses();
 
         $payload = $this->request->getPost();
@@ -36,7 +39,7 @@ class CoursesController extends BaseController
             $payload ?? [],
             $this->request->getFiles() ?? []
         );
-        if(!$row) return ApiResponse::error("Unable to create course");
+        if (!$row) return ApiResponse::error("Unable to create course");
 
         return ApiResponse::success('Course inserted successfully', $payload);
     }
@@ -44,14 +47,16 @@ class CoursesController extends BaseController
     /**
      * @throws Throwable
      */
-    public function update($id){
+    public function update($id)
+    {
         $course = new \App\Entities\Courses();
         $payload = $this->request->getRawInput();
 
         $row = $course->updateSingle(
-            $id, $payload ?? [],
+            $id,
+            $payload ?? [],
         );
-        if(!$row) return ApiResponse::error("Unable to update course");
+        if (!$row) return ApiResponse::error("Unable to update course");
 
         return ApiResponse::success('Course updated successfully', $payload);
     }
@@ -59,15 +64,17 @@ class CoursesController extends BaseController
     /**
      * @throws Throwable
      */
-    public function delete($id){
+    public function delete($id)
+    {
         $course = new \App\Entities\Courses();
         $row = $course->deleteSingle($id);
-        if(!$row) return ApiResponse::error("Unable to delete course");
+        if (!$row) return ApiResponse::error("Unable to delete course");
 
         return ApiResponse::success('Course deleted successfully');
     }
 
-    public function import(){
+    public function import()
+    {
         $course = new \App\Entities\Courses();
 
         $rules = [
@@ -97,7 +104,7 @@ class CoursesController extends BaseController
             $courseIdByKey[$r['code']] = (int)$r['id'];
         }
 
-        $preprocessRow = function(array $row): array {
+        $preprocessRow = function (array $row): array {
             static $dept = [];
             $db = $this->db;
 
@@ -117,7 +124,7 @@ class CoursesController extends BaseController
         };
 
         // Callback: fast match for update/upsert
-        $finder = function(array $row) use (&$courseIdByKey): ?int {
+        $finder = function (array $row) use (&$courseIdByKey): ?int {
             $code = strtoupper((string)($row['code'] ?? ''));
             if ($code === '') return null;
             return $courseIdByKey[$code] ?? null;
@@ -139,14 +146,14 @@ class CoursesController extends BaseController
                     'course_type'       => 'type',
                     'department_code'   => 'department_code', // still needs FK resolve
                 ],
-                'validateColumns'  => ['course_code','course_title','department_code','course_type'],
+                'validateColumns'  => ['course_code', 'course_title', 'department_code', 'course_type'],
                 'staticColumns'    => ['active' => 1],
 
                 'batchSize'        => 1000,
                 'preprocessRow'    => $preprocessRow,
                 'finder'           => $finder,
                 'processLogPath'     => $logPath,
-                'processLogMessage' => function (array $row){
+                'processLogMessage' => function (array $row) {
                     return [
                         'insert' => "New Record has been inserted for Course Code {$row['code']}",
                         'update' => "Course Code {$row['code']} has been updated "
@@ -159,7 +166,8 @@ class CoursesController extends BaseController
         return ApiResponse::success('Courses imported successfully. Please click the link for full process log', $result);
     }
 
-    public function importCourseEnrollment(){
+    public function importCourseEnrollment()
+    {
         $course = new \App\Entities\Course_enrollment();
 
         $rules = [
@@ -185,13 +193,12 @@ class CoursesController extends BaseController
         $courseEnrollment = $db->table('course_enrollment')
             ->select('id, student_id, course_id, session_id, student_level')
             ->get()->getResultArray();
-        foreach ($courseEnrollment as $r)
-        {
-            $k = $r['student_id'].'|'.$r['course_id'].'|'.$r['session_id'].'|'.$r['student_level'];
+        foreach ($courseEnrollment as $r) {
+            $k = $r['student_id'] . '|' . $r['course_id'] . '|' . $r['session_id'] . '|' . $r['student_level'];
             $existingMap[$k] = (int)$r['id'];
         }
         $now = date('Y-m-d H:i:s');
-        $preprocessRow = function(array $row) use($db, $now) : array {
+        $preprocessRow = function (array $row) use ($db, $now): array {
             static $studentByMatric = [];
             static $courseByCode    = [];
             static $sessionByName   = [];
@@ -263,8 +270,8 @@ class CoursesController extends BaseController
             return $row;
         };
 
-        $finder = function(array $row) use (&$existingMap): ?int {
-            $k = ($row['student_id'] ?? 0).'|'.($row['course_id'] ?? 0).'|'.($row['session_id'] ?? 0).'|'.($row['student_level'] ?? 0);
+        $finder = function (array $row) use (&$existingMap): ?int {
+            $k = ($row['student_id'] ?? 0) . '|' . ($row['course_id'] ?? 0) . '|' . ($row['session_id'] ?? 0) . '|' . ($row['student_level'] ?? 0);
             return $existingMap[$k] ?? null;
         };
 
@@ -285,19 +292,19 @@ class CoursesController extends BaseController
                     'course_semester' => 'course_semester',
                     'level'           => 'level',
                 ],
-                'validateColumns'  => ['matric_number','course_code','session','course_unit','course_status','course_semester','level'],
+                'validateColumns'  => ['matric_number', 'course_code', 'session', 'course_unit', 'course_status', 'course_semester', 'level'],
                 'staticColumns'    => [
                     'date_created' => $now,
                 ],
-                'updateFields'     => ['course_unit','course_status','semester','date_last_update'],
+                'updateFields'     => ['course_unit', 'course_status', 'semester', 'date_last_update'],
                 'batchSize'        => 1000,
                 'preprocessRow'    => $preprocessRow,
                 'finder'           => $finder,
                 'processLogPath'     => $logPath,
-                'processLogMessage' => function (array $row){
+                'processLogMessage' => function (array $row) {
                     return [
                         'insert' => "New Record has been inserted for Matric number {$row['matric_number']} - Course: {$row['course_code']}, Unit: {$row['course_unit']}, Status: {$row['course_status']}, Level: {$row['level']}, Session: {$row['session']}",
-                        'update' => "Record updated for Matric number ".$row['matric_number']
+                        'update' => "Record updated for Matric number " . $row['matric_number']
                     ];
                 }
             ]
@@ -307,10 +314,10 @@ class CoursesController extends BaseController
         return ApiResponse::success('Courses enrollment imported successfully. Please click the link for full process log', $result);
     }
 
-    public function stats(){
+    public function stats()
+    {
         EntityLoader::loadClass($this, 'courses');
         $result = $this->courses->getCourseStats();
         return ApiResponse::success('Course stats', $result);
     }
-
 }
