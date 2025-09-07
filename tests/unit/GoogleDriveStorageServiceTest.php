@@ -214,7 +214,7 @@ final class GoogleDriveStorageServiceTest extends CIUnitTestCase
         $fileId = 'test_file_id_123';
         $expectedUrl = "https://drive.google.com/file/d/{$fileId}/view";
 
-        $actualUrl = $this->service->getPublicUrl($fileId);
+        $actualUrl = GoogleDriveStorageService::getPublicUrl($fileId);
 
         $this->assertEquals($expectedUrl, $actualUrl);
     }

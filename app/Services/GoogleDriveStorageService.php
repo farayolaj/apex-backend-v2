@@ -177,7 +177,7 @@ class GoogleDriveStorageService
      * @param string $fileId Google Drive file ID
      * @return string Public URL for direct access
      */
-    public function getPublicUrl($fileId)
+    public static function getPublicUrl($fileId)
     {
         return "https://drive.google.com/file/d/{$fileId}/view";
     }
