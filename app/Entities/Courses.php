@@ -7,6 +7,7 @@ use App\Enums\CommonEnum as CommonSlug;
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
 use App\Models\WebSessionManager;
+use App\Services\GoogleDriveStorageService;
 use App\Support\DTO\ApiListParams;
 use App\Traits\ResultManagerTrait;
 
@@ -303,6 +304,7 @@ class Courses extends Crud
                         'unit' => (int)$course['course_unit'],
                         'status' => $course['course_status'],
                         'pre_select' => (int)$course['pre_select'],
+                        'course_guide' => GoogleDriveStorageService::getPublicUrl($course['course_guide_id']),
                     );
                     $result[] = $courseData;
                 }
