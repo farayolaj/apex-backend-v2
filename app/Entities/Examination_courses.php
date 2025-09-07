@@ -19,7 +19,7 @@ class Examination_courses extends Crud
 
     static $apiSelectClause = [];
 
-    protected array  $searchable = ['b.code','b.title'];
+    protected array  $searchable = ['b.code', 'b.title'];
 
     public function getSingleExaminationCourse($course, $session)
     {
@@ -100,7 +100,7 @@ class Examination_courses extends Crud
  			b.type as course_type");
     }
 
-    protected function defaultSelect(): string|array
+    public function defaultSelect(): string|array
     {
         return '';
     }
@@ -115,7 +115,8 @@ class Examination_courses extends Crud
         return $this->processList($rows);
     }
 
-    public function APIList($request, $filterList){
+    public function APIList($request, $filterList)
+    {
         $params = ApiListParams::fromArray($request, [
             'start'    => 1,
             'len' => 20,
@@ -124,7 +125,8 @@ class Examination_courses extends Crud
         $params->filters = $filterList;
         $params->groupBy = " a.course_id, a.session_id, b.type ";
 
-        return $this->listApi(null,
+        return $this->listApi(
+            null,
             $params
         );
     }
@@ -191,7 +193,7 @@ class Examination_courses extends Crud
         EntityLoader::loadClass($this, 'sessions');
         $currentUser = WebSessionManager::currentAPIUser();
         $payload = [];
-        foreach(useGenerators($items) as $item) {
+        foreach (useGenerators($items) as $item) {
             $payload[] = $this->loadExtras($item, $currentUser);
         }
         return $payload;
@@ -199,7 +201,7 @@ class Examination_courses extends Crud
 
     public function loadExtras($item, $currentUser)
     {
-        if($this->users_new === null || $this->sessions === null) {
+        if ($this->users_new === null || $this->sessions === null) {
             EntityLoader::loadClass($this, 'users_new');
             EntityLoader::loadClass($this, 'sessions');
         }
@@ -377,7 +379,8 @@ class Examination_courses extends Crud
 
         foreach ($results as $result) {
             if (($result['student_id'] == $student && !validateScoreIsNull($result['ca_score'])) ||
-                ($result['student_id'] == $student && !validateScoreIsNull($result['exam_score']))) {
+                ($result['student_id'] == $student && !validateScoreIsNull($result['exam_score']))
+            ) {
                 return [
                     'status' => true,
                     'data' => [
@@ -449,5 +452,4 @@ class Examination_courses extends Crud
         $result['total_unpublished_courses'] = $result['total_courses_offerings'] - $result['total_published_courses'];
         return $result;
     }
-
 }
