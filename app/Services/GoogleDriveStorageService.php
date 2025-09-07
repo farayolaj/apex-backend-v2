@@ -46,7 +46,7 @@ class GoogleDriveStorageService
     public function __construct()
     {
         $this->client = new Client();
-        $this->client->setAuthConfig(ROOTPATH . 'edp-dlc-email-account-c3d9d54387b1.json');
+        $this->client->setAuthConfig(ROOTPATH . 'gdrive-service-account.json');
         $this->client->addScope(Drive::DRIVE);
         $this->service = new Drive($this->client);
         $this->defaultSharedDriveId = '0ADcNOKrBiNpeUk9PVA';

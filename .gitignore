@@ -159,3 +159,5 @@ sample.zip
 deploy-production.sh
 env-live
 .env.live
+
+gdrive-service-account.json

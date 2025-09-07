@@ -363,6 +363,7 @@ class CoursesController extends BaseController
                 mkdir($tempPath, 0755, true);
             }
             $newName = $course['code'] . '_course_guide.' . $file->getExtension();
+            $mimeType = $file->getMimeType();
             $file->move($tempPath, $newName);
             $fullPath = $tempPath . $newName;
 
@@ -376,7 +377,7 @@ class CoursesController extends BaseController
 
                 $fileId = $storage->uploadFile(
                     $fullPath,
-                    $file->getMimeType(),
+                    $mimeType,
                     $newName
                 );
                 $updateData = [
