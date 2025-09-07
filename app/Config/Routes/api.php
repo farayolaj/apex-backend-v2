@@ -28,6 +28,16 @@ $routes->group('v1/api/', [
     $routes->get('notifications/count', 'NotificationController::getNotificationCount');
     $routes->post('notifications/read', 'NotificationController::markAsRead');
 
+    // profile
+    $routes->get('student/profile', 'ProfileController::index');
+    $routes->patch('student/profile', 'ProfileController::update');
+    $routes->get('student/dashboard', 'ProfileController::dashboard');
+    $routes->patch('student/password', 'ProfileController::updatePassword');
+
+    // courses
+    $routes->get('student/course/details/(:num)', 'CoursesController::courseDetails/$1');
+
+    // handles the cors
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});
     $routes->options('(:any)/(:any)/(:any)', static function () {});
@@ -36,12 +46,12 @@ $routes->group('v1/api/', [
 // this is the api for finance sync between server[UI Admission]
 //$routes->get('api/integrations/finance/v1/transaction', 'FinanceIntegration::getTransactionData');
 
-$routes->post('api/authenticate', 'Auth::student', ['filter' => 'apiValidation:student']);
-$routes->post('api/validate_student', 'Auth::validate_student', ['filter' => 'apiValidation:student']);
-$routes->get('api/baseUrl', 'AjaxData::baseUrl');
-$routes->post('api/logout', 'Auth::logout', ['filter' => 'apiValidation:student']);
-$routes->group('', ['filter' => 'cors'], static function (RouteCollection $routes): void {
-    $routes->options('api/(:any)', static function () {});
+$routes->group('v1/api/', ['filter' => 'apiValidation:student'], static function (RouteCollection $routes): void {
+    $routes->post('authenticate', 'Auth::student');
+    $routes->post('validate_student', 'Auth::validate_student');
+    $routes->post('logout', 'Auth::logout');
+
+    $routes->options('(:any)', static function () {});
 });
 
 $routes->group('api', ['filter' => ['cors', 'apiValidation:student']], function ($routes) {
@@ -54,17 +64,3 @@ $routes->group('api', ['filter' => ['cors', 'apiValidation:student']], function 
     $routes->options('(:any)/(:any)/(:any)', static function () {});
 });
 
-// this is for apex mobile API
-$routes->post('Apex_mobile/authenticate', 'Auth::apexAuth', ['filter' => 'apiValidation:apex']);
-$routes->group('', ['filter' => 'cors'], static function (RouteCollection $routes): void {
-    $routes->options('Apex_mobile/(:any)', static function () {});
-});
-$routes->group('Apex_mobile', ['filter' => ['cors', 'apiValidation:apex']], function ($routes) {
-    $routes->add('(:any)', 'Api::apexapi/$1');
-    $routes->add('(:any)/(:any)', 'Api::apexapi/$1/$2');
-    $routes->add('(:any)/(:any)/(:any)', 'Api::apexapi/$1/$2/$3');
-
-    $routes->options('(:any)', static function () {});
-    $routes->options('(:any)/(:any)', static function () {});
-    $routes->options('(:any)/(:any)/(:any)', static function () {});
-});

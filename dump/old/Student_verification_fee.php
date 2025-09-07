@@ -114,7 +114,7 @@ class Student_verification_fee extends Crud
 		on fee_description.id = transaction.payment_id where (fee_description.code = ? or fee_description.code = ? ) and payment_status in ('00', '01') and student_id = ?";
 		$data = [FeeDescriptionCode::VERIFICATION_ONE, FeeDescriptionCode::VERIFICATION_TWO, $studentID];
 		$result = $this->query($query, $data);
-		return $result ? true : false;
+		return (bool)$result;
 	}
 
 }

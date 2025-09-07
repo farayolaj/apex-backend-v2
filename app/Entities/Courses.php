@@ -62,11 +62,13 @@ class Courses extends Crud
 
     public function getDetails($id)
     {
-        $query = "SELECT distinct courses.id as main_course_id, courses.*, course_enrollment.course_unit, course_enrollment.course_status,
-		course_manager.course_lecturer_id, staffs.firstname, staffs.othernames, staffs.lastname from courses left join course_enrollment on
-		courses.id = course_enrollment.course_id left join course_manager on course_manager.course_id = courses.id left join users_new on
-		users_new.id = course_manager.course_lecturer_id left join staffs on staffs.id=users_new.user_table_id where courses.id =? ";
-
+        $query = "SELECT distinct a.id as main_course_id, a.*, b.course_unit, b.course_status,
+		c.course_lecturer_id, e.firstname, e.othernames, e.lastname 
+        from courses a
+        left join course_enrollment b on a.id = b.course_id 
+		left join course_manager c on c.course_id = a.id 
+		left join users_new d on d.id = c.course_lecturer_id and d.user_type = 'staff'
+		left join staffs e on e.id=d.user_table_id where a.id =? ";
         $courses = $this->query($query, [$id]);
         return $courses[0];
     }

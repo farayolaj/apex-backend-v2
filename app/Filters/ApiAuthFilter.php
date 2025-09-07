@@ -149,18 +149,18 @@ class ApiAuthFilter implements FilterInterface
             if ($user_id && !in_array($user_type, $excludeUsers)) {
                 $userNew = EntityLoader::loadClass(null, 'users_new');
                 $userNew->id = $user_id;
-
                 if (!$userNew->load()) {
                     return false;
                 }
 
                 $payload = array_merge($userNew->toArray(), ["type" => $user_type]);
                 $payload['user_department'] = null;
-
                 $userDetails = $userNew->getUserDetails($userNew);
                 if ($userDetails) {
                     $payload = array_merge($payload, $userDetails->toArray());
+                    $userRoleSlug = @$userDetails->outflow_slug ?? null;
                     $payload['id'] = $user_id;
+                    $payload['user_role'] = $userRoleSlug;
                     if ($userDetails->user_department && $userDetails->user_department != 0) {
                         $department = $departmentModel->getUserDepartment($userDetails->user_department);
                         if ($department) {

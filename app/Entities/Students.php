@@ -10,8 +10,11 @@ use App\Libraries\EntityLoader;
 use App\Models\Crud;
 use App\Models\GoogleService;
 use App\Traits\CommonTrait;
+use App\Traits\ProfileTrait;
 use App\Traits\StudentTrait;
 use CodeIgniter\Config\Factories;
+use CodeIgniter\Database\BaseResult;
+use CodeIgniter\Database\Query;
 use Config\Services;
 
 /**
@@ -19,7 +22,7 @@ use Config\Services;
  */
 class Students extends Crud
 {
-    use StudentTrait;
+    use StudentTrait, CommonTrait, ProfileTrait;
 
     protected static $tablename = 'Students';
     /* this array contains the field that can be null*/
@@ -52,491 +55,6 @@ class Students extends Crud
     }
 
     /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getFirstnameFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='firstname' >Firstname</label>
-		<input type='text' name='firstname' id='firstname' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getOthernamesFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='othernames' >Othernames</label>
-		<input type='text' name='othernames' id='othernames' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getLastnameFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='lastname' >Lastname</label>
-		<input type='text' name='lastname' id='lastname' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getGenderFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='gender' >Gender</label>
-		<input type='text' name='gender' id='gender' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getDoBFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='DoB' >DoB</label>
-		<input type='text' name='DoB' id='DoB' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getPhoneFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='phone' >Phone</label>
-		<input type='text' name='phone' id='phone' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getMarital_statusFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='marital_status' >Marital Status</label>
-		<input type='text' name='marital_status' id='marital_status' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getReligionFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='religion' >Religion</label>
-		<input type='text' name='religion' id='religion' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getContact_addressFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='contact_address' >Contact Address</label>
-		<input type='text' name='contact_address' id='contact_address' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getPostal_addressFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='postal_address' >Postal Address</label>
-		<input type='text' name='postal_address' id='postal_address' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getProfessionFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='profession' >Profession</label>
-		<input type='text' name='profession' id='profession' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getState_of_originFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='state_of_origin' >State Of Origin</label>
-		<input type='text' name='state_of_origin' id='state_of_origin' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getLgaFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='lga' >Lga</label>
-		<input type='text' name='lga' id='lga' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getNationalityFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='nationality' >Nationality</label>
-		<input type='text' name='nationality' id='nationality' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getPassportFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='passport' >Passport</label>
-		<input type='text' name='passport' id='passport' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getFull_imageFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='full_image' >Full Image</label>
-		<input type='text' name='full_image' id='full_image' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getNext_of_kinFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='next_of_kin' >Next Of Kin</label>
-		<input type='text' name='next_of_kin' id='next_of_kin' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getNext_of_kin_phoneFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='next_of_kin_phone' >Next Of Kin Phone</label>
-		<input type='text' name='next_of_kin_phone' id='next_of_kin_phone' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getNext_of_kin_addressFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='next_of_kin_address' >Next Of Kin Address</label>
-		<input type='text' name='next_of_kin_address' id='next_of_kin_address' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getRefereeFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='referee' >Referee</label>
-<textarea id='referee' name='referee' class='form-control' >$value</textarea>
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getAlternative_emailFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='alternative_email' >Alternative Email</label>
-	<input type='email' name='alternative_email' id='alternative_email' value='$value' class='form-control'  />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getUser_loginFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='user_login' >User Login</label>
-		<input type='text' name='user_login' id='user_login' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getUser_passFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='user_pass' >User Pass</label>
-		<input type='text' name='user_pass' id='user_pass' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getSession_keyFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='session_key' >Session Key</label>
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getUser_agentFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='user_agent' >User Agent</label>
-<textarea id='user_agent' name='user_agent' class='form-control' required>$value</textarea>
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getIp_addressFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='ip_address' >Ip Address</label>
-		<input type='text' name='ip_address' id='ip_address' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getLast_logged_inFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='last_logged_in' >Last Logged In</label>
-		<input type='text' name='last_logged_in' id='last_logged_in' value='$value' class='form-control' required />
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getActiveFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Active</label>
-	<select class='form-control' id='active' name='active' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getIs_verifiedFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Is Verified</label>
-	<select class='form-control' id='is_verified' name='is_verified' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getVerified_byFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='verified_by' >Verified By</label>
-<textarea id='verified_by' name='verified_by' class='form-control' >$value</textarea>
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getVerify_attemptFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Verify Attempt</label>
-	<select class='form-control' id='verify_attempt' name='verify_attempt' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getDate_verifiedFormField($value = '')
-    {
-
-        return " ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getIs_screenedFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Is Screened</label>
-	<select class='form-control' id='is_screened' name='is_screened' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getScreened_byFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label for='screened_by' >Screened By</label>
-<textarea id='screened_by' name='screened_by' class='form-control' >$value</textarea>
-</div> ";
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getScreening_attemptFormField($value = '')
-    {
-
-        return "<div class='form-group'>
-	<label class='form-checkbox'>Screening Attempt</label>
-	<select class='form-control' id='screening_attempt' name='screening_attempt' >
-		<option value='1'>Yes</option>
-		<option value='0' selected='selected'>No</option>
-	</select>
-	</div> ";
-    }
-
-    /**
-     * @param mixed $type
-     * @return void
-     */
-    public function getState_of_originOptions($type = '')
-    {
-        exit("i am trying to load state and origin options here");
-    }
-
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    public function getDate_createdFormField($value = '')
-    {
-
-        return " ";
-    }
-
-    /**
      * @param mixed $username
      * @return bool|Students
      */
@@ -548,45 +66,6 @@ class Students extends Crud
             return false;
         }
         return new Students($result[0]);
-    }
-
-    public function updatePassportPath()
-    {
-
-        $passport = studentImagePath($this->passport, $this);
-        $this->passport = $passport;
-
-        return $this->passport;
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    public function getDashboardData()
-    {
-        $result = [];
-        $this->updatePassportPath();
-        $biodata = $this->toArray();
-        unset($biodata['user_pass']);
-        unset($biodata['password']);
-        unset($biodata['user_login']);
-        unset($biodata['id']);
-
-        $academic = $this->academic_record;
-        $biodata['matric_number'] = $academic->matric_number;
-        $biodata['exam_center'] = $academic->exam_center;
-        $result['bioData'] = $biodata;
-        $medicalRecord = $this->Medical_record ?? null;
-        $result['medicalRecord'] = $medicalRecord;
-        $programDetails = $this->getProgramDetails() ?? null;
-        if (@$programDetails['level']) {
-            $programDetails['level'] = formatStudentLevel($programDetails['level']);
-        }
-        $result['programmeDetails'] = $programDetails;
-        $session = $academic->current_session;
-        $result['registered_course'] = $this->getCourseEnrollment($session, null, null, 10);
-        $result['cgpa'] = null;
-        return $result;
     }
 
     /**
@@ -834,19 +313,21 @@ class Students extends Crud
      * @param mixed $semester
      * @param mixed $currentLevel
      * @param boolean $limit [description]
-     * @return [type] [description]
+     * @return array|array[]|bool|BaseResult|Query [type] [description]
      */
-    public function getCourseEnrollment($session, $semester = null, $currentLevel = null, $limit = false)
+    public function getCourseEnrollmentWithCourseManager($session, $semester = null, $currentLevel = null, $limit = false)
     {
-        $courseSemester = ($semester && $semester == 'first') ? 1 : 2;
-        $query = "SELECT distinct courses.id as main_course_id, courses.code as course_code, courses.title as course_title, courses.description,
-        course_enrollment.course_id as course_enrollment_id, course_enrollment.course_unit as course_enrollment_unit,
-        course_enrollment.course_status as course_enrollment_status, course_enrollment.semester as course_enrollment_semester,
-	   courses.course_guide_url,course_manager.course_lecturer_id, staffs.firstname, staffs.othernames, staffs.lastname FROM
-	   course_enrollment left join courses on courses.id=course_enrollment.course_id left join course_manager on
-	    course_manager.course_id = courses.id left join users_new on users_new.id = course_manager.course_lecturer_id
-	    left join staffs on staffs.id=users_new.user_table_id where course_enrollment.student_id=? and course_enrollment.session_id = ? ";
+        $query = "SELECT distinct b.id as main_course_id, b.code as course_code, b.title as course_title,
+            b.description, a.course_id as course_enrollment_id, a.course_unit as course_enrollment_unit,
+            a.course_status as course_enrollment_status, a.semester as course_enrollment_semester,
+            b.course_guide_url,c.course_lecturer_id, e.firstname, e.othernames, e.lastname FROM course_enrollment a
+	        left join courses b on b.id=a.course_id 
+	        left join course_manager c on c.course_id = b.id and c.session_id = ?
+	        left join users_new d on d.id = c.course_lecturer_id and d.user_type = 'staff'
+	        left join staffs e on e.id=d.user_table_id 
+	        where a.student_id=? and a.session_id = ? ";
         if ($semester) {
+            $courseSemester = ($semester == 'first') ? 1 : 2;
             $query .= " and course_enrollment.semester = '$courseSemester'";
         }
         if ($currentLevel) {
@@ -856,7 +337,7 @@ class Students extends Crud
         if ($limit) {
             $query .= " limit {$limit}";
         }
-        return $this->query($query, [$this->id, $session]);
+        return $this->query($query, [$session, $this->id, $session]);
     }
 
     /**
@@ -891,7 +372,7 @@ class Students extends Crud
         $sessions = $this->getAllPaidSession();
         $result = [];
         foreach ($sessions as $val) {
-            $result[$val['date']] = $this->getCourseEnrollment($val['id']);
+            $result[$val['date']] = $this->getCourseEnrollmentWithCourseManager($val['id']);
         }
         return $result;
     }
@@ -2722,48 +2203,6 @@ class Students extends Crud
         }
     }
 
-    /**
-     * @param mixed $examRecord
-     * @param mixed $session
-     * @param mixed $semester
-     * @return bool|<missing>
-     */
-    public function getProgramDetails($examRecord = false, $session = false, $semester = null)
-    {
-        $data = [];
-        if ($examRecord) {
-            $query = "SELECT distinct entry_mode, sessions.date as entry_year, academic_record.current_level as level,
-                (select date from sessions s2 where s2.id=course_enrollment.session_id) as current_session,
-                academic_record.current_session as current_session_id, department.name as department, programme.name as programme,
-                faculty.name as faculty, mode_of_study, entry_mode,course_enrollment.student_level from students left join
-                academic_record on academic_record.student_id = students.id left join course_enrollment on course_enrollment.student_id = academic_record.student_id
-                join programme on programme.id = academic_record.programme_id join department on department.id = programme.department_id
-                join faculty on faculty.id=programme.faculty_id join sessions on sessions.id = academic_record.year_of_entry
-                where students.id=? and course_enrollment.student_id = ? and
-                course_enrollment.session_id = ?";
-            $data = [$this->id, $this->id, $session];
-            if ($semester) {
-                $semesterName = ($semester && $semester == 'first') ? 1 : 2;
-                $query .= " and course_enrollment.semester = ?";
-                $data[] = $semesterName;
-            }
-            $query .= " order by course_enrollment.student_level desc";
-        } else {
-            $query = "SELECT entry_mode, sessions.date as entry_year, academic_record.current_level as level,
-            (select date from sessions where id=academic_record.current_session) as current_session,academic_record.current_session as current_session_id,
-            department.name as department, programme.name as programme, faculty.name as faculty, mode_of_study, entry_mode from
-             academic_record  join programme on programme.id = academic_record.programme_id join department on department.id = programme.department_id
-            join faculty on faculty.id=programme.faculty_id join sessions on sessions.id = academic_record.year_of_entry
-             where academic_record.student_id=?";
-            $data = [$this->id];
-        }
-        $result = $this->query($query, $data);
-        if (!$result) {
-            return false;
-        }
-        return $result[0];
-    }
-
     public function getStudentProgramDetails()
     {
         $data = [];
@@ -3990,9 +3429,8 @@ class Students extends Crud
 
     private function processList($items)
     {
-        $generator = useGenerators($items);
         $payload = [];
-        foreach ($generator as $item) {
+        foreach (useGenerators($items) as $item) {
             $payload[] = $this->loadExtras($item);
         }
         return $payload;
@@ -4003,7 +3441,6 @@ class Students extends Crud
         if (isset($item['phone'])) {
             $item['phone'] = decryptData($item['phone']);
         }
-
         return $item;
     }
 
@@ -4015,7 +3452,8 @@ class Students extends Crud
     public function getDepartmentById($id, $get_code = false)
     {
         //Entity database to get template
-        $query = $this->db->get_where('department', ['id' => $id, 'active' => 1, 'type' => 'academic']);
+        $query = $this->db->table('department')
+            ->getWhere(['id' => $id, 'active' => 1, 'type' => 'academic']);
         if ($query->getNumRows() > 0) {
             $row = $query->getRow();
             return $get_code ? $row->code : $row->name;
@@ -4032,37 +3470,13 @@ class Students extends Crud
     public function getProgrammeById($id, $get_code = false)
     {
         //Entity database to get template
-        $query = $this->db->get_where('programme', ['id' => $id, 'active' => 1]);
+        $query = $this->db->table('programme')->getWhere(['id' => $id, 'active' => 1]);
         if ($query->getNumRows() > 0) {
             $row = $query->getRow();
             return $get_code ? $row->code : $row->name;
         } else {
             return null;
         }
-    }
-
-    public function getFacultyAttendance($student, $programmeID): ?string
-    {
-        $content = [
-            'f_ar' => 'Tues 19 Nov., 2024',
-            'f_sc' => 'Tues 19 Nov., 2024',
-            'f_so' => 'Mon 18 Nov., 2024',
-            'f_ed' => 'Wed 20 Nov., 2024',
-            'f_cl' => 'Wed 20 Nov., 2024'
-        ];
-        $result = $this->getProgrammefaculty($programmeID);
-        if ($result) {
-            return $content[$result[0]['faculty_code']] ?: null;
-        } else {
-            return null;
-        }
-    }
-
-    public function getProgrammefaculty($id)
-    {
-        $query = "SELECT a.id,a.name as programme,a.code as programme_code,b.name as faculty,b.slug as faculty_code 
-		FROM programme a join faculty b on a.faculty_id = b.id where a.id = ? and a.active = ?";
-        return $this->query($query, [$id, '1']);
     }
 
     /**
@@ -4078,7 +3492,11 @@ class Students extends Crud
             $sortDirection = ($sortDirection == 'down') ? 'desc' : 'asc';
             $orderBy = " $sortBy $sortDirection ";
         }
-        $query = "SELECT svc.id, CONCAT(firstname,' ',lastname,' ',othernames) as fullname,usage_status,svc.date_created as assign_date,vc.* from student_verification_cards svc join students stu on stu.id = svc.student_id join verification_cards vc on vc.id = svc.verification_cards_id where svc.student_id = ? order by $orderBy";
+        $query = "SELECT svc.id, CONCAT(firstname,' ',lastname,' ',othernames) as fullname,usage_status,
+            svc.date_created as assign_date,vc.* from student_verification_cards svc 
+            join students stu on stu.id = svc.student_id 
+            join verification_cards vc on vc.id = svc.verification_cards_id 
+            where svc.student_id = ? order by $orderBy";
         $id = $id ?? $this->id;
         $result = $this->query($query, [$id]);
         if (!$result) {

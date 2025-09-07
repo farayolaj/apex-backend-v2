@@ -136,7 +136,7 @@ class Auth extends BaseController
 		    (SELECT * from academic_record where student_id=students.id and (matric_number=? or application_number = ?))";
         $result = $this->db->query($query, [$userLogin, $userLogin, $userLogin]);
         if ($result->getNumRows() <= 0) {
-            return ApiResponse::error('No matching record found. Contact school administrator');
+            return ApiResponse::error('No matching record found. Contact the administrator');
         }
         return ApiResponse::success('Validate success');
     }

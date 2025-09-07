@@ -60,7 +60,7 @@ class Examination_courses extends Crud
 			END AS scored,
     		MAX(a.student_level) as student_level,
     		MAX(a.is_approved) as is_approved,
-    		MAX(b.type) as course_type
+    		MAX(b.type) as course_type,
     		 FROM course_manager c 
     		LEFT JOIN courses b ON b.id = c.course_id 
     		LEFT JOIN course_enrollment a ON a.course_id = c.course_id AND a.session_id = c.session_id 

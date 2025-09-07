@@ -114,11 +114,12 @@ class Student_verification_fee extends Crud
 
     public function hasStudentPaidOlevelVerification($studentID)
     {
-        $query = "SELECT transaction.ID as vid,student_id from transaction join fee_description 
-		on fee_description.id = transaction.payment_id where (fee_description.code = ? or fee_description.code = ? ) and payment_status in ('00', '01') and student_id = ?";
+        $query = "SELECT transaction.ID as vid,student_id from transaction 
+        join fee_description on fee_description.id = transaction.payment_id 
+        where (fee_description.code = ? or fee_description.code = ? ) and payment_status in ('00', '01') and student_id = ?";
         $data = [FeeDescriptionCode::VERIFICATION_ONE->value, FeeDescriptionCode::VERIFICATION_TWO->value, $studentID];
         $result = $this->query($query, $data);
-        return $result ? true : false;
+        return (bool)$result;
     }
 
 }
