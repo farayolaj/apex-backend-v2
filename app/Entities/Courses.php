@@ -660,4 +660,9 @@ class Courses extends Crud
             'department_id' => '1',
         ]);
     }
+
+    public function updateCourseGuideId(string $courseId, ?string $fileId = null)
+    {
+        return $this->db->table('courses')->where('id', $courseId)->update(['course_guide_id' => $fileId]);
+    }
 }

@@ -380,12 +380,9 @@ class CoursesController extends BaseController
                     $mimeType,
                     $newName
                 );
-                $updateData = [
-                    'course_guide_id'  => $fileId,
-                ];
-                $this->courses->updateSingle($id, $updateData);
+                $this->courses->updateCourseGuideId($id, $fileId);
 
-                return ApiResponse::success('Course guide uploaded successfully', $updateData);
+                return ApiResponse::success('Course guide uploaded successfully');
             } catch (Throwable $e) {
                 log_message('error', $e->getMessage(), $e->getTrace());
                 return ApiResponse::error('Error uploading to Google Drive: ' . $e->getMessage());
@@ -420,7 +417,7 @@ class CoursesController extends BaseController
             $updateData = [
                 'course_guide_id' => null,
             ];
-            $this->courses->updateSingle($id, $updateData);
+            $this->courses->updateCourseGuideId($id, null);
 
             return ApiResponse::success('Course guide deleted successfully');
         } catch (Throwable $e) {
