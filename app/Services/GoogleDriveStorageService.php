@@ -179,6 +179,10 @@ class GoogleDriveStorageService
      */
     public static function getPublicUrl($fileId)
     {
+        if (!$fileId) {
+            return null;
+        }
+
         return "https://drive.google.com/file/d/{$fileId}/view";
     }
 }
