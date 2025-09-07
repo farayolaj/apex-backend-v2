@@ -16,7 +16,7 @@ class CoursesController extends BaseController
 {
     use EntityListTrait, ExportTrait;
 
-    private Courses $courses;
+    public Courses $courses;
 
     public function __construct()
     {
