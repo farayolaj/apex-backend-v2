@@ -3,16 +3,25 @@
 namespace App\Controllers\Admin\V1;
 
 use App\Controllers\BaseController;
+use App\Entities\Courses;
 use App\Exceptions\ValidationFailedException;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Traits\Crud\EntityListTrait;
 use App\Traits\ExportTrait;
+use Config\Services;
 use Throwable;
 
 class CoursesController extends BaseController
 {
     use EntityListTrait, ExportTrait;
+
+    private Courses $courses;
+
+    public function __construct()
+    {
+        $this->courses = EntityLoader::loadClass(null, 'courses');
+    }
 
     public function index()
     {
@@ -319,5 +328,101 @@ class CoursesController extends BaseController
         EntityLoader::loadClass($this, 'courses');
         $result = $this->courses->getCourseStats();
         return ApiResponse::success('Course stats', $result);
+    }
+
+    public function uploadCourseGuide($id)
+    {
+        $course = $this->showListEntity('courses', $id);
+
+        if (empty($course)) {
+            return ApiResponse::error("Course not found", null, 404);
+        }
+
+        $rules = [
+            'course_guide' => [
+                'label' => 'Course Guide Document',
+                'rules' => implode('|', [
+                    'uploaded[course_guide]',
+                    'max_size[course_guide,10240]', // 10MB
+                    'mime_in[course_guide,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document]',
+                    'ext_in[course_guide,pdf,doc,docx]',
+                ]),
+            ],
+        ];
+
+        if (! $this->validate($rules)) {
+            $errors = $this->validator->getErrors();
+            return ApiResponse::error(reset($errors));
+        }
+        $file = $this->request->getFile('course_guide');
+
+        if ($file->isValid() && !$file->hasMoved()) {
+            // Move the file to a temporary location
+            $tempPath = WRITEPATH . 'uploads/temp/';
+            if (!is_dir($tempPath)) {
+                mkdir($tempPath, 0755, true);
+            }
+            $newName = $course['code'] . '_course_guide.' . $file->getExtension();
+            $file->move($tempPath, $newName);
+            $fullPath = $tempPath . $newName;
+
+            // Upload to Google Drive
+            $storage = Services::gDriveStorage();
+            try {
+                if ($course['course_guide_id']) {
+                    // Delete the old file if exists
+                    $storage->deleteFile($course['course_guide_id']);
+                }
+
+                $fileId = $storage->uploadFile(
+                    $fullPath,
+                    $file->getMimeType(),
+                    $newName
+                );
+                $updateData = [
+                    'course_guide_id'  => $fileId,
+                ];
+                $this->courses->updateSingle($id, $updateData);
+
+                return ApiResponse::success('Course guide uploaded successfully', $updateData);
+            } catch (Throwable $e) {
+                return ApiResponse::error('Error uploading to Google Drive: ' . $e->getMessage());
+            } finally {
+                if (file_exists($fullPath)) {
+                    unlink($fullPath);
+                }
+            }
+        } else {
+            return ApiResponse::error('Invalid file upload');
+        }
+    }
+
+    public function deleteCourseGuide($id)
+    {
+        $course = $this->showListEntity('courses', $id);
+
+        if (empty($course)) {
+            return ApiResponse::error("Course not found", null, 404);
+        }
+
+        if (empty($course['course_guide_id'])) {
+            return ApiResponse::error("No course guide to delete", null, 400);
+        }
+
+        // Delete from Google Drive
+        $storage = Services::gDriveStorage();
+        try {
+            $storage->deleteFile($course['course_guide_id']);
+
+            // Update the course record
+            $updateData = [
+                'course_guide_id' => null,
+            ];
+            $this->courses->updateSingle($id, $updateData);
+
+            return ApiResponse::success('Course guide deleted successfully');
+        } catch (Throwable $e) {
+            return ApiResponse::error('Error deleting from Google Drive: ' . $e->getMessage());
+        }
     }
 }
