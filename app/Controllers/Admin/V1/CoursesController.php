@@ -387,6 +387,7 @@ class CoursesController extends BaseController
 
                 return ApiResponse::success('Course guide uploaded successfully', $updateData);
             } catch (Throwable $e) {
+                log_message('error', $e->getMessage(), $e->getTrace());
                 return ApiResponse::error('Error uploading to Google Drive: ' . $e->getMessage());
             } finally {
                 if (file_exists($fullPath)) {
