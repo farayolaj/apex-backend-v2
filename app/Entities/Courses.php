@@ -665,4 +665,9 @@ class Courses extends Crud
     {
         return $this->db->table('courses')->where('id', $courseId)->update(['course_guide_id' => $fileId]);
     }
+
+    public function getCourse(string $courseId)
+    {
+        return $this->db->table('courses')->where('id', $courseId)->get()->getRowArray();
+    }
 }

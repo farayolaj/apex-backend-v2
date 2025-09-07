@@ -398,7 +398,7 @@ class CoursesController extends BaseController
 
     public function deleteCourseGuide($id)
     {
-        $course = $this->showListEntity('courses', $id);
+        $course = $this->courses->getCourse($id);
 
         if (empty($course)) {
             return ApiResponse::error("Course not found", null, 404);
