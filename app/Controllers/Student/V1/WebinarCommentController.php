@@ -54,6 +54,7 @@ class WebinarCommentController extends BaseController
 
     $rules = [
       'content' => 'required|string|max_length[255]',
+      'notify_all' => 'permit_empty|in_list[true,false,1,0]'
     ];
 
     if (!$this->validate($rules)) {
@@ -76,7 +77,14 @@ class WebinarCommentController extends BaseController
     $userFullname = $currentUser->firstname . ' ' . $currentUser->lastname;
 
     if ($this->webinarComments->newComment($webinarId, $data['content'], $authorId, 'students')) {
-      if ($webinar['send_notifications']) {
+      if (
+        isset($data['notify_all']) && (
+          $data['notify_all'] === true ||
+          $data['notify_all'] === 'true' ||
+          $data['notify_all'] === 1 ||
+          $data['notify_all'] === '1'
+        )
+      ) {
         Services::notificationManager()->sendNotifications(
           new NewWebinarCommentEvent(
             $webinarId,
