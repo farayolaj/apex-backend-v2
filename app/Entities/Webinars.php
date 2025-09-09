@@ -20,6 +20,7 @@ class Webinars extends Crud
         'w.title',
         'w.description',
         'w.scheduled_for',
+        'w.planned_duration',
         'w.start_time',
         'w.end_time',
         'w.presentation_id',

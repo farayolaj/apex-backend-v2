@@ -95,6 +95,7 @@ class WebinarController extends BaseController
             'description' => 'permit_empty|string',
             'course_id' => 'required|integer',
             'scheduled_for' => 'required|future_datetime[scheduled_for]',
+            'planned_duration' => 'required|integer|greater_than[0]',
             'enable_comments' => 'permit_empty|in_list[0,1]',
             'send_notifications' => 'permit_empty|in_list[0,1]',
             'presentation' => self::presentationRules,
@@ -163,6 +164,7 @@ class WebinarController extends BaseController
             'enable_comments' => 'permit_empty|in_list[0,1]',
             'send_notifications' => 'permit_empty|in_list[0,1]',
             'scheduled_for' => 'permit_empty|valid_datetime[scheduled_for]',
+            'planned_duration' => 'permit_empty|integer|greater_than[0]',
         ];
 
         if (!$this->validateData($data, $rules)) {
