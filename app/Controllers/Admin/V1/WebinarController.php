@@ -7,15 +7,14 @@ use App\Entities\Course_manager;
 use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
-use App\Libraries\Notifications\Events\Sender;
 use App\Libraries\Notifications\Events\Webinar\NewWebinarEvent;
 use App\Libraries\Notifications\Events\Webinar\RecordingReadyEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarCancelledEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarRescheduledEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarStartedEvent;
 use App\Libraries\WebinarPresentation;
-use App\Models\BBBModel;
 use App\Models\WebSessionManager;
+use App\Services\BBBService;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\I18n\Time;
@@ -28,7 +27,7 @@ class WebinarController extends BaseController
 {
     private EntitiesWebinars $webinars;
     private Course_manager $courseManager;
-    private BBBModel $bbbModel;
+    private BBBService $bbbService;
 
     // Duration in seconds to delay webinar end time (2 hours)
     const WEBINAR_END_DELAY_SECONDS = 7200;
@@ -46,7 +45,7 @@ class WebinarController extends BaseController
     {
         $this->webinars = EntityLoader::loadClass(null, 'webinars');
         $this->courseManager = EntityLoader::loadClass(null, 'course_manager');
-        $this->bbbModel = model('BBBModel');
+        $this->bbbService = Services::bbbService();
     }
 
     private function processWebinar(array $webinar): array
@@ -376,9 +375,9 @@ class WebinarController extends BaseController
             return ApiResponse::error('Webinar has already ended', code: 403);
         }
 
-        if (!$this->bbbModel->meetingExists($webinar['room_id'])) {
+        if (!$this->bbbService->meetingExists($webinar['room_id'])) {
             $bbbPresentation = $webinar['presentation_id'] ?
-                $this->bbbModel->createPresentation(
+                $this->bbbService->createPresentation(
                     WebinarPresentation::getPublicUrl(base_url(), $webinar['id']),
                     $webinar['presentation_name']
                 ) : null;
@@ -386,7 +385,7 @@ class WebinarController extends BaseController
             $meetingEndedUrl = getMeetingEndedUrl(encodeRoomId($webinar['room_id']));
             $recordingReadyUrl = getRecordingReadyUrl();
 
-            if (!$this->bbbModel->createMeeting(
+            if (!$this->bbbService->createMeeting(
                 $webinar['room_id'],
                 $webinar['title'],
                 $meetingEndedUrl,
@@ -415,7 +414,7 @@ class WebinarController extends BaseController
 
         $this->webinars->updateWebinar($webinarId, ['end_time' => null]);
 
-        return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
+        return ApiResponse::success(data: $this->bbbService->getJoinUrl(
             meetingId: $webinar['room_id'],
             fullName: $fullName,
             logoutURL: $redirectURL,
@@ -459,7 +458,7 @@ class WebinarController extends BaseController
         }
 
         // Store recording id and url
-        $recording_url = $this->bbbModel->getRecording($recordId);
+        $recording_url = $this->bbbService->getRecording($recordId);
 
         $this->webinars->updateWebinar($webinar['id'], [
             'recording_id' => $recordId,

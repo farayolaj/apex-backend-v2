@@ -70,4 +70,13 @@ class Services extends BaseService
 
         return new \App\Services\GoogleDriveStorageService();
     }
+
+    public static function bbbService($getShared = true): \App\Services\BBBService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('bbbService');
+        }
+
+        return new \App\Services\BBBService();
+    }
 }
