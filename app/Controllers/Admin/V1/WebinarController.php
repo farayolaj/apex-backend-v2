@@ -59,7 +59,6 @@ class WebinarController extends BaseController
         unset($webinar['presentation_id']);
         unset($webinar['course_id']);
         unset($webinar['room_id']);
-        unset($webinar['recording_id']);
 
         $webinar['enable_comments'] = $webinar['enable_comments'] ? true : false;
         $webinar['send_notifications'] = $webinar['send_notifications'] ? true : false;
@@ -457,10 +456,15 @@ class WebinarController extends BaseController
 
         // Store recording id and url
         $recording_url = $this->bbbService->getRecording($recordId);
+        $recording_date = date('Y-m-d H:i:s');
+        $recordings = array_merge($webinar['recordings'], [[
+            'id' => $recordId,
+            'url' => $recording_url,
+            'date' => $recording_date
+        ]]);
 
         $this->webinars->updateWebinar($webinar['id'], [
-            'recording_id' => $recordId,
-            'recording_url' => $recording_url
+            'recordings' => $recordings
         ]);
 
         // Send notifications

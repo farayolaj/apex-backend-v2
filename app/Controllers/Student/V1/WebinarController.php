@@ -33,7 +33,6 @@ class WebinarController extends BaseController
         unset($webinar['presentation_id']);
         unset($webinar['course_id']);
         unset($webinar['room_id']);
-        unset($webinar['recording_id']);
 
         $webinar['enable_comments'] = $webinar['enable_comments'] ? true : false;
         $webinar['send_notifications'] = $webinar['send_notifications'] ? true : false;
