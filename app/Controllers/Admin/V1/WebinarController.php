@@ -176,7 +176,7 @@ class WebinarController extends BaseController
             return ApiResponse::error('User does not have access to update webinar', code: 403);
         }
 
-        // if new scheduled_for has passed or old scheduled_for has passed, prevent update
+        // only allow updating scheduled_for if the new date is in the future
         if (
             isset($data['scheduled_for']) &&
             !Time::parse($data['scheduled_for'])->equals(Time::parse($webinar['scheduled_for']))
@@ -185,11 +185,7 @@ class WebinarController extends BaseController
                 "Y-m-d H:i:s",
                 Time::parse($data['scheduled_for'])->toDateTimeString()
             )->format('U') < time()) {
-                return ApiResponse::error('Cannot update webinar. New scheduled time is in the past.', code: 400);
-            }
-
-            if (\DateTime::createFromFormat("Y-m-d H:i:s", $webinar['scheduled_for'])->format('U') < time()) {
-                return ApiResponse::error('Cannot update webinar. Previous scheduled time has already passed.', code: 400);
+                return ApiResponse::error('Cannot update webinar. New scheduled time cannot be in the past.', code: 400);
             }
         }
 
