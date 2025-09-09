@@ -38,7 +38,7 @@ class Document_templates extends Crud
     {
         return $this->db->table('document_templates a')
             ->join('sessions b', 'b.id = a.session', 'left')
-            ->select("a.name, a.slug, a.category, a.active, a.date_added, b.date as session");
+            ->select("a.id, a.name, a.slug, a.category, a.active, a.date_added, b.date as session");
     }
 
     public function defaultSelect(): string|array
