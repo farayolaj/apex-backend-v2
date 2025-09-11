@@ -37,6 +37,9 @@ $routes->group('v1/api/', [
     // courses
     $routes->get('student/course/details/(:num)', 'CoursesController::courseDetails/$1');
 
+    // tour
+    $routes->get('tour/settings', 'TourController::getTourSettings');
+
     // handles the cors
     $routes->options('(:any)', static function () {});
     $routes->options('(:any)/(:num)', static function () {});
@@ -63,4 +66,3 @@ $routes->group('api', ['filter' => ['cors', 'apiValidation:student']], function 
     $routes->options('(:any)/(:any)', static function () {});
     $routes->options('(:any)/(:any)/(:any)', static function () {});
 });
-
