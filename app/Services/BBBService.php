@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Services;
 
 use BigBlueButton\BigBlueButton;
 use BigBlueButton\Enum\DocumentOption;
@@ -13,9 +13,9 @@ use BigBlueButton\Parameters\GetRecordingsParameters;
 use BigBlueButton\Parameters\JoinMeetingParameters;
 
 /**
- * Model for interacting with BigBlueButton API.
+ * Service for interacting with BigBlueButton API.
  */
-class BBBModel
+class BBBService
 {
   private BigBlueButton $bbb;
 

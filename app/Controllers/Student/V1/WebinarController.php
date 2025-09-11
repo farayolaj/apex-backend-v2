@@ -7,19 +7,19 @@ use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Libraries\WebinarPresentation;
-use App\Models\BBBModel;
 use App\Models\WebSessionManager;
-use CodeIgniter\I18n\Time;
+use App\Services\BBBService;
+use Config\Services;
 
 class WebinarController extends BaseController
 {
     private EntitiesWebinars $webinars;
-    private BBBModel $bbbModel;
+    private BBBService $bbbService;
 
     public function __construct()
     {
         $this->webinars = EntityLoader::loadClass(null, 'webinars');
-        $this->bbbModel = model('BBBModel');
+        $this->bbbService = Services::bbbService();
     }
 
     private function processWebinar(array $webinar): array
@@ -33,7 +33,6 @@ class WebinarController extends BaseController
         unset($webinar['presentation_id']);
         unset($webinar['course_id']);
         unset($webinar['room_id']);
-        unset($webinar['recording_id']);
 
         $webinar['enable_comments'] = $webinar['enable_comments'] ? true : false;
         $webinar['send_notifications'] = $webinar['send_notifications'] ? true : false;
@@ -83,9 +82,9 @@ class WebinarController extends BaseController
             return ApiResponse::error('Webinar has not started yet', code: 403);
         }
 
-        if (!$this->bbbModel->meetingExists($webinar['room_id'])) {
+        if (!$this->bbbService->meetingExists($webinar['room_id'])) {
             $bbbPresentation = $webinar['presentation_id'] ?
-                $this->bbbModel->createPresentation(
+                $this->bbbService->createPresentation(
                     WebinarPresentation::getPublicUrl(base_url(), $webinar['id']),
                     $webinar['presentation_name']
                 ) : null;
@@ -93,7 +92,7 @@ class WebinarController extends BaseController
             $meetingEndedUrl = getMeetingEndedUrl(encodeRoomId($webinar['room_id']));
             $recordingReadyUrl = getRecordingReadyUrl();
 
-            if (!$this->bbbModel->createMeeting(
+            if (!$this->bbbService->createMeeting(
                 $webinar['room_id'],
                 $webinar['title'],
                 $meetingEndedUrl,
@@ -112,7 +111,7 @@ class WebinarController extends BaseController
         // Increment join_count for webinar
         $this->webinars->incrementJoinCount($webinar['id']);
 
-        return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
+        return ApiResponse::success(data: $this->bbbService->getJoinUrl(
             meetingId: $webinar['room_id'],
             fullName: $fullName,
             logoutURL: $redirectURL,

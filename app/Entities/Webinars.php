@@ -20,6 +20,7 @@ class Webinars extends Crud
         'w.title',
         'w.description',
         'w.scheduled_for',
+        'w.planned_duration',
         'w.start_time',
         'w.end_time',
         'w.presentation_id',
@@ -28,11 +29,19 @@ class Webinars extends Crud
         'w.send_notifications',
         'w.join_count',
         'w.playback_count',
-        'w.recording_id',
-        'w.recording_url',
+        'w.recordings',
         'w.updated_at',
         'w.created_at'
     ];
+
+    private function process(?array $webinar)
+    {
+        if ($webinar) {
+            $webinar['recordings'] = json_decode($webinar['recordings'], true) ?: [];
+        }
+
+        return $webinar;
+    }
 
     public function webinarExists(int $webinarId): bool
     {
@@ -52,13 +61,14 @@ class Webinars extends Crud
     public function list(int $sessionId, int $courseId)
     {
         try {
-            return $this->db->table('webinars w')->select(self::$apiSelectClause)
+            $webinars = $this->db->table('webinars w')->select(self::$apiSelectClause)
                 ->where('session_id', $sessionId)
                 ->where('course_id', $courseId)
                 ->where('deletion_date IS NULL')
                 ->orderBy('scheduled_for', 'DESC')
                 ->get()
                 ->getResultArray();
+            return array_map([$this, 'process'], $webinars);
         } catch (\Exception $e) {
             log_message('error', 'Error Listing Webinars: ' . $e->getMessage(), [
                 'stack' => $e->getTraceAsString()
@@ -70,7 +80,7 @@ class Webinars extends Crud
     public function listWithCommentCount(int $sessionId, int $courseId)
     {
         try {
-            return $this->db->table('webinars w')
+            $webinars = $this->db->table('webinars w')
                 ->select(array_merge(self::$apiSelectClause, ['COUNT(wc.id) AS comment_count']))
                 ->join('webinar_comments wc', 'w.id = wc.webinar_id', 'left')
                 ->where('w.session_id', $sessionId)
@@ -80,6 +90,7 @@ class Webinars extends Crud
                 ->orderBy('w.scheduled_for', 'DESC')
                 ->get()
                 ->getResultArray();
+            return array_map([$this, 'process'], $webinars);
         } catch (\Exception $e) {
             log_message('error', 'Error Listing Webinars with Comments: ' . $e->getMessage(), [
                 'stack' => $e->getTraceAsString()
@@ -91,11 +102,12 @@ class Webinars extends Crud
     public function getDetails(int $webinarId)
     {
         try {
-            return $this->db->table('webinars w')->select(self::$apiSelectClause)
+            $webinar = $this->db->table('webinars w')->select(self::$apiSelectClause)
                 ->where('w.id', $webinarId)
                 ->where('w.deletion_date IS NULL')
                 ->get()
                 ->getRowArray();
+            return $this->process($webinar);
         } catch (\Exception $e) {
             log_message('error', 'Error Getting Webinar Details: ' . $e->getMessage(), [
                 'stack' => $e->getTraceAsString()
@@ -107,11 +119,12 @@ class Webinars extends Crud
     public function getDetailsByRoomId(string $roomId)
     {
         try {
-            return $this->db->table('webinars w')->select(self::$apiSelectClause)
+            $webinar = $this->db->table('webinars w')->select(self::$apiSelectClause)
                 ->where('w.room_id', $roomId)
                 ->where('w.deletion_date IS NULL')
                 ->get()
                 ->getRowArray();
+            return $this->process($webinar);
         } catch (\Exception $e) {
             log_message('error', 'Error Getting Webinar Details by Room ID: ' . $e->getMessage(), [
                 'stack' => $e->getTraceAsString()
@@ -136,6 +149,10 @@ class Webinars extends Crud
     public function updateWebinar(int $webinarId, array $data): bool
     {
         try {
+            if (isset($data['recordings'])) {
+                $data['recordings'] = json_encode($data['recordings']);
+            }
+
             $this->db->table('webinars')
                 ->where('id', $webinarId)
                 ->where('deletion_date IS NULL')

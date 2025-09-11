@@ -16,6 +16,7 @@ use App\Enums\ClaimEnum as ClaimType;
 use App\Enums\CommonEnum as CommonSlug;
 use App\Enums\RequestTypeEnum as RequestTypeSlug;
 use App\Enums\CourseManagerStatusEnum as CourseManagerStatus;
+use App\Services\GoogleDriveStorageService;
 
 class ResultManagerController extends BaseController
 {
@@ -70,7 +71,8 @@ class ResultManagerController extends BaseController
         return ApiResponse::success('success', $payload);
     }
 
-    public function examinationCourses(){
+    public function examinationCourses()
+    {
         $payload = $this->listApiEntity('examination_courses');
         return ApiResponse::success(data: $payload);
     }
@@ -80,16 +82,23 @@ class ResultManagerController extends BaseController
         $session = $this->request->getGet('session_id');
         $validation = $this->validateData([
             'session_id' => $session
-        ],[
+        ], [
             'session_id' => 'required',
         ]);
-        if(!$validation){
+        if (!$validation) {
             return ApiResponse::error($this->validator->getError('session_id'));
         }
 
         EntityLoader::loadClass($this, 'examination_courses');
         $currentUser = WebSessionManager::currentAPIUser();
         $payload = $this->examination_courses->getLecturersAssignCourses($session, $currentUser);
+
+        foreach ($payload as $key => $course) {
+            $payload[$key]['course_guide'] = GoogleDriveStorageService::getPublicUrl(
+                $course['course_guide_id']
+            );
+        }
+
         return ApiResponse::success('success', $payload);
     }
 
@@ -204,7 +213,7 @@ class ResultManagerController extends BaseController
             }
         }
         if (!$isUploadStatus && (!$isCourseManager || $isCourseManager['course_manager_id'] != $courseManager || $currentUser->id != $courseManager)) {
-            return ApiResponse::error( "You are not authorized to upload result");
+            return ApiResponse::error("You are not authorized to upload result");
         }
         $processType = $this->input->post('type', true) ?: 'file';
         if ($processType === 'direct') {
@@ -1093,7 +1102,8 @@ class ResultManagerController extends BaseController
                         $sumTotal += $subTotal;
                     }
 
-                    if ($courseExamType === 'yes' && (
+                    if (
+                        $courseExamType === 'yes' && (
                             $courseManager['exam_type'] == CourseManagerStatus::APPROVED ||
                             $courseManager['exam_type'] == CourseManagerStatus::WAIVER
                         )
@@ -1731,9 +1741,9 @@ class ResultManagerController extends BaseController
 
         if (ENVIRONMENT === 'production') {
             Queue::dispatch(Mail_events::EVENT_GRADE_NOTIFICATION, [
-                $email, $param
+                $email,
+                $param
             ]);
         }
     }
-
 }

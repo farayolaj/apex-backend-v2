@@ -62,6 +62,7 @@
     "extra": {
         "google/apiclient-services": [
             "Directory",
+            "Drive",
             "Gmail"
         ]
     }

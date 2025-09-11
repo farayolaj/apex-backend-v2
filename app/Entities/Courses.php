@@ -7,6 +7,7 @@ use App\Enums\CommonEnum as CommonSlug;
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
 use App\Models\WebSessionManager;
+use App\Services\GoogleDriveStorageService;
 use App\Support\DTO\ApiListParams;
 use App\Traits\ResultManagerTrait;
 
@@ -23,17 +24,36 @@ class Courses extends Crud
 
     protected static string $tablename = 'Courses';
     /* this array contains the field that can be null*/
-    static array $nullArray = array('course_guide_url', 'date_created');
+    static array $nullArray = array('course_guide_url', 'course_guide_id', 'date_created');
     static array $compositePrimaryKey = array();
     static array $uploadDependency = array();
     /*this array contains the fields that are unique*/
     static array $uniqueArray = array('code');
     /*this is an associative array containing the fieldname and the type of the field*/
-    static array $typeArray = array('code' => 'varchar', 'title' => 'text', 'description' => 'text', 'course_guide_url' => 'text',
-        'active' => 'tinyint', 'date_created' => 'varchar', 'type' => 'varchar', 'department_id' => 'int');
+    static array $typeArray = array(
+        'code' => 'varchar',
+        'title' => 'text',
+        'description' => 'text',
+        'course_guide_url' => 'text',
+        'course_guide_id' => 'varchar',
+        'active' => 'tinyint',
+        'date_created' => 'varchar',
+        'type' => 'varchar',
+        'department_id' => 'int'
+    );
     /*this is a dictionary that map a field name with the label name that will be shown in a form*/
-    static array $labelArray = array('id' => '', 'code' => '', 'title' => '', 'description' => '', 'course_guide_url' => '',
-        'active' => '', 'date_created' => '', 'type' => '', 'department_id' => '');
+    static array $labelArray = array(
+        'id' => '',
+        'code' => '',
+        'title' => '',
+        'description' => '',
+        'course_guide_url' => '',
+        'course_guide_id' => '',
+        'active' => '',
+        'date_created' => '',
+        'type' => '',
+        'department_id' => ''
+    );
     /*associative array of fields that have default value*/
     static array $defaultArray = array('date_created' => '');
     // populate this array with fields that are meant to be displayed as document in the format
@@ -47,8 +67,8 @@ class Courses extends Crud
 
     static array $tableAction = array('delete' => 'delete/courses', 'edit' => 'edit/courses');
 
-    static array $apiSelectClause = ['id', 'title', 'code', 'active', 'course_guide_url'];
-    protected array  $searchable = ['a.title','a.code'];
+    static array $apiSelectClause = ['id', 'title', 'code', 'active', 'course_guide_url', 'course_guide_id'];
+    protected array  $searchable = ['a.title', 'a.code'];
     protected array  $sortable   = ['code' => 'a.code', 'title' => 'a.title'];
 
     protected bool $externalObserversFirst = true;
@@ -127,7 +147,7 @@ class Courses extends Crud
         return false;
     }
 
-    protected function applyBaseFilters($b): void{}
+    protected function applyBaseFilters($b): void {}
 
     public function APIList($request, $filterList)
     {
@@ -155,7 +175,8 @@ class Courses extends Crud
         ];
     }
 
-    public function APIListNew($request, array $filterList){
+    public function APIListNew($request, array $filterList)
+    {
         $params = ApiListParams::fromArray($request, [
             'perPage'    => 1,
             'maxPerPage' => 20,
@@ -164,7 +185,8 @@ class Courses extends Crud
 
         $params->filters = $filterList;
 
-        return $this->listApi(static::$apiSelectClause,
+        return $this->listApi(
+            static::$apiSelectClause,
             $params
         );
     }
@@ -261,7 +283,7 @@ class Courses extends Crud
     {
         $semester = strtolower($semester);
         $semester = ($semester != '' && $semester == 'first') ? 1 : 2;
-        $query = "SELECT a.id as main_course_id, a.code, a.title, a.description, a.course_guide_url, a.active,
+        $query = "SELECT a.id as main_course_id, a.code, a.title, a.description, a.course_guide_url, a.course_guide_id, a.active,
         b.id as course_mapping_id, b.programme_id, b.semester, b.course_unit, b.course_status, b.level, b.mode_of_entry,
         b.pass_score, b.pre_select FROM courses a left join course_mapping b on a.id = b.course_id where b.programme_id = ?
     	and b.semester = ? and a.active = ? order by a.code asc";
@@ -282,10 +304,10 @@ class Courses extends Crud
                         'unit' => (int)$course['course_unit'],
                         'status' => $course['course_status'],
                         'pre_select' => (int)$course['pre_select'],
+                        'course_guide' => GoogleDriveStorageService::getPublicUrl($course['course_guide_id']),
                     );
                     $result[] = $courseData;
                 }
-
             }
         }
 
@@ -508,10 +530,10 @@ class Courses extends Crud
                 $userSubmitted = $this->course_request_claims->getExistingCourseClaims($session, $res['course_id']);
                 $fullname = null;
                 $departmentName = null;
-                if($userSubmitted){
+                if ($userSubmitted) {
                     $userSubmitted = $userSubmitted[0];
                     $userData = $this->users_new->getUserInfoWithDepartment($userSubmitted['course_manager_id'], 'staffs');
-                    $fullname = ucwords(strtolower($userData['title'] .' '. $userData['firstname'])) . ' '. strtoupper($userData['lastname']);
+                    $fullname = ucwords(strtolower($userData['title'] . ' ' . $userData['firstname'])) . ' ' . strtoupper($userData['lastname']);
                     $departmentName = $userData['department_name'];
                 }
 
@@ -626,7 +648,8 @@ class Courses extends Crud
         return $this->query($query)[0];
     }
 
-    public function insertDummyData(){
+    public function insertDummyData()
+    {
         $this->db->table('courses')->insert([
             'code' => 'TEST305',
             'title' => 'Test case',
@@ -638,4 +661,13 @@ class Courses extends Crud
         ]);
     }
 
+    public function updateCourseGuideId(string $courseId, ?string $fileId = null)
+    {
+        return $this->db->table('courses')->where('id', $courseId)->update(['course_guide_id' => $fileId]);
+    }
+
+    public function getCourse(string $courseId)
+    {
+        return $this->db->table('courses')->where('id', $courseId)->get()->getRowArray();
+    }
 }

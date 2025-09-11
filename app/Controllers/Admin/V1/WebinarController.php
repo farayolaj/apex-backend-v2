@@ -7,15 +7,14 @@ use App\Entities\Course_manager;
 use App\Entities\Webinars as EntitiesWebinars;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
-use App\Libraries\Notifications\Events\Sender;
 use App\Libraries\Notifications\Events\Webinar\NewWebinarEvent;
 use App\Libraries\Notifications\Events\Webinar\RecordingReadyEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarCancelledEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarRescheduledEvent;
 use App\Libraries\Notifications\Events\Webinar\WebinarStartedEvent;
 use App\Libraries\WebinarPresentation;
-use App\Models\BBBModel;
 use App\Models\WebSessionManager;
+use App\Services\BBBService;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\I18n\Time;
@@ -28,7 +27,7 @@ class WebinarController extends BaseController
 {
     private EntitiesWebinars $webinars;
     private Course_manager $courseManager;
-    private BBBModel $bbbModel;
+    private BBBService $bbbService;
 
     // Duration in seconds to delay webinar end time (2 hours)
     const WEBINAR_END_DELAY_SECONDS = 7200;
@@ -46,7 +45,7 @@ class WebinarController extends BaseController
     {
         $this->webinars = EntityLoader::loadClass(null, 'webinars');
         $this->courseManager = EntityLoader::loadClass(null, 'course_manager');
-        $this->bbbModel = model('BBBModel');
+        $this->bbbService = Services::bbbService();
     }
 
     private function processWebinar(array $webinar): array
@@ -60,7 +59,6 @@ class WebinarController extends BaseController
         unset($webinar['presentation_id']);
         unset($webinar['course_id']);
         unset($webinar['room_id']);
-        unset($webinar['recording_id']);
 
         $webinar['enable_comments'] = $webinar['enable_comments'] ? true : false;
         $webinar['send_notifications'] = $webinar['send_notifications'] ? true : false;
@@ -96,6 +94,7 @@ class WebinarController extends BaseController
             'description' => 'permit_empty|string',
             'course_id' => 'required|integer',
             'scheduled_for' => 'required|future_datetime[scheduled_for]',
+            'planned_duration' => 'required|integer|greater_than[0]',
             'enable_comments' => 'permit_empty|in_list[0,1]',
             'send_notifications' => 'permit_empty|in_list[0,1]',
             'presentation' => self::presentationRules,
@@ -164,6 +163,7 @@ class WebinarController extends BaseController
             'enable_comments' => 'permit_empty|in_list[0,1]',
             'send_notifications' => 'permit_empty|in_list[0,1]',
             'scheduled_for' => 'permit_empty|valid_datetime[scheduled_for]',
+            'planned_duration' => 'permit_empty|integer|greater_than[0]',
         ];
 
         if (!$this->validateData($data, $rules)) {
@@ -177,7 +177,7 @@ class WebinarController extends BaseController
             return ApiResponse::error('User does not have access to update webinar', code: 403);
         }
 
-        // if new scheduled_for has passed or old scheduled_for has passed, prevent update
+        // only allow updating scheduled_for if the new date is in the future
         if (
             isset($data['scheduled_for']) &&
             !Time::parse($data['scheduled_for'])->equals(Time::parse($webinar['scheduled_for']))
@@ -186,11 +186,7 @@ class WebinarController extends BaseController
                 "Y-m-d H:i:s",
                 Time::parse($data['scheduled_for'])->toDateTimeString()
             )->format('U') < time()) {
-                return ApiResponse::error('Cannot update webinar. New scheduled time is in the past.', code: 400);
-            }
-
-            if (\DateTime::createFromFormat("Y-m-d H:i:s", $webinar['scheduled_for'])->format('U') < time()) {
-                return ApiResponse::error('Cannot update webinar. Previous scheduled time has already passed.', code: 400);
+                return ApiResponse::error('Cannot update webinar. New scheduled time cannot be in the past.', code: 400);
             }
         }
 
@@ -376,9 +372,9 @@ class WebinarController extends BaseController
             return ApiResponse::error('Webinar has already ended', code: 403);
         }
 
-        if (!$this->bbbModel->meetingExists($webinar['room_id'])) {
+        if (!$this->bbbService->meetingExists($webinar['room_id'])) {
             $bbbPresentation = $webinar['presentation_id'] ?
-                $this->bbbModel->createPresentation(
+                $this->bbbService->createPresentation(
                     WebinarPresentation::getPublicUrl(base_url(), $webinar['id']),
                     $webinar['presentation_name']
                 ) : null;
@@ -386,7 +382,7 @@ class WebinarController extends BaseController
             $meetingEndedUrl = getMeetingEndedUrl(encodeRoomId($webinar['room_id']));
             $recordingReadyUrl = getRecordingReadyUrl();
 
-            if (!$this->bbbModel->createMeeting(
+            if (!$this->bbbService->createMeeting(
                 $webinar['room_id'],
                 $webinar['title'],
                 $meetingEndedUrl,
@@ -415,7 +411,7 @@ class WebinarController extends BaseController
 
         $this->webinars->updateWebinar($webinarId, ['end_time' => null]);
 
-        return ApiResponse::success(data: $this->bbbModel->getJoinUrl(
+        return ApiResponse::success(data: $this->bbbService->getJoinUrl(
             meetingId: $webinar['room_id'],
             fullName: $fullName,
             logoutURL: $redirectURL,
@@ -459,11 +455,16 @@ class WebinarController extends BaseController
         }
 
         // Store recording id and url
-        $recording_url = $this->bbbModel->getRecording($recordId);
+        $recording_url = $this->bbbService->getRecording($recordId);
+        $recording_date = date('Y-m-d H:i:s');
+        $recordings = array_merge($webinar['recordings'], [[
+            'id' => $recordId,
+            'url' => $recording_url,
+            'date' => $recording_date
+        ]]);
 
         $this->webinars->updateWebinar($webinar['id'], [
-            'recording_id' => $recordId,
-            'recording_url' => $recording_url
+            'recordings' => $recordings
         ]);
 
         // Send notifications
