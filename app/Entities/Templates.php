@@ -42,7 +42,7 @@ class Templates extends Crud
 
     public function defaultSelect(): string|array
     {
-        return ['a.name', 'a.slug', 'a.type', 'a.active'];
+        return ['a.id', 'a.name', 'a.slug', 'a.type', 'a.active'];
     }
 
     protected function applyDefaultOrder(BaseBuilder $builder): void
