@@ -225,7 +225,7 @@ PHP;
     public function create()
     {
         \$entity  = new {$entityFQN}();
-        \$payload = \$this->request->getPost();
+        \$payload = requestPayload();
 
         \$row = \$entity->insertSingle(
             \$payload ?? [],

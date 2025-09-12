@@ -41,8 +41,7 @@ class CoursesController extends BaseController
     public function store()
     {
         $course = new \App\Entities\Courses();
-
-        $payload = $this->request->getPost();
+        $payload = requestPayload();
 
         $row = $course->insertSingle(
             $payload ?? [],

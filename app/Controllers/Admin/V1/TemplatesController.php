@@ -32,7 +32,7 @@ class TemplatesController extends BaseController
     public function create()
     {
         $entity  = new \App\Entities\Templates();
-        $payload = $this->request->getPost();
+        $payload = requestPayload();
 
         $row = $entity->insertSingle(
             $payload ?? [],

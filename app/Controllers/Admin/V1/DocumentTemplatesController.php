@@ -32,7 +32,7 @@ class DocumentTemplatesController extends BaseController
     public function create()
     {
         $entity  = new \App\Entities\Document_templates();
-        $payload = $this->request->getPost();
+        $payload = requestPayload();
 
         $row = $entity->insertSingle(
             $payload ?? [],

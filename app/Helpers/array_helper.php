@@ -1,5 +1,20 @@
 <?php
 
+if (! function_exists('requestPayload')) {
+    function requestPayload(?\CodeIgniter\HTTP\IncomingRequest $req = null): array
+    {
+        $req ??= service('request');
+        $ct = $req->getHeaderLine('Content-Type');
+
+        if (is_string($ct) && stripos($ct, 'application/json') === 0) {
+            $json = $req->getJSON(true);
+            if (is_array($json)) return $json;
+        }
+        $post = $req->getPost();
+        return is_array($post) ? $post : [];
+    }
+}
+
 /**
  * @param array $rows  // your raw rows (course_code, actual_amount, user_id, etc.)
  * @param float|null $defaultLogisticsAmount // fallback allowance if not set per-user
