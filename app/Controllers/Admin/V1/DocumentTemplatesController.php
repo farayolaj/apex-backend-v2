@@ -53,7 +53,7 @@ class DocumentTemplatesController extends BaseController
     public function update(int $id)
     {
         $entity  = new \App\Entities\Document_templates();
-        $payload = $this->request->getRawInput();
+        $payload = $this->request->getJSON(true);
 
         $row = $entity->updateSingle(
             $id,

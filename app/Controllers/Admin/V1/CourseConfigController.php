@@ -53,7 +53,7 @@ class CourseConfigController extends BaseController
     public function update(int $id)
     {
         $entity  = new \App\Entities\Course_configuration();
-        $payload = $this->request->getRawInput();
+        $payload = $this->request->getJSON(true);
 
         $row = $entity->updateSingle(
             $id,
