@@ -79,4 +79,12 @@ class Services extends BaseService
 
         return new \App\Services\BBBService();
     }
+
+    public static function matrixService($getShared = true): \App\Services\MatrixService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('matrixService');
+        }
+        return new \App\Services\MatrixService();
+    }
 }

@@ -19,11 +19,17 @@
         "codeigniter4/framework": "^4.0",
         "firebase/php-jwt": "^6.10",
         "google/apiclient": "^2.18",
+        "illuminate/cache": "^12.28",
+        "illuminate/container": "^12.28",
+        "illuminate/redis": "^12.28",
+        "illuminate/support": "^12.28",
         "mpdf/mpdf": "^8.2",
         "phpmailer/phpmailer": "^6.9",
         "phpoffice/phpspreadsheet": "^4.1",
+        "predis/predis": "^3.2",
         "robmorgan/phinx": "^0.16.6",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "vocphone/laravel-matrix-sdk": "^1.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
