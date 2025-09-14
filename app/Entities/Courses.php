@@ -669,8 +669,11 @@ class Courses extends Crud
     public function getCourse(string $courseIdOrCode)
     {
         return $this->db->table('courses')
+            ->groupStart()
             ->where('id', $courseIdOrCode)
             ->orWhere(new RawSql('UPPER(code)'), strtoupper($courseIdOrCode))
+            ->groupEnd()
+            ->where('active', 1)
             ->get()
             ->getRowArray();
     }

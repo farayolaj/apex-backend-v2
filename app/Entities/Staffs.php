@@ -6,6 +6,7 @@ use App\Libraries\EntityLoader;
 use App\Models\Crud;
 use App\Enums\CommonEnum as CommonSlug;
 use App\Models\WebSessionManager;
+use CodeIgniter\Database\RawSql;
 
 /**
  * This class is automatically generated based on the structure of the table.
@@ -61,19 +62,57 @@ class Staffs extends Crud
      * of the field
      * @var array
      */
-    public static $typeArray = ['title' => 'varchar', 'staff_id' => 'varchar', 'firstname' => 'varchar', 'lastname' => 'varchar',
-        'othernames' => 'varchar', 'gender' => 'enum', 'dob' => 'varchar', 'marital_status' => 'varchar', 'phone_number' => 'varchar',
-        'email' => 'varchar', 'units_id' => 'int', 'user_rank' => 'varchar', 'role' => 'varchar', 'avatar' => 'varchar', 'address' => 'varchar',
-        'active' => 'tinyint', 'created_at' => 'timestamp', 'updated_at' => 'timestamp', 'can_upload' => 'tinyint', 'department_id' => 'int'];
+    public static $typeArray = [
+        'title' => 'varchar',
+        'staff_id' => 'varchar',
+        'firstname' => 'varchar',
+        'lastname' => 'varchar',
+        'othernames' => 'varchar',
+        'gender' => 'enum',
+        'dob' => 'varchar',
+        'marital_status' => 'varchar',
+        'phone_number' => 'varchar',
+        'email' => 'varchar',
+        'units_id' => 'int',
+        'user_rank' => 'varchar',
+        'role' => 'varchar',
+        'avatar' => 'varchar',
+        'address' => 'varchar',
+        'active' => 'tinyint',
+        'created_at' => 'timestamp',
+        'updated_at' => 'timestamp',
+        'can_upload' => 'tinyint',
+        'department_id' => 'int'
+    ];
 
     /**
      * This is a dictionary that map a field name with the label name that
      * will be shown in a form
      * @var array
      */
-    public static $labelArray = ['id' => '', 'title' => '', 'staff_id' => '', 'firstname' => '', 'lastname' => '', 'othernames' => '',
-        'gender' => '', 'dob' => '', 'marital_status' => '', 'phone_number' => '', 'email' => '', 'units_id' => '', 'user_rank' => '',
-        'role' => '', 'avatar' => '', 'address' => '', 'active' => '', 'created_at' => '', 'updated_at' => '', 'can_upload' => '', 'department_id' => ''];
+    public static $labelArray = [
+        'id' => '',
+        'title' => '',
+        'staff_id' => '',
+        'firstname' => '',
+        'lastname' => '',
+        'othernames' => '',
+        'gender' => '',
+        'dob' => '',
+        'marital_status' => '',
+        'phone_number' => '',
+        'email' => '',
+        'units_id' => '',
+        'user_rank' => '',
+        'role' => '',
+        'avatar' => '',
+        'address' => '',
+        'active' => '',
+        'created_at' => '',
+        'updated_at' => '',
+        'can_upload' => '',
+        'department_id' => ''
+    ];
 
     /**
      * Associative array of fields in the table that have default value
@@ -98,8 +137,9 @@ class Staffs extends Crud
      * entities
      * @var array
      */
-    public static $relation = ['staff' => array('staff_id', 'id')
-        , 'units' => array('units_id', 'id')
+    public static $relation = [
+        'staff' => array('staff_id', 'id'),
+        'units' => array('units_id', 'id')
     ];
 
     /**
@@ -109,8 +149,27 @@ class Staffs extends Crud
      */
     public static $tableAction = ['delete' => 'delete/staffs', 'edit' => 'edit/staffs'];
 
-    public static $apiSelectClause = ['id', 'title', 'lastname', 'firstname', 'othernames', 'gender', 'dob', 'marital_status', 'phone_number',
-        'email', 'units_id', 'user_rank', 'role', 'avatar', 'address', 'active', 'created_at', 'updated_at', 'staff_id'];
+    public static $apiSelectClause = [
+        'id',
+        'title',
+        'lastname',
+        'firstname',
+        'othernames',
+        'gender',
+        'dob',
+        'marital_status',
+        'phone_number',
+        'email',
+        'units_id',
+        'user_rank',
+        'role',
+        'avatar',
+        'address',
+        'active',
+        'created_at',
+        'updated_at',
+        'staff_id'
+    ];
 
     public function __construct(array $array = [])
     {
@@ -146,7 +205,6 @@ class Staffs extends Crud
             $result .= "</div>";
             return $result;
         }
-
     }
 
     public function getFirstnameFormField($value = '')
@@ -234,7 +292,6 @@ class Staffs extends Crud
             $result .= "</div>";
             return $result;
         }
-
     }
 
     public function getUser_RankFormField($value = '')
@@ -327,7 +384,7 @@ class Staffs extends Crud
         if (parent::delete($id, $db)) {
             $query = "DELETE from users_new where user_table_id=? and user_type='staff'";
             if ($this->query($query, array($id))) {
-                logAction( 'user_deletion', $currentUser->id, $id);
+                logAction('user_deletion', $currentUser->id, $id);
                 return true;
             }
         }
@@ -447,6 +504,76 @@ class Staffs extends Crud
         return ['query' => $query, 'data' => $data];
     }
 
+    /**
+     * @return list<array{matrix_id: string, staff_id: string, title: string, firstname: string, lastname: string, email: string, avatar: string}>
+     */
+    public function getStaffsByUserIds(array $userIds)
+    {
+        if (empty($userIds)) {
+            return [];
+        }
 
+        return $this->db->table('users_new u')
+            ->select('s.matrix_id, s.staff_id, s.title, s.firstname, s.lastname, s.email, s.avatar')
+            ->whereIn('u.id', $userIds)
+            ->where('u.user_type', 'staff') // Ensure the user type is 'staff'
+            ->where('u.active', 1) // Ensure the user is active
+            ->join('staffs s', 'u.user_table_id = s.id')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * @return array{id: string, staff_id: string, title: string, firstname: string, lastname: string, email: string, avatar: string} | null
+     */
+    public function getStaffByIdOrStaffId(int $idOrStaffId)
+    {
+        return $this->db->table('staffs')
+            ->select('id, staff_id, title, firstname, lastname, email, avatar')
+            ->groupStart()
+            ->where('id', $idOrStaffId)
+            ->orWhere(new RawSql('UPPER(staff_id)'), strtoupper($idOrStaffId))
+            ->groupEnd()
+            ->where('active', 1) // Ensure the staff is active
+            ->get()
+            ->getRowArray();
+    }
+
+    /**
+     * @return list<array{id: string, staff_id: string, title: string, firstname: string, lastname: string, email: string, avatar: string}>
+     */
+    public function getAllStaffsWithoutMatrixId()
+    {
+        return $this->db->table('staffs')
+            ->select('id, staff_id, title, firstname, lastname, email, avatar')
+            ->where('matrix_id IS NULL') // Staff without matrix_id
+            ->where('active', 1) // Ensure the staff is active
+            ->get()
+            ->getResultArray();
+    }
+
+    public function updateMatrixId(int $id, string $matrixId): bool
+    {
+        $data = ['matrix_id' => $matrixId];
+
+        try {
+            return $this->db->table('staffs')->where('id', $id)->update($data);
+        } catch (\Exception $e) {
+            log_message('error', 'Failed to update staff matrix id' . $e->getMessage(), $e->getTrace());
+            return false;
+        }
+    }
+
+    /**
+     * @param list<array{id: int, matrix_id: string}> $data Array of associative arrays with 'id' and 'matrix_id' keys
+     * @return int
+     */
+    public function updateMatrixIds(array $data): int
+    {
+        if (empty($data)) {
+            return 0;
+        }
+
+        return $this->db->table('staffs')->updateBatch($data, 'id');
+    }
 }
-
