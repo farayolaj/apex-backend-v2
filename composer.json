@@ -49,6 +49,9 @@
             "dump/former_transformed_model/**",
             "dump/old/**",
             "**/RelayQ/Migrations/**"
+        ],
+        "files": [
+            "app/Libraries/LaravelLogAlias.php"
         ]
     },
     "autoload-dev": {
