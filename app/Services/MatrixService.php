@@ -57,13 +57,31 @@ class MatrixService
         }
     }
 
-    public function createUser(string $username, string $displayName)
+    public function createUser(string $username, string $displayName, ?string $email = null)
     {
         try {
-            $response = $this->client->api()->adminRegisterUser($username, bin2hex(random_bytes(8)), $displayName);
-            return !!$response['user_id'];
+            $data = [
+                'displayname' => $displayName
+            ];
+
+            if ($email) {
+                $data['threepids'] = [
+                    [
+                        'medium' => 'email',
+                        'address' => $email
+                    ]
+                ];
+            }
+
+            $userId = self::getUserId($username);
+            $this->client->api()->adminSetUser($userId, $data);
+            return true;
         } catch (\Exception $e) {
-            log_message('error', 'Matrix user creation failed: ' . $e->getMessage(), $e->getTrace());
+            log_message(
+                'error',
+                'Matrix user creation failed: ' . $e->getMessage() . ' for username (user_id): ' . $username . ' (' . self::getUserId($username) . ')',
+                $e->getTrace()
+            );
             return false;
         }
     }
@@ -94,6 +112,7 @@ class MatrixService
 
     public static function getUserId(string $username): string
     {
+        $username = str_replace('/', '.', strtolower(trim($username)));
         if (is_numeric($username)) {
             $username = 'i' . $username;
         }
