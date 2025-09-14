@@ -30,6 +30,19 @@ class Matrix_rooms extends Crud
         }
     }
 
+    /**
+     * Create multiple Matrix room entries in a single batch operation.
+     * @param list<array{room_id: string, room_type: string, entity_id: int}> $rooms An array of associative arrays, each containing 'room_id', 'room_type', and 'entity_id'.
+     */
+    public function createMultiple(array $rooms): int
+    {
+        $res = $this->db->table(static::$tablename)->insertBatch($rooms);
+        return is_bool($res) ? 0 : $res;
+    }
+
+    /**
+     * @return array{room_id: string, room_type: string, entity_id: int}|null The room record as an associative array, or null if not found.
+     */
     public function getByRoomId(string $roomId): ?array
     {
         return $this->db->table(static::$tablename)
@@ -42,7 +55,7 @@ class Matrix_rooms extends Crud
      * Get a Matrix room by its associated entity ID and optional room type.
      * @param int $entityId The associated entity ID (course ID or department ID).
      * @param string|null $roomType The type of room ('course', 'general', 'department'), or null to ignore type.
-     * @return array|null The room record as an associative array, or null if not found.
+     * @return array{room_id: string, room_type: string, entity_id: int}|null The room record as an associative array, or null if not found.
      */
     public function getByEntityId(int $entityId, string $roomType = "course"): ?array
     {
@@ -53,6 +66,10 @@ class Matrix_rooms extends Crud
             ->getRowArray();
     }
 
+    /**
+     * Get all Matrix rooms of type 'course'.
+     * @return list<array{room_id: string, room_type: string, entity_id: int}> An array of room records.
+     */
     public function getGeneralRooms(): array
     {
         return $this->db->table(static::$tablename)
