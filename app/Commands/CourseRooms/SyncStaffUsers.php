@@ -91,8 +91,9 @@ class SyncStaffUsers extends BaseCommand
 
         $res = $courseRoomModel->createStaffUser(
             $staff['id'],
-            $staff['staff_id'],
-            "{$staff['firstname']} {$staff['lastname']}",
+            $staff['title'],
+            $staff['firstname'],
+            $staff['lastname'],
             $staff['email']
         );
 

@@ -115,8 +115,8 @@ class CourseRoomModel
         $failedStaffs = [];
 
         foreach ($staffs as $staff) {
-            $username = $staff['staff_id'];
-            $name = trim($staff['firstname'] . ' ' . $staff['lastname']);
+            $username = $this->getStaffUsername($staff['firstname'], $staff['lastname']);
+            $name = trim($staff['title'] . ' ' . $staff['firstname'] . ' ' . $staff['lastname']);
             $email = $staff['email'] ?? null;
             $userCreated = $this->matrixService->createUser($username, $name, $email);
 
@@ -196,12 +196,14 @@ class CourseRoomModel
         }
     }
 
-    public function createStaffUser(int $id, string $staffId, string $name, ?string $email = null)
+    public function createStaffUser(int $id, string $title, string $firstName, string $lastName, ?string $email = null)
     {
         // Create a Matrix account for the staff and update the matrix_id field in the staffs table
-        $userCreated = $this->matrixService->createUser($staffId, $name, $email);
+        $username = $this->getStaffUsername($firstName, $lastName);
+        $name = trim($title . ' ' . $firstName . ' ' . $lastName);
+        $userCreated = $this->matrixService->createUser($username, $name, $email);
         if ($userCreated) {
-            $matrixId = MatrixService::getUserId($staffId);
+            $matrixId = MatrixService::getUserId($username);
             $this->staffs->updateMatrixId($id, $matrixId);
             return $matrixId;
         } else {
@@ -232,5 +234,10 @@ class CourseRoomModel
         }
 
         return null;
+    }
+
+    private function getStaffUsername(string $firstName, string $lastName): string
+    {
+        return $firstName . '.' . $lastName . '.' . random_int(1000, 9999);
     }
 }

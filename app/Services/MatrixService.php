@@ -117,6 +117,7 @@ class MatrixService
     public static function getUserId(string $username): string
     {
         $username = str_replace('/', '.', strtolower(trim($username)));
+        $username = str_replace(' ', '.', $username);
         if (is_numeric($username)) {
             $username = 'i' . $username;
         }
