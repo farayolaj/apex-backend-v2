@@ -6,6 +6,7 @@ use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
 use Illuminate\Redis\RedisManager;
 use Illuminate\Support\Facades\Facade;
+use Vocphone\LaravelMatrixSdk\Exceptions\MatrixRequestException;
 use Vocphone\LaravelMatrixSdk\MatrixClient;
 
 class MatrixService
@@ -86,16 +87,19 @@ class MatrixService
         }
     }
 
-    public function addUsersToRoom(string $roomId, array $usernames)
+    public function addUsersToRoom(string $roomId, array $userIds)
     {
         try {
-            $userIds = array_map(
-                fn($username) => self::getUserId($username),
-                $usernames
-            );
-
             foreach ($userIds as $userId) {
-                $this->client->api()->inviteUser($roomId, $userId);
+                try {
+                    $this->client->api()->inviteUser($roomId, $userId);
+                } catch (MatrixRequestException $e) {
+                    // Ignore if already in room by checking for 403 error code
+                    if ($e->getHttpCode() === 403) {
+                        continue;
+                    }
+                    throw $e;
+                }
             }
 
             return true;
@@ -105,9 +109,9 @@ class MatrixService
         }
     }
 
-    public function addUserToRoom(string $roomId, string $username)
+    public function addUserToRoom(string $roomId, string $matrixId)
     {
-        return $this->addUsersToRoom($roomId, [$username]);
+        return $this->addUsersToRoom($roomId, [$matrixId]);
     }
 
     public static function getUserId(string $username): string

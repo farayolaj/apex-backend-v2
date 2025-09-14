@@ -148,12 +148,39 @@ class CourseRoomModel
             $lecturers = $this->getCourseLecturers($course['id'], $currentSession);
             $students = $this->getCourseStudents($course['id'], $currentSession);
 
-            $matrixIds = array_merge($matrixIds, array_column($lecturers, 'matrix_id'));
-            $matrixIds = array_merge($matrixIds, array_column($students, 'matrix_id'));
+            $lecturerMatrixIds = array_filter(array_column($lecturers, 'matrix_id'), fn($id) => !empty($id));
+            $studentMatrixIds = array_filter(array_column($students, 'matrix_id'), fn($id) => !empty($id));
+            $matrixIds = array_merge($matrixIds, $lecturerMatrixIds, $studentMatrixIds);
 
             // Add the lecturers and students to the course room
             $this->matrixService->addUsersToRoom($course['room_id'], $matrixIds);
         }
+    }
+
+    /**
+     * @return bool|null Returns true on success, false on failure, and null if the course or room is not found.
+     */
+    public function addMembersToCourseRoom(string $courseIdOrCode)
+    {
+        // Get all courses with course rooms
+        $currentSession = get_setting('active_session_student_portal');
+        $course = $this->courses->getCourse($courseIdOrCode);
+
+        if (!$course || !$course['room_id']) {
+            return null;
+        }
+
+        // For each course, get the lecturers and students
+        $matrixIds = [];
+        $lecturers = $this->getCourseLecturers($course['id'], $currentSession);
+        $students = $this->getCourseStudents($course['id'], $currentSession);
+
+        $lecturerMatrixIds = array_filter(array_column($lecturers, 'matrix_id'), fn($id) => !empty($id));
+        $studentMatrixIds = array_filter(array_column($students, 'matrix_id'), fn($id) => !empty($id));
+        $matrixIds = array_merge($matrixIds, $lecturerMatrixIds, $studentMatrixIds);
+
+        // Add the lecturers and students to the course room
+        return $this->matrixService->addUsersToRoom($course['room_id'], $matrixIds);
     }
 
     public function createStudentUser(int $studentId, string $matricNo, string $name, ?string $email = null) // Todo: include picture later
@@ -195,13 +222,13 @@ class CourseRoomModel
         }
     }
 
-    public function addMemberToCourseRoom(string $courseId, string $username)
+    public function addMemberToCourseRoom(string $courseId, string $matrixId)
     {
         // Add a member to the course room
         $room = $this->matrixRooms->getByEntityId($courseId, 'course');
 
         if ($room) {
-            return $this->matrixService->addUserToRoom($room['room_id'], $username);
+            return $this->matrixService->addUserToRoom($room['room_id'], $matrixId);
         }
 
         return null;

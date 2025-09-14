@@ -2,6 +2,8 @@
 
 namespace App\Commands\CourseRooms;
 
+use App\Entities\Courses;
+use App\Libraries\EntityLoader;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use Config\Services;
@@ -34,14 +36,16 @@ class SyncRoomMembers extends BaseCommand
      *
      * @var string
      */
-    protected $usage = 'sync:members';
+    protected $usage = 'sync:members [course_code]';
 
     /**
      * The Command's Arguments
      *
      * @var array
      */
-    protected $arguments = [];
+    protected $arguments = [
+        'course_code' => 'Optional course code to sync members for a specific course only.'
+    ];
 
     /**
      * The Command's Options
@@ -56,6 +60,39 @@ class SyncRoomMembers extends BaseCommand
      * @param array $params
      */
     public function run(array $params)
+    {
+        $courseCode = $params[0] ?? null;
+
+        if ($courseCode) {
+            return $this->syncMembersForCourse($courseCode);
+        } else {
+            return $this->syncCoursesMembers();
+        }
+    }
+
+    private function syncMembersForCourse(string $courseCode)
+    {
+        $courseRoomModel = Services::courseRoomModel();
+        /** @var Courses $courses */
+        $courses = EntityLoader::loadClass(null, 'courses');
+
+        CLI::write("Adding members to course room for course code: {$courseCode}... Please wait.", 'yellow');
+
+        $res = $courseRoomModel->addMembersToCourseRoom($courseCode);
+
+        if ($res === null) {
+            CLI::write("Course with code {$courseCode} not found or without room. Please check the course code or create the room first.", 'red');
+            return EXIT_USER_INPUT;
+        } elseif ($res === false) {
+            CLI::write("Members could not be added to course room for course code: {$courseCode}.", 'red');
+            return EXIT_ERROR;
+        } else {
+            CLI::write("Members added to course room for course code: {$courseCode}.", 'green');
+            return;
+        }
+    }
+
+    private function syncCoursesMembers()
     {
         $courseRoomModel = Services::courseRoomModel();
 

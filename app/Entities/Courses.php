@@ -666,12 +666,17 @@ class Courses extends Crud
         return $this->db->table('courses')->where('id', $courseId)->update(['course_guide_id' => $fileId]);
     }
 
+    /**
+     * @return array{ id: string, code: string, title: string, room_id: ?string }
+     */
     public function getCourse(string $courseIdOrCode)
     {
-        return $this->db->table('courses')
+        return $this->db->table('courses c')
+            ->select('c.id, c.code, c.title, mr.room_id')
+            ->join('matrix_rooms mr', 'mr.entity_id = c.id AND mr.room_type = "course"', 'left')
             ->groupStart()
             ->where('id', $courseIdOrCode)
-            ->orWhere(new RawSql('UPPER(code)'), strtoupper($courseIdOrCode))
+            ->orWhere(new RawSql('UPPER(c.code)'), strtoupper($courseIdOrCode))
             ->groupEnd()
             ->where('active', 1)
             ->get()
