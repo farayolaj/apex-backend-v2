@@ -10,6 +10,7 @@ use App\Entities\Staffs;
 use App\Entities\Students;
 use App\Libraries\EntityLoader;
 use App\Services\MatrixService;
+use App\Support\Cache\ShowCacheSupport;
 use Config\Services;
 
 class CourseRoomModel
@@ -239,5 +240,35 @@ class CourseRoomModel
     private function getStaffUsername(string $firstName, string $lastName): string
     {
         return $firstName . '.' . $lastName . '.' . random_int(1000, 9999);
+    }
+
+    public function getCourseRoomLink(string $courseId)
+    {
+        $cache = ShowCacheSupport::cache();
+        $cacheTtl = 3600;
+        $key = ShowCacheSupport::buildCacheKey('course_room_link-' . $courseId);
+        $cached = $cache->get($key);
+
+        if ($cached !== null && is_string($cached)) {
+            return $cached;
+        }
+
+        $room = $this->matrixRooms->getByEntityId($courseId, 'course');
+
+        if (!$room) {
+            return null;
+        }
+
+        $roomLink = rtrim(env('MATRIX_CLIENT_URL'), '/') . '/#/room/' . urlencode($room['room_id']);
+        $ssoLink = env('MATRIX_HOMESERVER')
+            . '/_matrix/client/v3/login/sso/redirect/'
+            . env('MATRIX_OIDC_PROVIDER')
+            . '?redirectUrl='
+            . urlencode($roomLink)
+            . '&org.matrix.msc3824.action=login';
+
+        $cache->save($key, $ssoLink, $cacheTtl);
+
+        return $ssoLink;
     }
 }

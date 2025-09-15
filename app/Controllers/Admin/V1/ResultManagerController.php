@@ -17,6 +17,7 @@ use App\Enums\CommonEnum as CommonSlug;
 use App\Enums\RequestTypeEnum as RequestTypeSlug;
 use App\Enums\CourseManagerStatusEnum as CourseManagerStatus;
 use App\Services\GoogleDriveStorageService;
+use Config\Services;
 
 class ResultManagerController extends BaseController
 {
@@ -96,6 +97,9 @@ class ResultManagerController extends BaseController
         foreach ($payload as $key => $course) {
             $payload[$key]['course_guide'] = GoogleDriveStorageService::getPublicUrl(
                 $course['course_guide_id']
+            );
+            $payload[$key]['course_room_url'] = Services::courseRoomModel()->getCourseRoomLink(
+                $course['course_id']
             );
         }
 
