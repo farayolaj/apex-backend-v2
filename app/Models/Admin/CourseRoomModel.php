@@ -231,7 +231,7 @@ class CourseRoomModel
         $roomId = $this->matrixService->createRoom($alias, $roomName, $roomTopic);
 
         if ($roomId) {
-            $this->matrixRooms->create($roomId, 'general', null);
+            $this->matrixRooms->create($roomId, 'general', null, $roomName);
             return $roomId;
         } else {
             return null;
