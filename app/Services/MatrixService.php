@@ -45,10 +45,19 @@ class MatrixService
 
     public function createCourseRoom(string $courseCode, string $courseTitle)
     {
+        return $this->createRoom(
+            $courseCode,
+            $courseCode . ': ' . $courseTitle,
+            'Course room for ' . $courseTitle
+        );
+    }
+
+    public function createRoom(string $alias, string $roomName, string $roomTopic = '')
+    {
         try {
-            $room = $this->client->createRoom($courseCode);
-            $room->setRoomName($courseCode . ': ' . $courseTitle);
-            $room->setRoomTopic('Course room for ' . $courseTitle);
+            $room = $this->client->createRoom($alias);
+            $room->setRoomName($roomName);
+            $room->setRoomTopic($roomTopic);
             $room->setInviteOnly(true);
 
             return $room->getRoomId();

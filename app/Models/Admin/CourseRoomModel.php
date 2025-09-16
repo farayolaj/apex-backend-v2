@@ -225,6 +225,19 @@ class CourseRoomModel
         }
     }
 
+    public function createGeneralRoom(string $alias, string $roomName, string $roomTopic = '')
+    {
+        // Create a general Matrix room and insert into the matrix_rooms table
+        $roomId = $this->matrixService->createRoom($alias, $roomName, $roomTopic);
+
+        if ($roomId) {
+            $this->matrixRooms->create($roomId, 'general', null);
+            return $roomId;
+        } else {
+            return null;
+        }
+    }
+
     public function addMemberToCourseRoom(string $courseId, string $matrixId)
     {
         // Add a member to the course room

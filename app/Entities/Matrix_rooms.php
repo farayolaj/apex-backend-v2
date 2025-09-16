@@ -15,7 +15,7 @@ class Matrix_rooms extends Crud
      * @param int $entityId The associated entity ID (course ID or department ID).
      * @return bool True on success, false on failure.
      */
-    public function create(string $roomId, string $roomType, int $entityId): bool
+    public function create(string $roomId, string $roomType, ?int $entityId = null): bool
     {
         try {
             $this->db->table(static::$tablename)->insert([
