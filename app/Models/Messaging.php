@@ -18,7 +18,6 @@ class Messaging extends CI_Model
 		parent::__construct();
 		$this->load->library('parser');
 	}
-
 	public function sendUploadEmailNotification($log_file_path)
 	{
 		$variables = array('course' => 'misc');

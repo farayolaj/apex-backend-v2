@@ -53,7 +53,7 @@ class CourseMappingController extends BaseController
     public function update(int $id)
     {
         $entity  = new \App\Entities\Course_mapping();
-        $payload = $this->request->getRawInput();
+        $payload = $this->request->getJSON(true);
 
         $row = $entity->updateSingle(
             $id,
