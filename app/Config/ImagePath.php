@@ -5,7 +5,7 @@ namespace Config;
 use CodeIgniter\Config\BaseConfig;
 class ImagePath extends BaseConfig
 {
-    public string $studentPassportPath = 'uploads/students/passport/';
+    public string $studentPassportPath = 'uploads/students/passports/';
 
     public string $studentFullimagePath = 'uploads/students/full_images/';
 

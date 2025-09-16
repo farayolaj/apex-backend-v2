@@ -20,17 +20,6 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
-    /*
-     * public static function example($getShared = true)
-     * {
-     *     if ($getShared) {
-     *         return static::getSharedInstance('example');
-     *     }
-     *
-     *     return new \CodeIgniter\Example();
-     * }
-     */
-
     public static function redis($getShared = true)
     {
         if ($getShared) {
@@ -78,5 +67,21 @@ class Services extends BaseService
         }
 
         return new \App\Services\BBBService();
+    }
+
+    public static function admission($getShared = true): \App\Services\Admin\AdmissionService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('admission');
+        }
+        return new \App\Services\Admin\AdmissionService();
+    }
+
+    public static function photo($getShared = true): \App\Services\Admin\PhotoService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('photo');
+        }
+        return new \App\Services\Admin\PhotoService();
     }
 }

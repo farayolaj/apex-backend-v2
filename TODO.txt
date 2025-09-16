@@ -10,3 +10,4 @@
 [] - I need to attach mail sending for the processlog for bulk course enrollment upload
 [] - The frontend have to made some changes on their end for update/delete/sample_csv/bulk_upload_action using their respective verbs
 [] - I want to bump/flush the cache in CI4 on entity changes that I'm using cache [course,course_mapping,course_config,document,messaging]
+[] - I want to complete the download logs endpoint so it works properly

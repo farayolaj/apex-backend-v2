@@ -5,10 +5,18 @@ namespace App\Controllers\Admin\V1;
 use App\Controllers\BaseController;
 use App\Libraries\ApiResponse;
 use App\Models\WebSessionManager;
+use App\Services\Admin\PhotoService;
 use ZipArchive;
 
 class PhotoManagerController extends BaseController
 {
+    private $photo;
+
+    public function __construct()
+    {
+        $this->photo = service('photo');
+    }
+
     /**
      * @param mixed $value
      * @return void
@@ -32,8 +40,7 @@ class PhotoManagerController extends BaseController
             'q'          => $this->request->getGet('q'),
         ];
 
-        $model = model('Admin/PhotoModel');
-        $result = $model->getPhotos($filters, $offset, $pageSize, true);
+        $result = $this->photo->getPhotos($filters, $offset, $pageSize, true);
 
         return ApiResponse::success('success', [
             'paging'     => $result['total'],
@@ -47,12 +54,10 @@ class PhotoManagerController extends BaseController
         $selected = $data['selected'] ?? [];
         $target   = strtolower((string) ($data['target'] ?? 'student'));
 
-        $model = model('Admin/PhotoModel');
-
         if (is_array($selected) && count($selected) > 0) {
-            $paths = $model->listFilesByMatric($selected, $target);
+            $paths = $this->photo->listFilesByMatric($selected, $target);
         } elseif (is_array($filters) && count($filters) > 0) {
-            $paths = $model->listFilesByFilter(array_merge($filters, ['target' => $target]));
+            $paths = $this->photo->listFilesByFilter(array_merge($filters, ['target' => $target]));
         } else {
             $paths = [];
         }

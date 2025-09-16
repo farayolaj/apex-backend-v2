@@ -249,7 +249,7 @@ PHP;
     public function update(int \$id)
     {
         \$entity  = new {$entityFQN}();
-        \$payload = \$this->request->getRawInput();
+        \$payload = \$this->request->getJSON(true);
 
         \$row = \$entity->updateSingle(
             \$id,

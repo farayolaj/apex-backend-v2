@@ -25,7 +25,7 @@ class ApiResponse
      * @param int $code
      * @return mixed
      */
-    public static function error(string $message = '', mixed $data = null, int $code = 401)
+    public static function error(string $message = '', mixed $data = null, int $code = 422)
     {
         return self::formatResponse(false, $message, $data, $code);
     }
@@ -51,7 +51,7 @@ class ApiResponse
         ];
 
         // Use custom reason or default one
-        $reasonPhrase = $statusCodeMessage ?: ($defaultPhrases[$code] ?? 'Unknown Status Code');
+        $reasonPhrase = $statusCodeMessage ?: ($defaultPhrases[$code] ?? '');
         $response = [
             'status' => $status,
             'message' => $message,

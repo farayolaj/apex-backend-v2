@@ -1,12 +1,19 @@
 <?php
 
-namespace App\Models\Admin;
+namespace App\Services\Admin;
 
-use CodeIgniter\Model;
 use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Database\BaseConnection;
 
-class PhotoModel extends Model
+class PhotoService
 {
+    private BaseConnection $db;
+
+    public function __construct(?BaseConnection $db = null)
+    {
+        $this->db = $db ?? db_connect();
+    }
+
     public function getPhotos(array $f, int $offset = 0, int $limit = 50, bool $withPaths = true): array
     {
         $target = strtolower((string) ($f['target'] ?? 'student'));
@@ -31,9 +38,13 @@ class PhotoModel extends Model
                 ->join('students a', 'e.student_id = a.id')
                 ->join('academic_record b', 'b.student_id = a.id')
                 ->join('programme d', 'd.id = e.programme_id')
-                ->join('department f', 'f.id = d.department_id')
-                ->join('course_enrollment c', 'c.student_id = a.id', 'left')
-                ->where('e.payment_id', 1)
+                ->join('department f', 'f.id = d.department_id');
+
+            if($course){
+                $base->join('course_enrollment c', 'c.student_id = a.id', 'inner')
+                    ->where('c.course_id', $course);
+            }
+            $base->where('e.payment_id', 1)
                 ->whereIn('e.payment_status', ['00', '01'])
                 ->where('e.session', $session);
 
@@ -43,8 +54,12 @@ class PhotoModel extends Model
             $base = $db->table('students a')
                 ->join('academic_record b', 'b.student_id = a.id')
                 ->join('programme d', 'd.id = b.programme_id', 'left')
-                ->join('department f', 'f.id = d.department_id')
-                ->join('course_enrollment c', 'c.student_id = a.id', 'left');
+                ->join('department f', 'f.id = d.department_id');
+
+            if ($course) {
+                $base->join('course_enrollment c', 'c.student_id = a.id', 'inner')
+                    ->where('c.course_id', $course);
+            }
 
             if ($level)   { $base->where('b.current_level', $level); }
             if ($program) { $base->where('b.programme_id', $program); }
@@ -52,7 +67,6 @@ class PhotoModel extends Model
 
         if ($entry)  { $base->where('b.session_of_admission', $entry); }
         if ($dept)   { $base->where('f.id', $dept); }
-        if ($course) { $base->where('c.course_id', $course); }
 
         if ($search) {
             $base->groupStart()
@@ -80,9 +94,8 @@ class PhotoModel extends Model
         $countBuilder = clone $base;
         $dataBuilder  = clone $base;
 
-        $total = (int) $countBuilder
-            ->select('COUNT(DISTINCT a.id) AS total', false)
-            ->get()->getRow('total');
+        $idsSQL = $countBuilder->select('DISTINCT a.id', false)->getCompiledSelect(false);
+        $total  = (int) $this->db->table("({$idsSQL}) t")->countAllResults(false);
 
         $levelExpr = ($f['session'] ?? null) ? 'e.level' : 'b.current_level';
 
@@ -147,9 +160,8 @@ class PhotoModel extends Model
         $countBuilder = clone $base;
         $dataBuilder  = clone $base;
 
-        $total = (int) $countBuilder
-            ->select('COUNT(DISTINCT ap.id) AS total', false)
-            ->get()->getRow('total');
+        $idsSQL = $countBuilder->select('DISTINCT ap.id', false)->getCompiledSelect(false);
+        $total  = (int) $this->db->table("({$idsSQL}) t")->countAllResults(false);
 
         $rows = $dataBuilder
             ->distinct()

@@ -657,7 +657,7 @@ class Applicants extends Crud
 		$query = "SELECT * FROM applicant_transaction WHERE applicant_id=? and (payment_status = '00' or payment_status = '01')";
 		$result = $this->query($query, array($id));
 		if (!$result) {
-			return false;
+			return null;
 		}
 		return $result;
 	}

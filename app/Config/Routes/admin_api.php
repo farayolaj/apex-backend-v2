@@ -78,6 +78,10 @@ $routes->group('v1/web/', [
     $routes->get('students/photos', 'PhotoManagerController::photos');
     $routes->post('students/photo/download', 'PhotoManagerController::photoDownload');
 
+    // applicants management
+    $routes::post('admissions/single/admission', 'AdmissionController::singleAdmission');
+    $routes::post('admissions/upload/admission', 'AdmissionController::uploadAdmission');
+
     $routes::get('common/prerequisites_fee', 'PaymentController::prerequisitesFee');
 
     // webinar management

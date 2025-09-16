@@ -648,7 +648,7 @@ if (!function_exists('movePassport')) {
         if (!is_dir($path)) {
             mkdir($path, 0777, true);
         }
-        $newPath = $path . $passport;
+        $newPath = WRITEPATH . $path . $passport;
 
         if (file_exists($imagePath)) {
             if (copy($imagePath, $newPath)) {
@@ -733,10 +733,10 @@ if (!function_exists('returnFormalDirectory')) {
     function returnFormalDirectory($parentName = 'applicants', $type = 'applicants'): string
     {
         $applicantPath = "/var" . DIRECTORY_SEPARATOR . "www" . DIRECTORY_SEPARATOR . "dlcoffice.ui.edu.ng" . DIRECTORY_SEPARATOR . "public_html" . DIRECTORY_SEPARATOR . "current" . DIRECTORY_SEPARATOR . "assets" . DIRECTORY_SEPARATOR . "images" . DIRECTORY_SEPARATOR . "{$parentName}" . DIRECTORY_SEPARATOR;
-        $studentPath = "/var" . DIRECTORY_SEPARATOR . "www" . DIRECTORY_SEPARATOR . "apex" . DIRECTORY_SEPARATOR . "public_html" . DIRECTORY_SEPARATOR . "uploads" . DIRECTORY_SEPARATOR;
+        $studentPath = "/var" . DIRECTORY_SEPARATOR . "www" . DIRECTORY_SEPARATOR . "apex" . DIRECTORY_SEPARATOR . "public_html" . DIRECTORY_SEPARATOR . "writable".DIRECTORY_SEPARATOR ."uploads" . DIRECTORY_SEPARATOR;
         $applicantLocalPath = "uploads" . DIRECTORY_SEPARATOR . "applicants" . DIRECTORY_SEPARATOR;
         $result = [
-            'applicants' => ENVIRONMENT !== 'production' ? FCPATH . $applicantLocalPath : $applicantPath,
+            'applicants' => ENVIRONMENT !== 'production' ? WRITEPATH . $applicantLocalPath : $applicantPath,
             'students' => $studentPath,
         ];
         return $result[$type];
