@@ -8,7 +8,7 @@ use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use Config\Services;
 
-class SyncRooms extends BaseCommand
+class SyncCourseRooms extends BaseCommand
 {
     /**
      * The Command's Group
