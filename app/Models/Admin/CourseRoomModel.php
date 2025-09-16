@@ -85,7 +85,7 @@ class CourseRoomModel
         $failedStudents = [];
 
         foreach ($students as $student) {
-            $username = $student['matric_no'];
+            $username = $student['matric_number'];
             $name = trim($student['firstname'] . ' ' . $student['lastname']);
             $email = $student['email'] ?? null;
             $userCreated = $this->matrixService->createUser($username, $name, $email);
