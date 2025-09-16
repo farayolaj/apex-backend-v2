@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "406d94c77f2419849fac2be9e285362f",
+    "content-hash": "7be3417dcba0b853580d1d7563ac7f30",
     "packages": [
         {
             "name": "bigbluebutton/bigbluebutton-api-php",
@@ -5337,86 +5337,6 @@
             "time": "2025-04-30T23:37:27+00:00"
         },
         {
-            "name": "vocphone/laravel-matrix-sdk",
-            "version": "1.0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/vocphone/laravel-matrix-sdk.git",
-                "reference": "b39ce879a3655b5f1ecb8ee5f5f740c9980b06f4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/vocphone/laravel-matrix-sdk/zipball/b39ce879a3655b5f1ecb8ee5f5f740c9980b06f4",
-                "reference": "b39ce879a3655b5f1ecb8ee5f5f740c9980b06f4",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "guzzlehttp/guzzle": "^6.3|^7",
-                "laravel/helpers": "^1.7",
-                "php": "~7.4|^8"
-            },
-            "replace": {
-                "aryess/php-matrix-sdk": "self.version",
-                "aryess/phpmatrixsdk": "self.version"
-            },
-            "require-dev": {
-                "phpunit/phpunit": ">=5.4.3"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Vocphone\\LaravelMatrixSdk\\MatrixServiceProvider"
-                    ]
-                },
-                "branch-alias": {
-                    "dev-master": "1.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Vocphone\\LaravelMatrixSdk\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Yoann Celton",
-                    "email": "aryess@github.com",
-                    "homepage": "https://github.com/aryess",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Brad Jones",
-                    "email": "brad@kinksters.dating",
-                    "homepage": "https://github.com/bradjones1",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Tom Higgins",
-                    "email": "support@vocphone.com",
-                    "homepage": "https://github.com/vocphone",
-                    "role": "Developer"
-                }
-            ],
-            "description": "PHP SDK for interacting with Matrix/Synapse.",
-            "homepage": "https://github.com/vocphones/laravel-matrix-sdk",
-            "keywords": [
-                "Matrix Chat",
-                "Synapse",
-                "matrix",
-                "php"
-            ],
-            "support": {
-                "source": "https://github.com/vocphone/laravel-matrix-sdk/tree/1.0.5"
-            },
-            "time": "2024-12-09T19:19:24+00:00"
-        },
-        {
             "name": "voku/portable-ascii",
             "version": "2.0.3",
             "source": {
@@ -7200,6 +7120,7 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2",
+        "ext-json": "*",
         "ext-openssl": "*",
         "ext-redis": "*",
         "ext-zip": "*",

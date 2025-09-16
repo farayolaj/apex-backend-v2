@@ -6,8 +6,8 @@ use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
 use Illuminate\Redis\RedisManager;
 use Illuminate\Support\Facades\Facade;
-use Vocphone\LaravelMatrixSdk\Exceptions\MatrixRequestException;
-use Vocphone\LaravelMatrixSdk\MatrixClient;
+use MatrixSdk\Exceptions\MatrixRequestException;
+use MatrixSdk\MatrixClient;
 
 class MatrixService
 {
