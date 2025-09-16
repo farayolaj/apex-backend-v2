@@ -3984,4 +3984,18 @@ class Students extends Crud
 
         return is_bool($res) ? 0 : $res;
     }
+
+    /**
+     * @return array<array{matrix_id: string, firstname: string, lastname: string, email: string, matric_number: string}>
+     */
+    public function getActiveStudentsWithMatrixId()
+    {
+        return $this->db->table('students s')
+            ->select('s.matrix_id, s.firstname, s.lastname, s.user_login as email, ar.matric_number')
+            ->where('s.active', 1) // Only active students
+            ->where(new RawSql('s.matrix_id IS NOT NULL'))
+            ->join('academic_record ar', 'ar.student_id = s.id')
+            ->get()
+            ->getResultArray();
+    }
 }

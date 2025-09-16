@@ -284,4 +284,16 @@ class CourseRoomModel
 
         return $ssoLink;
     }
+
+    public function addMembersToGeneralRoom(string $roomId)
+    {
+        // Get all active students
+        $students = $this->students->getActiveStudentsWithMatrixId();
+
+        // For each student, collect their matrix IDs
+        $matrixIds = array_filter(array_column($students, 'matrix_id'), fn($id) => !empty($id));
+
+        // Add the students to the general room
+        return $this->matrixService->addUsersToRoom($roomId, $matrixIds);
+    }
 }
