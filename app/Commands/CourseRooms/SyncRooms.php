@@ -22,7 +22,7 @@ class SyncRooms extends BaseCommand
      *
      * @var string
      */
-    protected $name = 'rooms:sync';
+    protected $name = 'rooms:sync:course';
 
     /**
      * The Command's Description
@@ -36,7 +36,7 @@ class SyncRooms extends BaseCommand
      *
      * @var string
      */
-    protected $usage = 'rooms:sync [course_id_or_code]';
+    protected $usage = 'rooms:sync:course [course_id_or_code]';
 
     /**
      * The Command's Arguments
@@ -44,7 +44,7 @@ class SyncRooms extends BaseCommand
      * @var array
      */
     protected $arguments = [
-        'course_id' => 'Optional course id or course code to sync a specific course only',
+        'course_id_or_code' => 'Optional course id or course code to sync a specific course only',
     ];
 
     /**
