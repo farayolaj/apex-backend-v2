@@ -273,7 +273,7 @@ class CourseRoomModel
         }
 
         $roomLink = rtrim(env('MATRIX_CLIENT_URL'), '/') . '/#/room/' . urlencode($room['room_id']);
-        $ssoLink = env('MATRIX_HOMESERVER')
+        $ssoLink = env('MATRIX_API_URL')
             . '/_matrix/client/v3/login/sso/redirect/'
             . env('MATRIX_OIDC_PROVIDER')
             . '?redirectUrl='

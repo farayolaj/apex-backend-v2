@@ -38,9 +38,9 @@ class MatrixService
 
         Facade::setFacadeApplication($app);
 
-        $homeserver = env('MATRIX_HOMESERVER');
+        $apiUrl = env('MATRIX_API_URL');
         $accessToken = env('MATRIX_ACCESS_TOKEN');
-        $this->client = new MatrixClient($homeserver, $accessToken);
+        $this->client = new MatrixClient($apiUrl, $accessToken);
     }
 
     public function createCourseRoom(string $courseCode, string $courseTitle)
@@ -130,6 +130,6 @@ class MatrixService
         if (is_numeric($username)) {
             $username = 'i' . $username;
         }
-        return '@' . $username . ':' . parse_url(env('MATRIX_HOMESERVER'), PHP_URL_HOST);
+        return '@' . $username . ':' . env('MATRIX_HOMESERVER');
     }
 }
