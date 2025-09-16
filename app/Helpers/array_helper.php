@@ -11,7 +11,7 @@ if (! function_exists('requestPayload')) {
             if (is_array($json)) return $json;
         }
         $post = $req->getPost();
-        return is_array($post) ? $post : [];
+        return is_array($post) && !empty($post) ? $post : ($req->getRawInput() ?? []);
     }
 }
 

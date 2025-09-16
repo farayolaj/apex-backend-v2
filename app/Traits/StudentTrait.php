@@ -211,6 +211,7 @@ trait StudentTrait
             'description' => $prerequisite_fee ? $preqDesc : null,
             'paid' => false,
             'paid_id' => null,
+            'session' => $session
         ];
     }
 

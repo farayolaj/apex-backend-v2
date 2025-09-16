@@ -84,4 +84,10 @@ class Services extends BaseService
         }
         return new \App\Services\Admin\PhotoService();
     }
+
+    public static function student($getShared = true): \App\Services\Admin\StudentService
+    {
+        if ($getShared) return static::getSharedInstance('student');
+        return new \App\Services\Admin\StudentService();
+    }
 }
