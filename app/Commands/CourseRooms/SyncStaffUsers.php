@@ -22,7 +22,7 @@ class SyncStaffUsers extends BaseCommand
      *
      * @var string
      */
-    protected $name = 'sync:staff';
+    protected $name = 'rooms:sync:staff';
 
     /**
      * The Command's Description
@@ -36,7 +36,7 @@ class SyncStaffUsers extends BaseCommand
      *
      * @var string
      */
-    protected $usage = 'sync:staff [staff_id]';
+    protected $usage = 'rooms:sync:staff [staff_id]';
 
     /**
      * The Command's Arguments

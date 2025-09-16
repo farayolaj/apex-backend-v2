@@ -22,7 +22,7 @@ class SyncStudentUsers extends BaseCommand
      *
      * @var string
      */
-    protected $name = 'sync:students';
+    protected $name = 'rooms:sync:students';
 
     /**
      * The Command's Description
@@ -36,7 +36,7 @@ class SyncStudentUsers extends BaseCommand
      *
      * @var string
      */
-    protected $usage = 'sync:students [matric_no]';
+    protected $usage = 'rooms:sync:students [matric_no]';
 
     /**
      * The Command's Arguments
