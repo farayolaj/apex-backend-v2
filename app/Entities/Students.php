@@ -3935,6 +3935,7 @@ class Students extends Crud
             ->select('s.id, s.firstname, s.lastname, s.user_login as email, ar.matric_number')
             ->where('s.matrix_id IS NULL', null, false)
             ->where('s.active', 1) // Only active students
+            ->where('ar.has_matric_number', 1) // Who have matric number
             ->join('academic_record ar', 'ar.student_id = s.id')
             ->get()
             ->getResultArray();
