@@ -257,12 +257,12 @@ class CourseRoomModel
 
     public static function getRoomLink(string $roomId): string
     {
-        $roomLink = rtrim(env('MATRIX_CLIENT_URL'), '/') . '/#/room/' . urlencode($roomId);
+        $roomLink = rtrim(env('MATRIX_CLIENT_URL'), '/') . '/#/room/' . $roomId;
         $ssoLink = env('MATRIX_API_URL')
             . '/_matrix/client/v3/login/sso/redirect/'
             . env('MATRIX_OIDC_PROVIDER')
             . '?redirectUrl='
-            . urlencode($roomLink)
+            . $roomLink
             . '&org.matrix.msc3824.action=login';
 
         return $ssoLink;
