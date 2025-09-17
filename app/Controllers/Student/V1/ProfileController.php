@@ -36,13 +36,6 @@ class ProfileController extends BaseController
         $result['is_finalist'] = isGraduate($studentLevel, $academicRecord['entry_mode']);
         $result['is_extraYear'] = isCarryOverGraduate($studentLevel);
 
-        /**
-         * @var Matrix_rooms $matrixRooms
-         */
-        $matrixRooms = EntityLoader::loadClass(null, 'matrix_rooms');
-        $room = $matrixRooms->getByExternalId('university');
-        $result['university_room_url'] = $room && isset($result['matrix_id']) && $result['matrix_id'] ? CourseRoomModel::getRoomLink($room['room_id']) : null;
-
         return ApiResponse::success('success', $result);
     }
 
@@ -147,5 +140,17 @@ class ProfileController extends BaseController
         }
 
         return ApiResponse::success('Password updated successfully');
+    }
+
+    public function getUniversityRoomLink()
+    {
+        $student = WebSessionManager::currentAPIUser();
+        /** 
+         * @var Matrix_rooms $matrixRooms 
+         */
+        $matrixRooms = EntityLoader::loadClass(null, 'matrix_rooms');
+        $room = $matrixRooms->getByExternalId('university');
+        $roomLink = $room && $student->matrix_id ? CourseRoomModel::getRoomLink($room['room_id']) : null;
+        return ApiResponse::success('success', $roomLink);
     }
 }

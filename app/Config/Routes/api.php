@@ -33,6 +33,7 @@ $routes->group('v1/api/', [
     $routes->patch('student/profile', 'ProfileController::update');
     $routes->get('student/dashboard', 'ProfileController::dashboard');
     $routes->patch('student/password', 'ProfileController::updatePassword');
+    $routes->get('student/university_room_link', 'ProfileController::getUniversityRoomLink');
 
     // courses
     $routes->get('student/course/details/(:num)', 'CoursesController::courseDetails/$1');
