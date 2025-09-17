@@ -76,7 +76,7 @@ class Course_configuration extends Crud
 
     public function registrationIsOpened($programme, $level, $entry_mode, $semester = false)
     {
-        $courseSemester = ($semester && $semester == 'first') ? 1 : 2;
+        $courseSemester = ($semester == 'first') ? 1 : 2;
         if ($semester && $courseSemester != get_setting('active_semester')) {
             return false;
         }
@@ -95,12 +95,11 @@ class Course_configuration extends Crud
         return $item->enable_reg;
     }
 
-    // TODO: REMEMBER TO REMOVE ALWAYS TRUE VALUE RETURN
+    // TODO: REMEMBER TO REMOVE ALWAYS TRUE VALUE RETURN WHEN IN GOOD CONDITION
     // WHILE WE WAIT TO IMPLEMENT PROFILE UPDATE
     public function isPassportCheckValid($student)
     {
         return true;
-        $passportPath = 'assets/images/students/passports/';
         $setting = trim(get_setting('force_course_reg_image_upload'));
         if (!$setting) {
             return true;
@@ -109,7 +108,7 @@ class Course_configuration extends Crud
         if (!trim($student->passport)) {
             return false;
         }
-        $path = $passportPath . $student->passport;
+        $path = studentImagePathDirectory($student->passport);
         if (file_exists($path)) {
             return true;
         }

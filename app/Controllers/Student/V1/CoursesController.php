@@ -2,19 +2,26 @@
 
 namespace App\Controllers\Student\V1;
 
+use App\Controllers\Api;
 use App\Controllers\BaseController;
 use App\Entities\Courses;
+use App\Enums\CacheEnum;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Models\WebSessionManager;
 use App\Services\GoogleDriveStorageService;
+use App\Services\Student\CourseService;
+use App\Support\Cache\ShowCacheSupport;
 
 class CoursesController extends BaseController
 {
     private Courses $courses;
+    private CourseService $svc;
 
     public function __construct()
     {
         $this->courses = EntityLoader::loadClass(null, 'courses');
+        $this->svc = service('course');
     }
 
     public function courseDetails($id)
@@ -25,4 +32,182 @@ class CoursesController extends BaseController
         );
         return ApiResponse::success('success', $result);
     }
+
+    public function enrollment($session = null, $semester = null)
+    {
+        try {
+            if (!in_array($semester, ['first','second'], true)) {
+                return ApiResponse::error('Please provide a valid semester');
+            }
+
+            $payload = $this->svc->getEnrollment($session, $semester);
+            return ApiResponse::success('success', $payload);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), null, 400);
+        }
+    }
+
+    public function stats()
+    {
+        $semester = $this->request->getGet('semester');
+        $session  = trim((string)$this->request->getGet('session') ?? '') ?: null;
+        $student = WebSessionManager::currentAPIUser();
+        try {
+            $payload = ShowCacheSupport::remember(
+                CacheEnum::STUDENT_STATS->value,
+                600,
+                fn() => $this->svc->getStats($session, $semester),
+                $student->id,
+                [$session, $semester]
+            );
+
+            return ApiResponse::success('success', $payload);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), null, 400);
+        }
+    }
+
+    public function config()
+    {
+        try {
+            $student = WebSessionManager::currentAPIUser();
+            $payload = ShowCacheSupport::remember(
+                CacheEnum::STUDENT_CONFIG->value,
+                1800,
+                fn() => $this->svc->getCourseConfig(),
+                $student->id
+            );
+
+            return ApiResponse::success('success', $payload);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), null, 400);
+        }
+    }
+
+    public function preload($semester = null){
+
+        if (!in_array($semester, ['first', 'second'], true)) {
+            return ApiResponse::error('Please provide a valid semester');
+        }
+
+        // TODO: CAUTION:  The team lead said we should allow courses to show but
+        // won't be able to register if payment for that session is not made
+        $semester = ($semester == 'first') ? 1 : 2;
+        try {
+            $payload = $this->svc->listAllCourses($semester);
+            return ApiResponse::success('success', $payload);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), null, 400);
+        } catch (\Throwable $e) {
+            log_message('error','course.preload: {m}', ['m'=>$e->getMessage()]);
+            return ApiResponse::error('Unable to load courses', null, 500);
+        }
+    }
+
+    /**
+     * This search for course less or equal to the student current level
+     */
+    public function search(){
+        $q = trim((string)($this->request->getGet('course') ?? ''));
+        if ($q === '') {
+            return ApiResponse::error('Please provide a search name', null, 400);
+        }
+
+        try {
+            $courses = $this->svc->searchCourses($q);
+            return ApiResponse::success('success', $courses);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), null, 400);
+        } catch (\Throwable $e) {
+            log_message('error', 'course.search: {m}', ['m' => $e->getMessage()]);
+            return ApiResponse::error('Unable to search courses', null, 500);
+        }
+    }
+
+    public function isOpen()
+    {
+        $semester = $this->request->getGet('semester');
+        try {
+            $this->svc->assertRegistrationOpen($semester, false);
+            return ApiResponse::success('Course configuration is now available');
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), null, 400);
+        }
+    }
+
+    public function isDeleteOpen()
+    {
+        $semester = $this->request->getGet('semester');
+        try {
+            $this->svc->assertRegistrationOpen($semester, true);
+            return ApiResponse::success('Course configuration is now available');
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), null, 400);
+        }
+    }
+
+    public function register()
+    {
+        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
+        $courses = $payload['data'] ?? null;
+
+        if (!$courses) {
+            return $this->respond(['status'=>false,'message'=>'No course was selected'], 422);
+        }
+        if (is_string($courses)) {
+            $courses = json_decode($courses, true);
+        }
+        if (!is_array($courses)) {
+            return $this->respond(['status'=>false,'message'=>'Invalid course format'], 422);
+        }
+
+        try {
+            $this->svc->registerCourses($courses);
+            return $this->respond(['status'=>true,'message'=>'Your selected course(s) has been successfully registered']);
+        } catch (\DomainException $e) {
+            return $this->respond(['status'=>false,'message'=>$e->getMessage()], 400);
+        } catch (\Throwable $e) {
+            log_message('error','coursereg.register: {m}', ['m'=>$e->getMessage()]);
+            return $this->respond(['status'=>false,'message'=>'Course could not be registered at the moment, try again later'], 500);
+        }
+    }
+
+    // POST /student/v1/course/unregister   body: { "data": [courseId,...] }
+    public function unregister()
+    {
+        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
+        $courses = $payload['data'] ?? null;
+
+        if (!$courses) {
+            return $this->respond(['status'=>false,'message'=>'No course was selected'], 422);
+        }
+        if (is_string($courses)) {
+            $courses = json_decode($courses, true);
+        }
+        if (!is_array($courses)) {
+            return $this->respond(['status'=>false,'message'=>'Invalid course format'], 422);
+        }
+
+        try {
+            $this->svc->unregisterCourses($courses);
+            return $this->respond(['status'=>true,'message'=>'Your selected courses has been deleted successfully']);
+        } catch (\DomainException $e) {
+            return $this->respond(['status'=>false,'message'=>$e->getMessage()], 400);
+        } catch (\Throwable $e) {
+            log_message('error','coursereg.unregister: {m}', ['m'=>$e->getMessage()]);
+            return $this->respond(['status'=>false,'message'=>'An error occured while trying to delete courses'], 500);
+        }
+    }
+
+    public function sessions()
+    {
+        try {
+            $payload = $this->svc->getAllPaidSessionsWithActive();
+            return $this->respond(['status'=>true,'message'=>'success','payload'=>$payload]);
+        } catch (\DomainException $e) {
+            return $this->respond(['status'=>false,'message'=>$e->getMessage()], 400);
+        }
+    }
+
+
 }

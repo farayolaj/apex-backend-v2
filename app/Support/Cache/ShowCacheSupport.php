@@ -83,13 +83,15 @@ final class ShowCacheSupport
 
     public static function buildCacheKey(
         string $ns,
-        string $prefix = 'cache',
+        ?int $id = null,
+        ?array $include = [],
         ?string $selectTag = null
     ): string {
         $cache  = self::cache();
-        $id = 11;
+        $id = $id ?? 11;
         $entVer = self::getVersion($cache, self::verKeyEntity($ns));
         $idVer  = self::getVersion($cache, self::verKeyId($ns, $id));
+        $incStr = $include ? implode('-', array_map([Key::class,'clean'], $include)) : 'none';
 
         // select signature: prefer caller-provided tag; else crc32 base36
         if ($selectTag !== null && $selectTag !== '') {
@@ -97,12 +99,13 @@ final class ShowCacheSupport
         } else {
             $selectStr = 'str';
             $crc   = sprintf('%u', crc32($selectStr . '|' . '0'));
-            $selSig = base_convert($crc, 10, 36); // e.g. "k1z8d0"
+            $selSig = base_convert($crc, 10, 36);
         }
 
         $parts = [
-            $prefix, 'show', $ns,
+            'cache', 'show', $ns,
             'ev'.(string)$entVer, 'iv'.(string)$idVer, (string)$id,
+            'inc', $incStr,
             'sel', $selSig,
         ];
 
@@ -115,10 +118,10 @@ final class ShowCacheSupport
         self::bumpVersion($cache, self::verKeyId($ns, $id));
     }
 
-    public static function invalidateByKey(string $ns): void
+    public static function invalidateByKey(string $key, ?int $id = null): void
     {
         $cache = self::cache();
-        self::bumpVersion($cache, self::verKeyId($ns, 11));
+        self::bumpVersion($cache, self::verKeyId($key, $id ?? 11));
     }
 
     public static function invalidateAll(string $ns): void
@@ -126,4 +129,31 @@ final class ShowCacheSupport
         $cache = self::cache();
         self::bumpVersion($cache, self::verKeyEntity($ns));
     }
+
+    /**
+     * "Laravel-style" remember(): return cached value if present,
+     * otherwise compute via $producer(), cache it, and return it.
+     *
+     * @template T
+     * @param string $key
+     * @param int $ttl
+     * @param callable():T $producer
+     * @param array|null $parts Optional extra parts for the key
+     * @return T
+     */
+    public static function remember(string $key, int $ttl, callable $producer, ?int $id=null, ?array $parts=[]){
+        $cache = self::cache();
+        $ns = self::buildCacheKey($key, $id, $parts);
+
+        $has = $cache->get($ns);
+        if ($has !== null) {
+            return $has;
+        }
+
+        $value = $producer();
+        $cache->save($ns, $value, $ttl);
+
+        return $value;
+    }
+
 }

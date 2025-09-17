@@ -336,79 +336,65 @@ class Academic_record extends Crud
         return $result[0]['num'];
     }
 
-    public function getTotalRegisteredCourseUnit($session, $semester = null)
+    public function getTotalRegisteredCourseUnit(?string $session, ?string $semester = null): int
     {
-        if ($semester == null) {
-            $query = "SELECT sum(course_unit) as num from course_enrollment where student_id=? and session_id =?";
-            $param = [
-                $this->student_id,
-                $session,
-            ];
-        } else {
-            $query = "SELECT sum(course_unit) as num from course_enrollment where student_id=? and session_id =? and semester=?";
-            $param = [
-                $this->student_id,
-                $session,
-                $semester
-            ];
+        $baseQuery = "SELECT sum(course_unit) as num FROM course_enrollment WHERE student_id = ? AND session_id = ?";
+        $params = [$this->student_id, $session];
+
+        if ($semester !== null) {
+            $baseQuery .= " AND semester = ?";
+            $params[] = $semester;
         }
 
-        $result = $this->query($query, $param);
-        if (!$result) {
-            return 0;
-        }
-        return $result[0]['num'];
+        $result = $this->query($baseQuery, $params);
+        return (int) ($result[0]['num'] ?? 0);
+
     }
 
-    public function getTotalRegisteredCourses($session, $semester = null)
+    public function getTotalRegisteredCourses(string $session, ?string $semester = null): int
     {
-        if ($semester == null) {
-            $query = "SELECT count(*) as num from course_enrollment where student_id=? and session_id =?";
-            $param = [
-                $this->student_id,
-                $session,
-            ];
-        } else {
-            $query = "SELECT count(*) as num from course_enrollment where student_id=? and session_id =? and semester=?";
-            $param = [
-                $this->student_id,
-                $session,
-                $semester
-            ];
+        $baseQuery = "SELECT COUNT(*) as num FROM course_enrollment WHERE student_id = ? AND session_id = ?";
+        $params = [$this->student_id, $session];
+
+        if ($semester !== null) {
+            $baseQuery .= " AND semester = ?";
+            $params[] = $semester;
         }
 
-        $result = $this->query($query, $param);
-        if (!$result) {
-            return 0;
-        }
-        return $result[0]['num'];
+        $result = $this->query($baseQuery, $params);
+
+        return (int) ($result[0]['num'] ?? 0);
     }
 
-    public function getMinMaxUnit($semester = null)
-    {
-        $result = [];
-        if ($semester == null) {
-            $query = "SELECT sum(min_unit) as min_unit,sum(max_unit) as max_unit from course_configuration where programme_id= ? and level = ? and entry_mode = ?";
-            $param = [
-                $this->programme_id,
-                $this->current_level, $this->entry_mode
-            ];
-            $result = $this->query($query, $param);
-        } else {
 
-            $query = "SELECT min_unit,max_unit from course_configuration where programme_id= ? and semester=? and level = ? and entry_mode = ?";
-            $param = [
-                $this->programme_id,
-                $semester,
-                $this->current_level, $this->entry_mode
-            ];
-            $result = $this->query($query, $param);
+    public function getMinMaxUnit(?string $semester = null): ?array
+    {
+        $params = [
+            $this->programme_id,
+            $this->current_level,
+            $this->entry_mode
+        ];
+
+        if ($semester === null) {
+            $query = "SELECT SUM(min_unit) as min_unit, SUM(max_unit) as max_unit 
+                 FROM course_configuration 
+                 WHERE programme_id = ? 
+                 AND level = ? 
+                 AND entry_mode = ?";
+        } else {
+            $query = "SELECT min_unit, max_unit 
+                 FROM course_configuration 
+                 WHERE programme_id = ? 
+                 AND level = ? 
+                 AND entry_mode = ?
+                 AND semester = ? ";
+            $params[] = $semester;
         }
-        if (!$result) {
-            return false;
-        }
-        return $result[0];
+
+        $result = $this->query($query, $params);
+        return $result ? $result[0] : null;
     }
+
 
 
 }

@@ -165,7 +165,9 @@ class Auth extends BaseController
         $academicRecord = $student->academic_record;
         $student->updatePassportPath();
         $student->orientation_attendance_date = $student->getFacultyAttendance($student, $academicRecord->programme_id);
+        $student->academic_record = $academicRecord->toArray();
         $student = $student->toArray() ?? null;
+
         unset($student['password'], $student['id'], $student['user_pass'], $student['session_key']);
 
         $payload = [

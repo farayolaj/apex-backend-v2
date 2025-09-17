@@ -36,6 +36,13 @@ $routes->group('v1/api/', [
 
     // courses
     $routes->get('student/course/details/(:num)', 'CoursesController::courseDetails/$1');
+    $routes->get('course/enrollment/(:segment)/(:segment)', 'CoursesController::enrollment/$1/$2');
+    $routes->get('course/stats', 'CoursesController::stats');
+    $routes->get('course/config', 'CoursesController::config');
+    $routes->get('course/preload/(:segment)', 'CoursesController::preload/$1');
+    $routes->get('course/search', 'CoursesController::search');
+    $routes->get('course/is_registration_open', 'CoursesController::isOpen');
+    $routes->get('course/is_registration_delete_open', 'CoursesController::isDeleteOpen');
 
     // tour
     $routes->get('tour/settings', 'TourController::getTourSettings');

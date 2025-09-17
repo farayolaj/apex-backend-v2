@@ -3,6 +3,7 @@
 namespace App\Entities;
 
 use App\Models\Crud;
+use App\Models\WebSessionManager;
 use App\Support\DTO\ApiListParams;
 use CodeIgniter\Database\BaseBuilder;
 
@@ -50,75 +51,122 @@ class Course_mapping extends Crud
     /**
      * This load courses based on programme and semester in which the
      * result is filtered by student level according to mapped level
-     * @param $programme_id
-     * @param $level
-     * @param $entryMode
-     * @param string $semester [description]
+     * TODO - Need to look into how to load course lecturers in this query properly as this will give false positive
+     * @param int $programme_id
+     * @param int $level
+     * @param string $entryMode
+     * @param int $semester [description]
      * @return array [type] [description]
      */
-    public function getCourseLists($programme_id, $level, $entryMode, $semester): array
+    public function getCourseLists(int $programme_id, int $level, string $entryMode, int $semester): array
     {
-        $query = "SELECT courses.id as main_course_id, courses.code, courses.title, courses.description, courses.course_guide_url, courses.active,
-        course_mapping.id as course_mapping_id, course_mapping.programme_id, course_mapping.semester, course_mapping.level, course_mapping.course_unit, 
-        course_mapping.course_status,course_manager.course_lecturer_id, staffs.firstname, staffs.othernames, staffs.lastname, course_mapping.pre_select 
-        from courses left join course_mapping on course_mapping.course_id = courses.id  left join course_manager on course_manager.course_id = courses.id 
-        left join users_new on users_new.id = course_manager.course_lecturer_id left join staffs on staffs.id=users_new.user_table_id 
-        where course_mapping.programme_id = ? and course_mapping.semester = ? and 
-        course_mapping.mode_of_entry = ? and courses.active = '1' order by courses.code asc ";
+        $query = "SELECT c.id as main_course_id, c.code, c.title, c.description, c.course_guide_url,
+            c.active, cm.id as course_mapping_id, cm.programme_id, cm.semester,
+            cm.level, cm.course_unit, cm.course_status, cm.pre_select,
+            cmgr.course_lecturer_id, s.firstname, s.othernames, s.lastname
+            FROM courses c
+            LEFT JOIN course_mapping cm ON cm.course_id = c.id
+            LEFT JOIN course_manager cmgr ON cmgr.course_id = c.id
+            LEFT JOIN users_new un ON un.id = cmgr.course_lecturer_id and un.user_type = 'staff'
+            LEFT JOIN staffs s ON s.id = un.user_table_id
+            WHERE cm.programme_id = ?
+                AND cm.semester = ?
+                AND cm.mode_of_entry = ?
+                AND c.active = '1'
+            ORDER BY c.code ASC
+        ";
+
         $courses = $this->query($query, [$programme_id, $semester, $entryMode]);
-        $result = [];
+
         if (!$courses) {
-            return $result;
+            return [];
         }
 
-        foreach ($courses as $courseData) {
-            $mappedLevel = json_decode($courseData['level'], true);
-            if (is_array($mappedLevel) && in_array($level, $mappedLevel)) {
-                unset($courseData['level']);
-                $courseData['semester'] = (int)$courseData['semester'];
-                $courseData['course_unit'] = (int)$courseData['course_unit'];
-                $courseData['pre_select'] = (int)$courseData['pre_select'];
-                $result[] = $courseData;
-            }
-        }
-        return $result;
+        return array_values(array_filter(
+            array_map(
+                function (array $courseData) use ($level): ?array {
+                    $mappedLevel = json_decode($courseData['level'], true);
+                    if (!is_array($mappedLevel) || !in_array($level, $mappedLevel)) {
+                        return null;
+                    }
+
+                    unset($courseData['level']);
+                    return array_merge($courseData, [
+                        'semester' => $courseData['semester'],
+                        'course_unit' => $courseData['course_unit'],
+                        'pre_select' => $courseData['pre_select']
+                    ]);
+                },
+                $courses
+            )
+        ));
     }
 
-    public function searchCourseLists($course, $level, $semester, $programme = null): array
+    public function searchCourseLists(string $course, int $level, int $semester, ?int $programme = null): array
     {
-        $query = "SELECT courses.id as main_course_id, courses.code, courses.title, courses.description, courses.course_guide_url, 
-       courses.active,course_mapping.id as course_mapping_id, course_mapping.programme_id, course_mapping.semester, course_mapping.level, 
-       course_mapping.course_unit, course_mapping.course_status,course_manager.course_lecturer_id, staffs.firstname, staffs.othernames, 
-       staffs.lastname, course_mapping.pre_select from courses left join course_mapping on course_mapping.course_id = courses.id 
-       left join course_manager on course_manager.course_id = courses.id left join users_new on users_new.id = course_manager.course_lecturer_id 
-       left join staffs on staffs.id=users_new.user_table_id where 
-    	(courses.code like '%$course%' or courses.title like '%$course%') and 
-    		course_mapping.semester = ? and courses.active = '1' ";
-        if ($programme) {
-            $query .= " and course_mapping.programme_id = '$programme'";
-        }
-        $query .= " order by courses.code asc";
-        $courses = $this->query($query, [$semester]);
-        $result = [];
-        if (!$courses) {
-            return $result;
+        $query ="SELECT c.id as main_course_id, c.code, c.title, c.description, c.course_guide_url,
+            c.active, cm.id as course_mapping_id, cm.programme_id,
+            cm.semester, cm.level, cm.course_unit, cm.course_status,
+            cm.pre_select, cmgr.course_lecturer_id, s.firstname, s.othernames, s.lastname
+            FROM courses c
+            LEFT JOIN course_mapping cm ON cm.course_id = c.id
+            LEFT JOIN course_manager cmgr ON cmgr.course_id = c.id
+            LEFT JOIN users_new un ON un.id = cmgr.course_lecturer_id
+            LEFT JOIN staffs s ON s.id = un.user_table_id
+            WHERE (c.code LIKE ? OR c.title LIKE ?)
+                AND cm.semester = ?
+                AND c.active = '1'
+        ";
+
+        $params = [
+            "%{$course}%",
+            "%{$course}%",
+            $semester
+        ];
+
+        if ($programme !== null) {
+            $query .= " AND cm.programme_id = ?";
+            $params[] = $programme;
         }
 
+        $query .= " ORDER BY c.code ASC";
+        $courses = $this->query($query, $params);
+
+        if (!$courses) {
+            return [];
+        }
+
+        $result = [];
         foreach ($courses as $courseData) {
             $mappedLevel = json_decode($courseData['level'], true);
-            foreach ($mappedLevel as $key => $levelMapped) {
+            if (!is_array($mappedLevel)) {
+                continue;
+            }
+
+            $hasValidLevel = false;
+            foreach ($mappedLevel as $levelMapped) {
                 if ($levelMapped <= $level) {
-                    unset($courseData['level']);
-                    $courseData['semester'] = (int)$courseData['semester'];
-                    $courseData['course_unit'] = (int)$courseData['course_unit'];
-                    $courseData['pre_select'] = (int)$courseData['pre_select'];
-                    $result[] = $courseData;
+                    $hasValidLevel = true;
+                    break;
                 }
             }
 
+            if (!$hasValidLevel) {
+                continue;
+            }
+
+            unset($courseData['level']);
+            $result[] = [
+                ...$courseData,
+                'semester' => $courseData['semester'],
+                'course_unit' => $courseData['course_unit'],
+                'pre_select' => $courseData['pre_select']
+            ];
         }
+
         return uniqueMultidimensionalArray($result, 'main_course_id');
     }
+
 
     public function delete($id = null, &$dbObject = null, $type = null): bool
     {

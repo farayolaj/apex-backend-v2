@@ -223,17 +223,16 @@ class Students extends Crud
 
     /**
      * You might be tempted to add payment_status to verify payment was valid, but don't do that
-     * because the student is just using these to get session that exists in transaction only
+     * because the student is just using these to get a session that exists in transaction only
      * whether paid or not
      * @param boolean $code [description]
-     * @param  [type]  $semester [description]
      * @param mixed $semester
-     * @return [type]            [description]
+     * @return array|array[]|bool [type] [description]
      */
     public function getAllPaidSession($code = false, $semester = null)
     {
-        $code = $code ? $code : get_setting('school_fees_code');
-        $semesterName = ($semester && $semester == 'first') ? 1 : 2;
+        $code = $code ?: get_setting('school_fees_code');
+        $semesterName = ($semester == 'first') ? 1 : 2;
         $query = "SELECT sessions.id,date FROM sessions left join transaction on transaction.session=sessions.id 
 			left join fee_description on fee_description.id=transaction.payment_id where transaction.student_id=? and 
 		    fee_description.code=? ";
@@ -328,12 +327,12 @@ class Students extends Crud
 	        where a.student_id=? and a.session_id = ? ";
         if ($semester) {
             $courseSemester = ($semester == 'first') ? 1 : 2;
-            $query .= " and course_enrollment.semester = '$courseSemester'";
+            $query .= " and a.semester = '$courseSemester'";
         }
         if ($currentLevel) {
-            $query .= " and course_enrollment.student_level = '$currentLevel'";
+            $query .= " and a.student_level = '$currentLevel'";
         }
-        $query .= " order by course_code";
+        $query .= " order by b.code";
         if ($limit) {
             $query .= " limit {$limit}";
         }

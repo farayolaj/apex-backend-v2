@@ -90,4 +90,10 @@ class Services extends BaseService
         if ($getShared) return static::getSharedInstance('student');
         return new \App\Services\Admin\StudentService();
     }
+
+    public static function course($getShared = true): \App\Services\Student\CourseService
+    {
+        if ($getShared) return static::getSharedInstance('course');
+        return new \App\Services\Student\CourseService();
+    }
 }
