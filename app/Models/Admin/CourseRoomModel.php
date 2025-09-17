@@ -255,6 +255,19 @@ class CourseRoomModel
         return $firstName . '.' . $lastName . '.' . random_int(1000, 9999);
     }
 
+    public static function getRoomLink(string $roomId): string
+    {
+        $roomLink = rtrim(env('MATRIX_CLIENT_URL'), '/') . '/#/room/' . urlencode($roomId);
+        $ssoLink = env('MATRIX_API_URL')
+            . '/_matrix/client/v3/login/sso/redirect/'
+            . env('MATRIX_OIDC_PROVIDER')
+            . '?redirectUrl='
+            . urlencode($roomLink)
+            . '&org.matrix.msc3824.action=login';
+
+        return $ssoLink;
+    }
+
     public function getCourseRoomLink(string $courseId)
     {
         $cache = ShowCacheSupport::cache();
@@ -272,13 +285,7 @@ class CourseRoomModel
             return null;
         }
 
-        $roomLink = rtrim(env('MATRIX_CLIENT_URL'), '/') . '/#/room/' . urlencode($room['room_id']);
-        $ssoLink = env('MATRIX_API_URL')
-            . '/_matrix/client/v3/login/sso/redirect/'
-            . env('MATRIX_OIDC_PROVIDER')
-            . '?redirectUrl='
-            . urlencode($roomLink)
-            . '&org.matrix.msc3824.action=login';
+        $ssoLink = self::getRoomLink($room['room_id']);
 
         $cache->save($key, $ssoLink, $cacheTtl);
 
