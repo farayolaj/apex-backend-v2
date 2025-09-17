@@ -29,6 +29,7 @@ class MatrixService
                     'host' => env('redis.host'),
                     'port' => env('redis.port'),
                     'database' => env('redis.database'),
+                    'password' => env('redis.password'),
                 ],
             ]
         ];
