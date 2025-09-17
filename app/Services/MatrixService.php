@@ -15,33 +15,37 @@ class MatrixService
 
     public function __construct()
     {
-        $app = new Container();
-        $app['config'] = [
-            'cache.default' => 'redis',
-            'cache.stores.redis' => [
-                'driver' => 'redis',
-                'connection' => 'default'
-            ],
-            'cache.prefix' => 'illuminate_non_laravel',
-            'database.redis' => [
-                'cluster' => false,
-                'default' => [
-                    'host' => env('redis.host'),
-                    'port' => env('redis.port'),
-                    'database' => env('redis.database'),
-                    'password' => env('redis.password'),
+        try {
+            $app = new Container();
+            $app['config'] = [
+                'cache.default' => 'redis',
+                'cache.stores.redis' => [
+                    'driver' => 'redis',
+                    'connection' => 'default'
                 ],
-            ]
-        ];
+                'cache.prefix' => 'illuminate_non_laravel',
+                'database.redis' => [
+                    'cluster' => false,
+                    'default' => [
+                        'host' => env('redis.host'),
+                        'port' => env('redis.port'),
+                        'database' => env('redis.database'),
+                        'password' => env('redis.password'),
+                    ],
+                ]
+            ];
 
-        $app['redis'] = new RedisManager($app, 'predis', $app['config']['database.redis']);
-        $app['cache'] = new CacheManager($app);
+            $app['redis'] = new RedisManager($app, 'predis', $app['config']['database.redis']);
+            $app['cache'] = new CacheManager($app);
 
-        Facade::setFacadeApplication($app);
+            Facade::setFacadeApplication($app);
 
-        $apiUrl = env('MATRIX_API_URL');
-        $accessToken = env('MATRIX_ACCESS_TOKEN');
-        $this->client = new MatrixClient($apiUrl, $accessToken);
+            $apiUrl = env('MATRIX_API_URL');
+            $accessToken = env('MATRIX_ACCESS_TOKEN');
+            $this->client = new MatrixClient($apiUrl, $accessToken);
+        } catch (\Exception $e) {
+            log_message('error', 'Matrix client initialization failed: ' . $e->getMessage(), $e->getTrace());
+        }
     }
 
     public function createCourseRoom(string $courseCode, string $courseTitle)
