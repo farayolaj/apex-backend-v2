@@ -3,6 +3,7 @@
 namespace App\Services\Student;
 
 use App\Enums\CacheEnum;
+use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Support\Cache\ShowCacheSupport;
 use CodeIgniter\Database\BaseConnection;
@@ -41,7 +42,6 @@ class CourseService
 
     private function requirePaymentForCurrentSemester(array $record): void
     {
-        // '00' or '01' = paid (as per CI3)
         $paid = (isset($record['payment_status']) && in_array($record['payment_status'], ['00','01'], true));
         if (!$paid) {
             throw new \DomainException('You must pay your school fees before you can register your courses');
@@ -103,6 +103,7 @@ class CourseService
         $student = $this->student();
         $record  = $student->academic_record;
 
+        // global check to open/close course reg
         $flag = $forDelete ? 'global_course_unreg_status' : 'global_course_reg_status';
         $status = trim(get_setting($flag));
         if (!$status) {
@@ -123,8 +124,10 @@ class CourseService
 
         // transaction-bound session/payment object (like CI3)
         $record = $student->getStudentCurrentSessionPayment($activeSem);
+        if(!$record){
+            throw new \DomainException("Cannot proceed with registration. No active session payment record found.");
+        }
 
-        // Global gates
         $this->assertRegistrationOpen(null, false);
         $this->ensurePassportUploaded($student);
         $this->ensureActiveSessionMatches($record);
@@ -136,8 +139,8 @@ class CourseService
 
         $this->requirePaymentForCurrentSemester($record);
 
-        loadClass(service('controller')->load, 'courses');
-        loadClass(service('controller')->load, 'course_enrollment');
+        EntityLoader::loadClass($this, 'courses');
+        $courseEnrollment = EntityLoader::loadClass(null, 'course_enrollment');
 
         $this->db->transException(true)->transStart();
 
@@ -153,15 +156,14 @@ class CourseService
                 throw new \DomainException('No course found');
             }
 
-            // semester toggle
             $semesters = ['first','second'];
+            // this ensures only the semester set you can register a course for
             $semesterRegStatus = (int)get_setting('global_course_reg_semester_status'); // 0=both, else 1/2
             if ($semesterRegStatus !== 0 && (int)$course['semester'] !== $semesterRegStatus) {
                 $name = $semesters[((int)$course['semester']) - 1] ?? '';
-                throw new \DomainException("Course Registration is disabled for {$name} semeter");
+                throw new \DomainException("Course Registration is disabled for {$name} semester");
             }
 
-            // duplicate guard
             if ($student->checkEnrolledCourses($courseId, $record['current_session'], $record['current_level'], false, $activeSem)) {
                 $courseName = '"' . $course['course_code'] . ' - ' . $course['course_title'] . '"';
                 throw new \DomainException("You've previously registered for {$courseName}, unselect it and continue registration");
@@ -184,12 +186,11 @@ class CourseService
                 'date_created'   => $date,
             ];
 
-            $courseEntrollment = new \Course_enrollment($enrollment);
-            if (!$courseEntrollment->insert()) {
+            $courseEnrollment = new $courseEnrollment($enrollment);
+            if (!$courseEnrollment->insert()) {
                 throw new \DomainException('Course could not be registered at the moment, try again later');
             }
 
-            // ensure exam_record exists (CI3 logic)
             if (!$student->checkExamRecord($record['current_session'], $record['current_level'])) {
                 $exam = [
                     'student_id'    => $student->id,
@@ -200,8 +201,8 @@ class CourseService
                     'active'        => 1,
                     'date_created'  => $date,
                 ];
-                loadClass(service('controller')->load, 'exam_record');
-                $examRecord = new \Exam_record($exam);
+                $examRecord = EntityLoader::loadClass(null, 'exam_record');
+                $examRecord = new $examRecord($exam);
                 if (!$examRecord->insert()) {
                     throw new \DomainException('Something went wrong while registering your course, try again later');
                 }
@@ -209,7 +210,6 @@ class CourseService
         }
 
         $this->db->transComplete();
-        // CI3 message handled in controller. :contentReference[oaicite:4]{index=4}
     }
 
     public function unregisterCourses(array $courseIds): void
@@ -217,14 +217,16 @@ class CourseService
         $student  = $this->student();
         $activeSem= $this->activeSemester();
         $record   = $student->getStudentCurrentSessionPayment($activeSem);
+        if(!$record){
+            throw new \DomainException("Cannot proceed with unregistration. No active session payment record found.");
+        }
 
-        // Global gates (delete window uses unreg flag)
         $this->assertRegistrationOpen(null, true);
         $this->ensureActiveSessionMatches($record);
         $this->requirePaymentForCurrentSemester($record);
 
-        loadClass(service('controller')->load, 'courses');
-        loadClass(service('controller')->load, 'course_enrollment');
+        EntityLoader::loadClass($this, 'courses');
+        EntityLoader::loadClass($this, 'course_enrollment');
 
         $this->db->transException(true)->transStart();
 
@@ -241,7 +243,7 @@ class CourseService
             }
 
             if ((int)$course['semester'] !== $activeSem) {
-                throw new \DomainException('Course deletion is unavailable for the semeter');
+                throw new \DomainException('Course deletion is unavailable for the semester');
             }
 
             $enrolled = $student->checkEnrolledCourses($courseId, $record['current_session_code'], $record['current_level'], false, $activeSem);
@@ -252,12 +254,11 @@ class CourseService
 
             if (!$this->course_enrollment->deleteCourse($student->id, $courseId, $record['current_session_code'], $record['current_level'], $activeSem)) {
                 $courseName = '"' . $course['course_code'] . ' - ' . $course['course_title'] . '"';
-                throw new \DomainException('An error occured while trying to delete' . $courseName);
+                throw new \DomainException('An error occurred while trying to delete' . $courseName);
             }
         }
 
         $this->db->transComplete();
-        // CI3 message handled in controller. :contentReference[oaicite:5]{index=5}
     }
 
     public function getEnrollment($session, $semester): array
@@ -285,10 +286,10 @@ class CourseService
         $temp    = $student->getAllPaidSession($code);
         $current = (int)get_setting('active_session_student_portal');
 
-        loadClass(service('controller')->load, 'sessions');
+        EntityLoader::loadClass($this, 'sessions');
         $activeSessionObj = $this->sessions->getSessionById($current);
 
-        // Ensure active is included even if unpaid (CI3 behaviour)
+        // Ensure active is included even if unpaid
         $result = [];
         $hasActive = false;
         foreach ($temp as $ses) {
@@ -298,10 +299,9 @@ class CourseService
             $result[] = $ses;
         }
         if (!$hasActive && $activeSessionObj) {
-            // CI3 merges a single session record; assuming $activeSessionObj is array-like
             $result = array_merge((array)$activeSessionObj, $result);
         }
-        return $result; // mirrors allsessions_get. :contentReference[oaicite:6]{index=6}
+        return $result;
     }
 
     public function getStats(?string $session, ?string $semester): array

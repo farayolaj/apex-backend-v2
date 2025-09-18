@@ -148,54 +148,49 @@ class CoursesController extends BaseController
 
     public function register()
     {
-        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
+        $payload = requestPayload();
         $courses = $payload['data'] ?? null;
 
         if (!$courses) {
-            return $this->respond(['status'=>false,'message'=>'No course was selected'], 422);
+            return ApiResponse::error('No course was selected', null, 422);
         }
-        if (is_string($courses)) {
-            $courses = json_decode($courses, true);
-        }
+
         if (!is_array($courses)) {
-            return $this->respond(['status'=>false,'message'=>'Invalid course format'], 422);
+            return ApiResponse::error('Invalid course format', null, 422);
         }
 
         try {
             $this->svc->registerCourses($courses);
-            return $this->respond(['status'=>true,'message'=>'Your selected course(s) has been successfully registered']);
+            return ApiResponse::success('Your selected courses has been registered successfully');
         } catch (\DomainException $e) {
-            return $this->respond(['status'=>false,'message'=>$e->getMessage()], 400);
+            return ApiResponse::error($e->getMessage());
         } catch (\Throwable $e) {
             log_message('error','coursereg.register: {m}', ['m'=>$e->getMessage()]);
-            return $this->respond(['status'=>false,'message'=>'Course could not be registered at the moment, try again later'], 500);
+            return ApiResponse::error('Course could not be registered at the moment, try again later', null, 500);
         }
     }
 
-    // POST /student/v1/course/unregister   body: { "data": [courseId,...] }
     public function unregister()
     {
-        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
+        $payload = requestPayload();
         $courses = $payload['data'] ?? null;
 
         if (!$courses) {
-            return $this->respond(['status'=>false,'message'=>'No course was selected'], 422);
+            return ApiResponse::error('No course was selected');
         }
-        if (is_string($courses)) {
-            $courses = json_decode($courses, true);
-        }
+
         if (!is_array($courses)) {
-            return $this->respond(['status'=>false,'message'=>'Invalid course format'], 422);
+            return ApiResponse::error('Invalid course format');
         }
 
         try {
             $this->svc->unregisterCourses($courses);
-            return $this->respond(['status'=>true,'message'=>'Your selected courses has been deleted successfully']);
+            return ApiResponse::success('Your selected courses has been deleted successfully');
         } catch (\DomainException $e) {
-            return $this->respond(['status'=>false,'message'=>$e->getMessage()], 400);
+            return ApiResponse::error($e->getMessage());
         } catch (\Throwable $e) {
             log_message('error','coursereg.unregister: {m}', ['m'=>$e->getMessage()]);
-            return $this->respond(['status'=>false,'message'=>'An error occured while trying to delete courses'], 500);
+            return ApiResponse::error('Course could not be deleted at the moment, try again later', null, 500);
         }
     }
 
@@ -203,9 +198,9 @@ class CoursesController extends BaseController
     {
         try {
             $payload = $this->svc->getAllPaidSessionsWithActive();
-            return $this->respond(['status'=>true,'message'=>'success','payload'=>$payload]);
+            return ApiResponse::success('success', $payload);
         } catch (\DomainException $e) {
-            return $this->respond(['status'=>false,'message'=>$e->getMessage()], 400);
+            return ApiResponse::error($e->getMessage(), null, 400);
         }
     }
 

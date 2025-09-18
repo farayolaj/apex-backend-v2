@@ -145,25 +145,25 @@ class Students extends Crud
      * @param mixed $id
      * @return bool|<missing>
      */
-    public function getStudentCurrentSessionPayment($semester = null, $id = null)
+    public function getStudentCurrentSessionPayment(?string $semester = null, $id = null)
     {
         $schoolFeesCode = get_setting('school_fees_code');
-        $query = "SELECT students.id as student_id, students.*, academic_record.*, academic_record.programme_id as programme_id_code, 
-       		academic_record.current_session as current_session_code, fee_description.*, fee_description.code as payment_code, 
-       		transaction.*, transaction.session as trans_session from students left join academic_record on 
-       		academic_record.student_id = students.id left join transaction on transaction.student_id = students.id 
-       		left join fee_description on fee_description.id = transaction.payment_id where transaction.student_id = ? and 
-       		fee_description.code = ? and transaction.session = academic_record.current_session";
+        $query = "SELECT a.student_id, a.current_session,a.current_level,a.programme_id as programme_id_code, 
+       		a.current_session as current_session_code, c.code as payment_code, 
+       		b.payment_status, b.session as trans_session from academic_record a
+       		join transaction b on b.student_id = a.student_id 
+       		left join fee_description c on c.id = b.payment_id 
+       	    where b.student_id = ? and c.code = ? and b.session = a.current_session";
         if ($semester) {
-            $query .= " and transaction.payment_id = '$semester'";
+            $query .= " and b.payment_id = '$semester'";
         }
         $id = $id ?? $this->id;
         $results = $this->query($query, [$id, $schoolFeesCode]);
         if (!$results) {
-            return false;
+            return null;
         }
         foreach ($results as $res) {
-            if (isset($res['payment_status']) && CommonTrait::isPaymentValid($res['payment_status'])) {
+            if (isset($res['payment_status']) && self::isPaymentValid($res['payment_status'])) {
                 return $res;
             }
         }
@@ -2267,7 +2267,7 @@ class Students extends Crud
     }
 
     /**
-     * Checking if student is already entrolled for a course
+     * Checking if student is already enrolled for a course
      * @param mixed $session
      * @param mixed $studentLevel
      * @param mixed $courseArray

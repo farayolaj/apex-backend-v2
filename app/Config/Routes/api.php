@@ -43,6 +43,9 @@ $routes->group('v1/api/', [
     $routes->get('course/search', 'CoursesController::search');
     $routes->get('course/is_registration_open', 'CoursesController::isOpen');
     $routes->get('course/is_registration_delete_open', 'CoursesController::isDeleteOpen');
+    $routes->post('course/registration', 'CoursesController::register');
+    $routes->post('course/unregister', 'CoursesController::unregister');
+    $routes->get('student/sessions', 'CoursesController::sessions');
 
     // tour
     $routes->get('tour/settings', 'TourController::getTourSettings');

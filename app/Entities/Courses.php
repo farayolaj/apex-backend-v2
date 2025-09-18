@@ -95,7 +95,8 @@ class Courses extends Crud
 
     public function getCourseById($courseId, $courseArray = false, $programmeId = null, $entryMode = null, $semester = null)
     {
-        $query = "SELECT courses.id as course_id, courses.*, course_mapping.id as course_mapping_id, course_mapping.* from courses left join course_mapping on course_mapping.course_id = courses.id where courses.id = ?";
+        $query = "SELECT courses.id as course_id, courses.*, course_mapping.id as course_mapping_id, course_mapping.* 
+            from courses left join course_mapping on course_mapping.course_id = courses.id where courses.id = ?";
         if ($entryMode) {
             $query .= " and course_mapping.mode_of_entry = '$entryMode'";
         }
