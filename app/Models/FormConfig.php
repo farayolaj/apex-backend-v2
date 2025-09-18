@@ -72,10 +72,6 @@ class FormConfig
                 (
                     'search' => ['applicant_id', 'firstname', 'lastname', 'email', 'phone', 'applicant_id'],
                 ),
-                'students' => array
-                (
-                    'search' => ['matric_number', 'application_number', 'firstname', 'lastname', 'othernames', 'gender', 'phone', 'reg_num', 'e.name', 'd.name'],
-                ),
                 'student_verification_fee' => array
                 (
                     'search' => ['matric_number', 'firstname', 'lastname', 'department.name', 'faculty.name'],
@@ -232,22 +228,22 @@ class FormConfig
                 array(
                     'filter_label' => 'c.id',
                     'filter_display' => 'entryYear', // to be used on the client side
-                    'preload_query' => "SELECT id,date as value from sessions order by date desc",
+                    'preload_query' => null,
                 ),
                 array(
                     'filter_label' => 'e.id',
                     'filter_display' => 'department',
-                    'preload_query' => "SELECT id,name as value from department where type = 'academic' order by value asc",
+                    'preload_query' => null,
                 ),
                 array(
                     'filter_label' => 'f.id',
                     'filter_display' => 'faculty',
-                    'preload_query' => "SELECT id,name as value from faculty order by value asc",
+                    'preload_query' => null,
                 ),
                 array(
                     'filter_label' => 'd.id',
                     'filter_display' => 'programme',
-                    'preload_query' => "SELECT id,name as value from programme order by value asc",
+                    'preload_query' => null,
                 ),
                 array(
                     'filter_label' => 'b.current_level',

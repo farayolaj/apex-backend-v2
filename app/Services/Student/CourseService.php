@@ -384,4 +384,65 @@ class CourseService
         );
     }
 
+    public function createTourEnrollment(): array
+    {
+        $tourCourseId = get_setting('tour_course_id');
+        $tourSessionId = get_setting('tour_session_id');
+        $student = $this->student();
+        $record   = $student->academic_record;
+
+        $course = fetchSingle($this->db, 'courses', 'id', $tourCourseId);
+        if(!$course){
+            throw new \DomainException('Course not found');
+        }
+
+        $activeSemester = get_setting('active_semester');
+        $date = date('Y-m-d H:i:s');
+        $enrollment = [
+            'student_id'     => $student->id,
+            'course_id'      => $tourCourseId,
+            'course_unit'    => 3,
+            'course_status'  => 'E',
+            'semester'       => $activeSemester,
+            'session_id'     => $tourSessionId,
+            'student_level'  => $record->current_level,
+            'ca_score'       => null,
+            'exam_score'     => null,
+            'total_score'    => null,
+            'is_approved'    => 1,
+            'date_last_update'=> '',
+            'date_created'   => $date,
+        ];
+        if ($student->checkEnrolledCourses($tourCourseId, $tourSessionId, $record->current_level, false, $activeSemester)) {
+            return $enrollment;
+        }
+        $this->db->transException(true)->transStart();
+
+        $this->db->table('course_enrollment')->insert($enrollment);
+        $id = (int)$this->db->insertID();
+        if (! $id) {
+            throw new \RuntimeException('Student enrollment failed');
+        }
+        $this->db->transComplete();
+        $enrollment['id'] = $id;
+        return $enrollment;
+    }
+
+    public function removeTourEnrollment(): void
+    {
+        $tourCourseId = get_setting('tour_course_id');
+        $tourSessionId = get_setting('tour_session_id');
+        $student = $this->student();
+
+        $this->db->transException(true)->transStart();
+
+        $this->db->table('course_enrollment')
+            ->where('student_id', $student->id)
+            ->where('course_id', $tourCourseId)
+            ->where('session_id', $tourSessionId)
+            ->delete();
+
+        $this->db->transComplete();
+    }
+
 }

@@ -695,7 +695,7 @@ class Applicants extends Crud
 			left join programme b on b.id = a.programme_id left join programme c on c.id = a.programme_given left join 
 			admission d on d.id = a.admission_id $filterQuery
 			UNION
-			SELECT " . buildApiClause(static::$apiSelectClause, 'e', false) . " ,f.name as programme_interest,
+			SELECT " . buildApiClause(static::$apiSelectClause, 'e') . " ,f.name as programme_interest,
 			g.name as programme_offered,h.name as admission_type,'applicant_putme' as applicant_type from applicant_post_utme e 
 			left join programme f on f.id = e.programme_id left join programme g on g.id = e.programme_given left join 
 			admission h on h.id = e.admission_id $filterQuery1

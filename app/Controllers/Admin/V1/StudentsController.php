@@ -4,18 +4,29 @@ namespace App\Controllers\Admin\V1;
 
 use App\Controllers\BaseController;
 use App\Libraries\ApiResponse;
-use CodeIgniter\API\ResponseTrait;
+use App\Traits\Crud\EntityListTrait;
 use App\Services\Admin\StudentService;
 
 class StudentsController extends BaseController
 {
-    use ResponseTrait;
+    use EntityListTrait;
 
     private StudentService $svc;
 
     public function __construct()
     {
         $this->svc = service('student');
+    }
+
+    public function index(){
+        $payload = $this->listApiEntity('students');
+        return ApiResponse::success(data: $payload);
+    }
+
+    public function show(int $id)
+    {
+        $payload = $this->showListEntity('students', $id);
+        return ApiResponse::success(data: $payload);
     }
 
     public function store()
@@ -96,4 +107,5 @@ class StudentsController extends BaseController
             return ApiResponse::error('Student cannot be added, something went wrong!', null, 500);
         }
     }
+
 }

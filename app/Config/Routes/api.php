@@ -46,6 +46,8 @@ $routes->group('v1/api/', [
     $routes->post('course/registration', 'CoursesController::register');
     $routes->post('course/unregister', 'CoursesController::unregister');
     $routes->get('student/sessions', 'CoursesController::sessions');
+    $routes->post('course/tour/create', 'CoursesController::tourEnrollment');
+    $routes->post('course/tour/delete', 'CoursesController::tourEnrollmentRemoved');
 
     // tour
     $routes->get('tour/settings', 'TourController::getTourSettings');

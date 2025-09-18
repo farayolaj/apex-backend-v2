@@ -11,8 +11,8 @@ final class ApiListParams
     public string $dir = 'up';
 
     public ?string $rawOrder = null;
-
     private bool $usePaging = false;
+
     /**
      * Your internal column=>value filters (e.g., ['a.code'=>'eco'])
      */

@@ -354,7 +354,7 @@ trait CrudTrait {
             ->limit(1);
 
         $row = $b->get()->getRowArray();
-        if (! $row) return null;
+        if (!$row) return null;
 
         $row = $this->postProcessOne($row);
 

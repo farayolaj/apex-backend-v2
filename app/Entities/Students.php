@@ -9,10 +9,12 @@ use App\Enums\StudentStatusEnum as StudentStatus;
 use App\Libraries\EntityLoader;
 use App\Models\Crud;
 use App\Models\GoogleService;
+use App\Support\DTO\ApiListParams;
 use App\Traits\CommonTrait;
 use App\Traits\ProfileTrait;
 use App\Traits\StudentTrait;
 use CodeIgniter\Config\Factories;
+use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\BaseResult;
 use CodeIgniter\Database\Query;
 use Config\Services;
@@ -26,32 +28,120 @@ class Students extends Crud
 
     protected static $tablename = 'Students';
     /* this array contains the field that can be null*/
-    static $nullArray = ['referee', 'alternative_email', 'verified_by', 'verify_attempt', 'screened_by', 'screening_attempt', 'date_created'];
-    static $compositePrimaryKey = [];
-    static $uploadDependency = [];
+    public static $nullArray = ['referee', 'alternative_email', 'verified_by', 'verify_attempt', 'screened_by', 'screening_attempt', 'date_created'];
+    public static $compositePrimaryKey = [];
+    public static $uploadDependency = [];
     /*this array contains the fields that are unique*/
-    static $uniqueArray = [];
+    public static $uniqueArray = [];
     /*this is an associative array containing the fieldname and the type of the field*/
-    static $typeArray = ['firstname' => 'varchar', 'othernames' => 'varchar', 'lastname' => 'varchar', 'gender' => 'varchar', 'DoB' => 'varchar', 'phone' => 'varchar', 'marital_status' => 'varchar', 'religion' => 'varchar', 'contact_address' => 'varchar', 'postal_address' => 'varchar', 'profession' => 'varchar', 'state_of_origin' => 'varchar', 'lga' => 'varchar', 'nationality' => 'varchar', 'reg_num' => 'varchar', 'passport' => 'varchar', 'full_image' => 'varchar', 'next_of_kin' => 'varchar', 'next_of_kin_phone' => 'varchar', 'next_of_kin_address' => 'varchar', 'referee' => 'text', 'alternative_email' => 'varchar', 'user_login' => 'varchar', 'user_pass' => 'varchar', 'session_key' => 'mediumtext', 'user_agent' => 'text', 'ip_address' => 'varchar', 'last_logged_in' => 'varchar', 'active' => 'tinyint', 'is_verified' => 'tinyint', 'verified_by' => 'text', 'verify_attempt' => 'tinyint', 'date_verified' => 'datetime', 'date_created' => 'timestamp', 'password' => 'varchar', 'document_verification' => 'varchar', 'verify_comments' => 'text'];
+    public static $typeArray = ['firstname' => 'varchar', 'othernames' => 'varchar', 'lastname' => 'varchar',
+        'gender' => 'varchar', 'DoB' => 'varchar', 'phone' => 'varchar', 'marital_status' => 'varchar',
+        'religion' => 'varchar', 'contact_address' => 'varchar', 'postal_address' => 'varchar', 'profession' => 'varchar',
+        'state_of_origin' => 'varchar', 'lga' => 'varchar', 'nationality' => 'varchar', 'reg_num' => 'varchar',
+        'passport' => 'varchar', 'full_image' => 'varchar', 'next_of_kin' => 'varchar', 'next_of_kin_phone' => 'varchar',
+        'next_of_kin_address' => 'varchar', 'referee' => 'text', 'alternative_email' => 'varchar', 'user_login' => 'varchar',
+        'user_pass' => 'varchar', 'session_key' => 'mediumtext', 'user_agent' => 'text', 'ip_address' => 'varchar',
+        'last_logged_in' => 'varchar', 'active' => 'tinyint', 'is_verified' => 'tinyint', 'verified_by' => 'text',
+        'verify_attempt' => 'tinyint', 'date_verified' => 'datetime', 'date_created' => 'timestamp', 'password' => 'varchar', 'document_verification' => 'varchar', 'verify_comments' => 'text'];
+
     /*this is a dictionary that map a field name with the label name that will be shown in a form*/
-    static $labelArray = ['ID' => '', 'firstname' => '', 'othernames' => '', 'lastname' => '', 'gender' => '', 'DoB' => '', 'phone' => '', 'marital_status' => '', 'religion' => '', 'contact_address' => '', 'postal_address' => '', 'profession' => '', 'state_of_origin' => '', 'lga' => '', 'nationality' => '', 'reg_num' => '', 'passport' => '', 'full_image' => '', 'next_of_kin' => '', 'next_of_kin_phone' => '', 'next_of_kin_address' => '', 'referee' => '', 'alternative_email' => '', 'user_login' => '', 'user_pass' => '', 'session_key' => '', 'user_agent' => '', 'ip_address' => '', 'last_logged_in' => '', 'active' => '', 'is_verified' => '', 'verified_by' => '', 'verify_attempt' => '', 'date_verified' => '', 'date_created' => '', 'password' => '', 'document_verification' => '', 'verify_comments' => ''];
+    public static $labelArray = ['ID' => '', 'firstname' => '', 'othernames' => '', 'lastname' => '', 'gender' => '', 'DoB' => '',
+        'phone' => '', 'marital_status' => '', 'religion' => '', 'contact_address' => '', 'postal_address' => '', 'profession' => '',
+        'state_of_origin' => '', 'lga' => '', 'nationality' => '', 'reg_num' => '', 'passport' => '', 'full_image' => '',
+        'next_of_kin' => '', 'next_of_kin_phone' => '', 'next_of_kin_address' => '', 'referee' => '', 'alternative_email' => '',
+        'user_login' => '', 'user_pass' => '', 'session_key' => '', 'user_agent' => '', 'ip_address' => '', 'last_logged_in' => '',
+        'active' => '', 'is_verified' => '', 'verified_by' => '', 'verify_attempt' => '', 'date_verified' => '', 'date_created' => '',
+        'password' => '', 'document_verification' => '', 'verify_comments' => ''];
     /*associative array of fields that have default value*/
-    static $defaultArray = ['date_created' => 'current_timestamp()'];
+    public static $defaultArray = ['date_created' => 'current_timestamp()'];
     //populate this array with fields that are meant to be displayed as document in the format array('fieldname'=>array('filetype','maxsize',foldertosave','preservefilename'))
     //the folder to save must represent a path from the basepath. it should be a relative path,preserve filename will be either true or false. when true,the file will be uploaded with it default filename else the system will pick the current user id in the session as the name of the file.
-    static $documentField = []; //array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
+    public static array $documentField = []; //array containing an associative array of field that should be regareded as document field. it will contain the setting for max size and data type.
 
-    static $relation = [];
+    public static array $relation = [];
 
-    static $tableAction = ['delete' => 'delete/students', 'edit' => 'edit/students'];
+    public static array $tableAction = ['delete' => 'delete/students', 'edit' => 'edit/students'];
 
-    static $apiSelectClause = ['id', 'firstname', 'lastname', 'othernames', 'gender', 'dob', 'phone', 'contact_address', 'state_of_origin'];
+    static array $apiSelectClause = ['id', 'firstname', 'lastname', 'othernames', 'gender', 'dob', 'phone', 'contact_address', 'state_of_origin'];
 
-    static $uploadFields = ['matric_number', 'surname', 'firstname', 'other_names', 'programme', 'phone_number', 'user_login', 'alternative_email', 'gender', 'date_of_birth', 'marital_status', 'entry_mode', 'mode_of_study', 'academic_level', 'interactive_center', 'exam_center', 'teaching_subject', 'nationality', 'state_of_origin', 'lga', 'level_of_admission', 'session_of_admission', 'current_session', 'min_programme_duration', 'max_programme_duration', 'has_matric_number', 'has_institution_email', 'application_number'];
+    protected array $searchable = ['b.matric_number', 'b.application_number', 'a.firstname',
+        'a.lastname', 'a.othernames', 'a.alternative_email' ,'reg_num', 'e.name', 'd.name'];
+
+    protected array $sortable = [
+        'fullname' => 'a.lastname',
+        'matric_number'=> 'b.matric_number'
+    ];
 
     public function __construct($array = [])
     {
         parent::__construct($array);
+    }
+
+    protected function baseBuilder(): BaseBuilder
+    {
+        $query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . " ,CONCAT(upper(a.lastname), ', ', a.firstname) AS fullname,
+		b.matric_number as matric_number,b.current_level as level, c.date as year_of_entry,
+		e.name as department, f.name as faculty, d.name as programme,b.application_number,a.active
+		from students a join academic_record b on b.student_id = a.id left join sessions c on c.id = b.year_of_entry
+		join programme d on d.id = b.programme_id join department e on e.id = d.department_id join
+		faculty f on f.id = d.faculty_id";
+        return $this->db->table('students a')
+            ->join('academic_record b', 'b.student_id = a.id')
+            ->join('sessions c', 'c.id = b.year_of_entry', 'left')
+            ->join('programme d', 'd.id = b.programme_id')
+            ->join('department e', 'e.id = d.department_id')
+            ->join('faculty f', 'f.id = d.faculty_id');
+    }
+
+    public function defaultSelect(): string
+    {
+        return buildApiClause(static::$apiSelectClause, 'a') . " ,CONCAT(upper(a.lastname), ', ', a.firstname) AS fullname,
+		b.matric_number as matric_number,b.current_level as level, c.date as year_of_entry,
+		e.name as department, f.name as faculty, d.name as programme,b.application_number,a.active";
+    }
+
+    protected function applyDefaultOrder(BaseBuilder $builder): void
+    {
+        $builder->orderBy('a.date_created', 'desc');
+    }
+
+    protected function postProcess(array $rows): array
+    {
+        return $this->processList($rows);
+    }
+
+    protected function postProcessOne(array $row): array
+    {
+        return $row;
+    }
+
+    public function APIList($request, array $filterList): array
+    {
+        $params = ApiListParams::fromArray($request, [
+            'start' => 1,
+            'len' => 20,
+        ]);
+
+        $params->filters = $filterList;
+
+        return $this->listApi(null, $params);
+    }
+
+    private function processList($items): array
+    {
+        $payload = [];
+        foreach (useGenerators($items) as $item) {
+            $payload[] = $this->loadExtras($item);
+        }
+        return $payload;
+    }
+
+    public function loadExtras($item)
+    {
+        if (isset($item['phone'])) {
+            $item['phone'] = decryptData($item['phone']);
+        }
+        return $item;
     }
 
     /**
@@ -203,7 +293,7 @@ class Students extends Crud
         $id = $id ?? $this->id;
         $result = $this->query($query, [$id]);
         if (!$result) {
-            return false;
+            return null;
         }
         return $result[0];
     }
@@ -1163,9 +1253,9 @@ class Students extends Crud
         if (
             $payment->description == PaymentFeeDescription::OUTSTANDING_22->value ||
             ($descriptionCode && (
-                $descriptionCode == FeeDescriptionCode::REACTIVATION_CODE->value ||
-                $descriptionCode == FeeDescriptionCode::SUSPENSION_CODE->value
-            ))
+                    $descriptionCode == FeeDescriptionCode::REACTIVATION_CODE->value ||
+                    $descriptionCode == FeeDescriptionCode::SUSPENSION_CODE->value
+                ))
         ) {
             $prerequisites = [];
         }
@@ -2148,10 +2238,10 @@ class Students extends Crud
 
             if (
                 ($isPartPayment && (
-                    isFinalistOrExtraYear($academic_record) ||
-                    $this->hasPaidSchFee($academic_record) ||
-                    $this->isNewlyAdmitted($academic_record)
-                ))
+                        isFinalistOrExtraYear($academic_record) ||
+                        $this->hasPaidSchFee($academic_record) ||
+                        $this->isNewlyAdmitted($academic_record)
+                    ))
             ) {
                 continue;
             }
@@ -3203,7 +3293,9 @@ class Students extends Crud
      * @param mixed $programme_id
      * @return void
      */
-    public function getOutstandingCourses($student_id, $session, $level, $programme_id) {}
+    public function getOutstandingCourses($student_id, $session, $level, $programme_id)
+    {
+    }
 
     /**
      * @return array|array<string,array<string,mixed>>
@@ -3379,68 +3471,6 @@ class Students extends Crud
         ];
 
         return [$content, $content1];
-    }
-
-    /**
-     * @param mixed $filterList
-     * @param mixed $queryString
-     * @param mixed $start
-     * @param mixed $len
-     * @param mixed $orderBy
-     * @return array
-     */
-    public function APIList($filterList, $queryString, $start, $len, $orderBy): array
-    {
-        $temp = getFilterQueryFromDict($filterList);
-        $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
-        $filterValues = $temp[1];
-
-        if (isset($_GET['sortBy']) && $orderBy) {
-            $filterQuery .= " order by $orderBy ";
-        } else {
-            $filterQuery .= " order by a.date_created desc ";
-        }
-
-        if (isset($_GET['start']) && $len) {
-            $start = $this->db->escapeString($start);
-            $len = $this->db->escapeString($len);
-            $filterQuery .= " limit $start, $len";
-        }
-        if (!$filterValues) {
-            $filterValues = [];
-        }
-
-        $query = "SELECT " . buildApiClause(static::$apiSelectClause, 'a') . " ,CONCAT(upper(a.lastname), ', ', a.firstname) AS fullname,
-		b.matric_number as matric_number,b.current_level as level, c.date as year_of_entry,
-		e.name as department, f.name as faculty, d.name as programme,b.application_number,a.active
-		from students a join academic_record b on b.student_id = a.id left join sessions c on c.id = b.year_of_entry
-		join programme d on d.id = b.programme_id join department e on e.id = d.department_id join
-		faculty f on f.id = d.faculty_id $filterQuery";
-
-        $query2 = "SELECT FOUND_ROWS() as totalCount";
-        $res = $this->db->query($query, $filterValues);
-        $res = $res->getResultArray();
-        $res2 = $this->db->query($query2);
-        $res2 = $res2->getResultArray();
-        $res = $this->processList($res);
-        return [$res, $res2];
-    }
-
-    private function processList($items)
-    {
-        $payload = [];
-        foreach (useGenerators($items) as $item) {
-            $payload[] = $this->loadExtras($item);
-        }
-        return $payload;
-    }
-
-    public function loadExtras($item)
-    {
-        if (isset($item['phone'])) {
-            $item['phone'] = decryptData($item['phone']);
-        }
-        return $item;
     }
 
     /**

@@ -220,38 +220,6 @@ class Course_mapping extends Crud
         );
     }
 
-    public function APIListOld($filterList, $queryString, $start, $len, $orderBy)
-    {
-        $temp = getFilterQueryFromDict($filterList);
-        $filterQuery = buildCustomWhereString($temp[0], $queryString, false);
-        $filterValues = $temp[1];
-
-        if (isset($_GET['sortBy']) && $orderBy) {
-            $filterQuery .= " order by $orderBy ";
-        } else {
-            $filterQuery .= " order by b.code asc, name asc ";
-        }
-
-        if (isset($_GET['start']) && $len) {
-            $start = $this->db->escapeString($start);
-            $len = $this->db->escapeString($len);
-            $filterQuery .= " limit $start, $len";
-        }
-        if (!$filterValues) {
-            $filterValues = [];
-        }
-
-        $query = "SELECT SQL_CALC_FOUND_ROWS a.*, c.name, b.code as course_code from course_mapping a 
-                join courses b on b.id = a.course_id join programme c on c.id = a.programme_id $filterQuery";
-        $query2 = "SELECT FOUND_ROWS() as totalCount";
-        $res = $this->db->query($query, $filterValues);
-        $res = $res->getResultArray();
-        $res2 = $this->db->query($query2);
-        $res2 = $res2->getResultArray();
-
-        return [$this->processList($res), $res2];
-    }
-
     private function processList(array $items): array
     {
         $generator = useGenerators($items);

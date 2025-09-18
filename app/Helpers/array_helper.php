@@ -627,7 +627,7 @@ if (!function_exists('getFilterQueryFromDict')) {
 }
 
 if (!function_exists('buildApiClause')) {
-    function buildApiClause(?array $apiSelectClause = [], ?string $alias = null, bool $sqlCalc = true): string
+    function buildApiClause(?array $apiSelectClause = [], ?string $alias = null): string
     {
         $clause = $alias ? "{$alias}.*" : "*";
         if (!empty($apiSelectClause)) {
@@ -637,7 +637,7 @@ if (!function_exists('buildApiClause')) {
             );
             $clause = implode(', ', $fields);
         }
-        return $sqlCalc ? "SQL_CALC_FOUND_ROWS {$clause}" : $clause;
+        return $clause;
     }
 }
 

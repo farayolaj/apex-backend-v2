@@ -6,7 +6,7 @@ use CodeIgniter\Database\BaseBuilder;
 final class DictFilters
 {
     /**
-     * Apply your internal dict to the builder:
+     * Apply internal dict to the builder:
      *   ['a.code' => 'eco', 'department_id' => 4, 'status' => ['active','pending'], 'deleted_at' => null]
      */
     public static function apply(BaseBuilder $b, array $map, ?string $defaultAlias = 'a'): void
@@ -14,7 +14,7 @@ final class DictFilters
         if (empty($map)) return;
 
         foreach ($map as $col => $val) {
-            $qualified = (strpos($col, '.') === false && $defaultAlias)
+            $qualified = (!str_contains($col, '.') && $defaultAlias)
                 ? "{$defaultAlias}.{$col}"
                 : $col;
 

@@ -204,5 +204,29 @@ class CoursesController extends BaseController
         }
     }
 
+    public function tourEnrollment(){
+        try {
+            $res = $this->svc->createTourEnrollment();
+            return ApiResponse::success('Student enrolled successfully', $res);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage());
+        } catch (\Throwable $e) {
+            log_message('error','students.tour.create: {m}', ['m'=>$e->getMessage()]);
+            return ApiResponse::error('Student cannot be enrolled, something went wrong!');
+        }
+    }
+
+    public function tourEnrollmentRemoved(){
+        try {
+            $this->svc->removeTourEnrollment();
+            return ApiResponse::success('Student unenrolled successfully');
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage());
+        } catch (\Throwable $e) {
+            log_message('error','students.tour.delete: {m}', ['m'=>$e->getMessage()]);
+            return ApiResponse::error('Student cannot be unenrolled, something went wrong!');
+        }
+    }
+
 
 }

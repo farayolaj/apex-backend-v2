@@ -628,7 +628,7 @@ class User_requests extends Crud
 				q.project_title, q.project_id,
        			q.request_type, q.is_auditable, q.prev_request, q.firstname, q.lastname, q.staff_id
 				from ( 
-					SELECT " . buildApiClause(static::$apiSelectClause, 'a', false) . ", b.task_title,
+					SELECT " . buildApiClause(static::$apiSelectClause, 'a') . ", b.task_title,
 					c.title as project_title, c.id as project_id,d.name as request_type, d.is_auditable,
 					'prev_request' as prev_request, 
 					CASE

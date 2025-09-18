@@ -241,4 +241,5 @@ class StudentService
     {
         return (bool)$this->db->table($table)->select('1')->where($col,$val)->where("$pk !=",$id)->get()->getFirstRow();
     }
+
 }

@@ -77,6 +77,8 @@ $routes->group('v1/web/', [
     // student management
     $routes->get('students/photos', 'PhotoManagerController::photos');
     $routes->post('students/photo/download', 'PhotoManagerController::photoDownload');
+    $routes->get('students', 'StudentsController::index');
+    $routes->get('students/(:segment)', 'StudentsController::show/$1');
     $routes->post('students/create', 'StudentsController::store');
     $routes->patch('students/update/(:num)', 'StudentsController::update/$1');
 
