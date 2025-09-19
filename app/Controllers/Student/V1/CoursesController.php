@@ -28,12 +28,18 @@ class CoursesController extends BaseController
     public function courseDetails($id)
     {
         $result = $this->courses->getDetails($id);
-        $result['course_guide'] = GoogleDriveStorageService::getPublicUrl(
-            $result['course_guide_id']
-        );
-        $result['course_room_url'] = Services::courseRoomModel()->getCourseRoomLink(
-            $result['main_course_id']
-        );
+        if(isset($result['course_guide_id'])){
+            $result['course_guide'] = GoogleDriveStorageService::getPublicUrl(
+                $result['course_guide_id']
+            );
+        }
+
+        if(isset($result['main_course_id'])){
+            $result['course_room_url'] = Services::courseRoomModel()->getCourseRoomLink(
+                $result['main_course_id']
+            );
+        }
+        
         return ApiResponse::success('success', $result);
     }
 

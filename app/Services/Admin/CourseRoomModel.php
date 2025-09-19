@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Admin;
+namespace App\Services\Admin;
 
 use App\Entities\Course_enrollment;
 use App\Entities\Course_manager;
