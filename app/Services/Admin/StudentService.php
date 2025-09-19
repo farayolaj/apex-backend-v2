@@ -15,6 +15,16 @@ class StudentService
         $this->db ??= db_connect();
     }
 
+    private function loadStudent(int $studentId): object
+    {
+        $student = EntityLoader::loadClass(null, 'students');
+        $student->id = $studentId;
+        if (!$student->load()) {
+            throw new \DomainException('Invalid student info');
+        }
+        return $student;
+    }
+
     public function createStudent(array $in): array
     {
         $email = strtolower(trim($in['email'] ?? ''));
@@ -240,6 +250,18 @@ class StudentService
     private function existsOther(string $table, string $col, string $val, string $pk, int $id): bool
     {
         return (bool)$this->db->table($table)->select('1')->where($col,$val)->where("$pk !=",$id)->get()->getFirstRow();
+    }
+
+    public function getAllRegisteredCourses(int $studentId): array
+    {
+        $students = $this->loadStudent($studentId);
+        $academic = $students->academic_record;
+
+        return [
+            'has_payment' => $students->hasPayment($studentId, $academic->current_session),
+            'course_registration_log' => $students->getCourseRegistrationLog($studentId),
+            'registered_courses' => $students->getAllStudentRegisteredCourses($studentId),
+        ];
     }
 
 }

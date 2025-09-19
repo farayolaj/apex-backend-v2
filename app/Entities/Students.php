@@ -2327,14 +2327,13 @@ class Students extends Crud
 
     /**
      * The checks student payment for the session
-     * @param  [type]  $session [description]
      * @param mixed $student
      * @param mixed $session
      * @param mixed $semester
      * @param mixed $return
      * @return boolean          [description]
      */
-    public function hasPayment($student, $session, $semester = null, $return = false)
+    public function hasPayment(int $student, int $session, ?int $semester = null, bool $return = false)
     {
         $data = [$student, $session];
         $sessionSemesterStart = get_setting('session_semester_payment_start');

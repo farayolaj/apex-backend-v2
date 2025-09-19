@@ -79,8 +79,15 @@ $routes->group('v1/web/', [
     $routes->post('students/photo/download', 'PhotoManagerController::photoDownload');
     $routes->get('students', 'StudentsController::index');
     $routes->get('students/(:segment)', 'StudentsController::show/$1');
-    $routes->post('students/create', 'StudentsController::store');
-    $routes->patch('students/update/(:num)', 'StudentsController::update/$1');
+    $routes->post('students/create', 'StudentsController::store', [
+        'filter' => 'authorize:student_create'
+    ]);
+    $routes->patch('students/update/(:num)', 'StudentsController::update/$1', [
+        'filter' => 'authorize:student_edit'
+    ]);
+    $routes->get('students/course/registered', 'StudentsController::studentAllRegistered', [
+        'filter' => 'authorize:student_edit'
+    ]);
 
     // applicants management
     $routes::post('admissions/single/admission', 'AdmissionController::singleAdmission');
