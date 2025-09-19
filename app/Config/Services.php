@@ -77,7 +77,7 @@ class Services extends BaseService
         return new \App\Services\MatrixService();
     }
 
-    public static function courseRoomModel($getShared = true): \App\Models\Services\CourseRoomModel
+    public static function courseRoomModel($getShared = true): \App\Services\Admin\CourseRoomModel
     {
         if ($getShared) {
             return static::getSharedInstance('courseRoomModel');
