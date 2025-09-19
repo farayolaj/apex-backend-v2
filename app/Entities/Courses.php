@@ -10,7 +10,7 @@ use App\Models\WebSessionManager;
 use App\Services\GoogleDriveStorageService;
 use App\Support\DTO\ApiListParams;
 use App\Traits\ResultManagerTrait;
-
+use CodeIgniter\Database\RawSql;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -667,8 +667,50 @@ class Courses extends Crud
         return $this->db->table('courses')->where('id', $courseId)->update(['course_guide_id' => $fileId]);
     }
 
-    public function getCourse(string $courseId)
+    /**
+     * @return array{ id: string, code: string, title: string, room_id: ?string }
+     */
+    public function getCourse(string $courseIdOrCode)
     {
-        return $this->db->table('courses')->where('id', $courseId)->get()->getRowArray();
+        return $this->db->table('courses c')
+            ->select('c.id, c.code, c.title, mr.room_id')
+            ->join('matrix_rooms mr', 'mr.entity_id = c.id AND mr.room_type = "course"', 'left')
+            ->groupStart()
+            ->where('id', $courseIdOrCode)
+            ->orWhere(new RawSql('UPPER(c.code)'), strtoupper($courseIdOrCode))
+            ->groupEnd()
+            ->where('active', 1)
+            ->get()
+            ->getRowArray();
+    }
+
+    /**
+     * @return list<array{ id: string, code: string, title: string }>
+     */
+    public function getCoursesWithoutRooms()
+    {
+        $entityIdQuery = $this->db->table('matrix_rooms')
+            ->select('entity_id')
+            ->where('room_type', 'course');
+
+        return $this->db->table('courses')
+            ->select('id, code, title')
+            ->where('active', 1)
+            ->whereNotIn("id", $entityIdQuery)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * @return list<array{ id: string, code: string, title: string, room_id: string }>
+     */
+    public function getCoursesWithRooms()
+    {
+        return $this->db->table('courses c')
+            ->select('c.id, c.code, c.title, mr.room_id')
+            ->join('matrix_rooms mr', 'mr.entity_id = c.id AND mr.room_type = "course"')
+            ->where('active', 1)
+            ->get()
+            ->getResultArray();
     }
 }

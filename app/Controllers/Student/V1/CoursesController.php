@@ -12,6 +12,7 @@ use App\Models\WebSessionManager;
 use App\Services\GoogleDriveStorageService;
 use App\Services\Student\CourseService;
 use App\Support\Cache\ShowCacheSupport;
+use Config\Services;
 
 class CoursesController extends BaseController
 {
@@ -29,6 +30,9 @@ class CoursesController extends BaseController
         $result = $this->courses->getDetails($id);
         $result['course_guide'] = GoogleDriveStorageService::getPublicUrl(
             $result['course_guide_id']
+        );
+        $result['course_room_url'] = Services::courseRoomModel()->getCourseRoomLink(
+            $result['main_course_id']
         );
         return ApiResponse::success('success', $result);
     }

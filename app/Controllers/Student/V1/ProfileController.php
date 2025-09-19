@@ -3,10 +3,11 @@
 namespace App\Controllers\Student\V1;
 
 use App\Controllers\BaseController;
+use App\Entities\Matrix_rooms;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
+use App\Models\Admin\CourseRoomModel;
 use App\Models\WebSessionManager;
-use CodeIgniter\HTTP\ResponseInterface;
 
 class ProfileController extends BaseController
 {
@@ -43,17 +44,17 @@ class ProfileController extends BaseController
         $student = WebSessionManager::currentAPIUser();
         EntityLoader::loadClass($this, 'students');
         $postData = request()->getRawInput();
-        
+
         // Define allowed fields
         $allowedFields = ['phone', 'alternative_mail', 'contact_address'];
         $data = [];
-        
+
         // Validate and collect data
         foreach ($allowedFields as $field) {
             if (!isset($postData[$field])) {
                 continue;
             }
-            
+
             $key = $field === 'alternative_mail' ? 'alternative_email' : $field;
             $value = $postData[$field];
 
@@ -68,27 +69,26 @@ class ProfileController extends BaseController
                 if ($existingEmail) {
                     return ApiResponse::error("Personal email address is already in use by another user");
                 }
-
             }
-            
+
             $student->$key = $value;
             $data[$key] = $value;
         }
-        
+
         // Only proceed if there's data to update
         if (empty($data)) {
             return ApiResponse::error("No valid fields to update");
         }
-        
+
         $status = $student->update(null);
-        
+
         if (!$status) {
             return ApiResponse::error("Cannot update information");
         }
-        
+
         $payload = $student->toArray();
         unset($payload['password'], $payload['user_pass']);
-        
+
         return ApiResponse::success("Information updated successfully", $payload);
     }
 
@@ -98,12 +98,12 @@ class ProfileController extends BaseController
         $dashboardInfo = $student->getDashboardData();
         return ApiResponse::success('success', $dashboardInfo);
     }
-    
+
     public function updatePassword()
     {
         $student = WebSessionManager::currentAPIUser();
         $validation = \Config\Services::validation();
-        
+
         $rules = [
             'current_password' => [
                 'label' => 'Current password',
@@ -121,7 +121,7 @@ class ProfileController extends BaseController
                 ]
             ]
         ];
-        
+
         if (!$validation->setRules($rules)->run($this->request->getRawInput())) {
             $error = $validation->getErrors();
             return ApiResponse::error(reset($error));
@@ -130,7 +130,7 @@ class ProfileController extends BaseController
         $data = $this->request->getRawInput();
         $current = $data['current_password'];
         $newPassword = $data['user_pass'];
-        
+
         if (!password_verify($current, $student->password)) {
             return ApiResponse::error('Incorrect current password');
         }
@@ -138,7 +138,19 @@ class ProfileController extends BaseController
         if (!$student->update()) {
             return ApiResponse::error('Unable to update password, please try again');
         }
-        
+
         return ApiResponse::success('Password updated successfully');
+    }
+
+    public function getUniversityRoomLink()
+    {
+        $student = WebSessionManager::currentAPIUser();
+        /** 
+         * @var Matrix_rooms $matrixRooms 
+         */
+        $matrixRooms = EntityLoader::loadClass(null, 'matrix_rooms');
+        $room = $matrixRooms->getByExternalId('university');
+        $roomLink = $room && $student->matrix_id ? CourseRoomModel::getRoomLink($room['room_id']) : null;
+        return ApiResponse::success('success', $roomLink);
     }
 }

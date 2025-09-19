@@ -69,6 +69,22 @@ class Services extends BaseService
         return new \App\Services\BBBService();
     }
 
+    public static function matrixService($getShared = true): \App\Services\MatrixService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('matrixService');
+        }
+        return new \App\Services\MatrixService();
+    }
+
+    public static function courseRoomModel($getShared = true): \App\Models\Admin\CourseRoomModel
+    {
+        if ($getShared) {
+            return static::getSharedInstance('courseRoomModel');
+        }
+        return new \App\Models\Admin\CourseRoomModel();
+    }
+
     public static function admission($getShared = true): \App\Services\Admin\AdmissionService
     {
         if ($getShared) {

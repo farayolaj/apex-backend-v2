@@ -17,6 +17,7 @@ use CodeIgniter\Config\Factories;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\BaseResult;
 use CodeIgniter\Database\Query;
+use CodeIgniter\Database\RawSql;
 use Config\Services;
 
 /**
@@ -3933,5 +3934,97 @@ class Students extends Crud
             return null;
         }
         return $result;
+    }
+
+    /**
+     * @return array<array{matrix_id: string, firstname: string, lastname: string, email: string, matric_number: string}>
+     */
+    public function getStudentsByIds(array $ids)
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        return $this->db->table('students s')
+            ->select('s.matrix_id, s.firstname, s.lastname, s.user_login as email, ar.matric_number')
+            ->whereIn('s.id', $ids)
+            ->where('s.active', 1) // Only active students
+            ->join('academic_record ar', 'ar.student_id = s.id')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * @return array<array{id: string, firstname: string, lastname: string, email: string, matric_number: string}>
+     */
+    public function getStudentsWithoutMatrixId()
+    {
+        return $this->db->table('students s')
+            ->select('s.id, s.firstname, s.lastname, s.user_login as email, ar.matric_number')
+            ->where('s.matrix_id IS NULL', null, false)
+            ->where('s.active', 1) // Only active students
+            ->where('ar.has_matric_number', 1) // Who have matric number
+            ->join('academic_record ar', 'ar.student_id = s.id')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * @return array{id: string, firstname: string, lastname: string, email: string, matric_number: string} | null
+     */
+    public function getStudentsByIdOrMatricNo($identifier)
+    {
+        return $this->db->table('students s')
+            ->select('s.id, s.firstname, s.lastname, s.user_login as email, ar.matric_number')
+            ->groupStart()
+            ->where('s.id', $identifier)
+            ->orWhere(new RawSql('UPPER(ar.matric_number)'), strtoupper($identifier))
+            ->groupEnd()
+            ->where('s.active', 1) // Only active students
+            ->join('academic_record ar', 'ar.student_id = s.id')
+            ->get()
+            ->getRowArray();
+    }
+
+    public function updateMatrixId($id, $matrixId)
+    {
+        try {
+            return $this->db->table('students')
+                ->where('id', $id)
+                ->update(['matrix_id' => $matrixId]);
+        } catch (\Exception $e) {
+            log_message('error', 'Failed to update student matrix ID: ' . $e->getMessage(), $e->getTrace());
+            return false;
+        }
+    }
+
+    /**
+     * @param list<array{id: int, matrix_id: string}> $data An array of associative arrays with keys 'id' and 'matrix_id'
+     * @return int
+     */
+    public function updateMatrixIds(array $data)
+    {
+        if (empty($data)) {
+            return 0;
+        }
+
+        $res = $this->db->table('students')
+            ->updateBatch($data, 'id');
+
+        return is_bool($res) ? 0 : $res;
+    }
+
+    /**
+     * @return array<array{matrix_id: string, firstname: string, lastname: string, email: string, matric_number: string}>
+     */
+    public function getActiveStudentsWithMatrixId()
+    {
+        return $this->db->table('students s')
+            ->select('s.matrix_id, s.firstname, s.lastname, s.user_login as email, ar.matric_number')
+            ->where('s.active', 1) // Only active students
+            ->where(new RawSql('s.matrix_id IS NOT NULL'))
+            ->join('academic_record ar', 'ar.student_id = s.id')
+            ->get()
+            ->getResultArray();
     }
 }
