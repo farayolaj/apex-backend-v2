@@ -251,8 +251,13 @@ class Courses extends Crud
         // create a transaction making sure that the data is backup before being delete
         $this->db->transStart();
         $param = array($student_id, $course_id, $session_id, $level);
-        $query = "INSERT into course_enrollment_archive(student_id,course_id,course_unit,course_status,semester,session_id,student_level,ca_score,exam_score,total_score,is_approved,date_last_update,date_created,date_deleted) select student_id,course_id,course_unit,course_status,semester,session_id,student_level,ca_score,exam_score,total_score,is_approved,date_last_update,date_created,current_timestamp from course_enrollment where student_id=? and course_id=? and session_id=? and student_level=?";
+        $query = "INSERT into course_enrollment_archive(student_id,course_id,course_unit,course_status,semester,session_id,
+            student_level,ca_score,exam_score,total_score,is_approved,date_last_update,date_created,date_deleted) 
+            select student_id,course_id,course_unit,course_status,semester,session_id,student_level,ca_score,exam_score,
+            total_score,is_approved,date_last_update,date_created,current_timestamp from course_enrollment 
+            where student_id=? and course_id=? and session_id=? and student_level=?";
         $this->db->query($query, $param);
+
         $query2 = 'DELETE from course_enrollment where student_id=? and course_id=? and session_id=? and student_level=?';
         $this->db->query($query2, $param);
         $this->db->transComplete();

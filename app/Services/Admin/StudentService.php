@@ -264,4 +264,163 @@ class StudentService
         ];
     }
 
+    public function getAllPaidSessions(int $studentId): array
+    {
+        $students = $this->loadStudent($studentId);
+        return $students->getAllPaidTransactionSession() ?? [];
+    }
+
+    private function normalizeLevel($level): int
+    {
+        return (string)$level === '501' ? 5 : (int)$level;
+    }
+
+    public function getRegistrationCoursesForSemester(int $studentId, int $sessionId, int $semester): array
+    {
+        $students = $this->loadStudent($studentId);
+        $paymentRecord = $students->hasPayment($studentId, $sessionId, $semester, true);
+        if (! $paymentRecord) {
+            throw new \DomainException("It appears the student has not paid school fee for the semester");
+        }
+
+        $academic = $students->academic_record;
+        $level = $paymentRecord[0]['level'] ?? $academic->current_level;
+        $effectiveSession = $sessionId ?: $academic->current_session;
+
+        $courses = $students->getRegistrationCourses(
+            $studentId,
+            $level,
+            $academic->programme_id,
+            $academic->entry_mode,
+            $effectiveSession,
+            $semester
+        );
+
+        return $courses ?? [];
+    }
+
+    public function registerCourses(int $studentId, int $session, array $courseIds): void
+    {
+        EntityLoader::loadClass($this, 'courses');
+
+        $students = $this->loadStudent($studentId);
+        $academic = $students->academic_record;
+
+        $currentUser = WebSessionManager::currentAPIUser();
+        $paidLevel   = $students->hasPayment($studentId, $session, null, true);
+        $level       = $paidLevel ? $paidLevel[0]['level'] : $academic->current_level;
+
+        $coursesToAdd = [];
+        $logsToAdd    = [];
+
+        foreach ($courseIds as $cid) {
+            $courseMap = $students->getCourseMappingDetails($academic->programme_id, $cid, $level);
+            $code      = $this->courses->getCourseCodeById($cid);
+
+            if (!$courseMap) {
+                throw new \DomainException("Courses cannot be registered, cannot find course mapping details for student, course code: '{$code}'!");
+            }
+
+            $courseSemester = (int)$courseMap['semester'];
+            $semesterName   = ['first','second'][$courseSemester - 1] ?? '';
+
+            if (!$students->hasPayment($studentId, $session, $courseSemester)) {
+                $courseName = $this->courses->getCourseById($cid);
+                throw new \DomainException("{$courseName} is a {$semesterName} semester course, and sch-fee for {$semesterName} semester not paid");
+            }
+
+            if ($students->alreadyHasRegistration($studentId, $cid, $session, $level)) {
+                $courseName = $this->courses->getCourseById($cid);
+                throw new \DomainException('You have previously registered for ' . $courseName);
+            }
+
+            $date = date('Y-m-d H:i:s');
+            $coursesToAdd[] = [
+                'student_id'      => $studentId,
+                'course_id'       => $cid,
+                'session_id'      => $session,
+                'student_level'   => $level,
+                'is_approved'     => '0',
+                'date_last_update'=> '',
+                'date_created'    => $date,
+                'course_unit'     => $courseMap['course_unit'],
+                'course_status'   => $courseMap['course_status'],
+                'semester'        => $courseMap['semester'],
+            ];
+
+            $logsToAdd[] = [
+                'student_id'    => $studentId,
+                'course_id'     => $cid,
+                'session_id'    => $session,
+                'level'         => $level,
+                'username'      => $currentUser->user_login,
+                'date_created'  => $date,
+                'operation'     => 'add_course_registration',
+                'course_unit'   => $courseMap['course_unit'],
+                'course_status' => $courseMap['course_status'],
+            ];
+        }
+
+        $this->db->transException(true)->transStart();
+
+        $this->db->table('course_enrollment')->insertBatch($coursesToAdd);
+        $this->db->table('course_registration_log')->insertBatch($logsToAdd);
+
+        if ($students->checkExamRecord($session, $level)) {
+            update_record($this->db, 'exam_record', 'student_id', $studentId, [
+                'student_id' => $studentId,
+                'session_id' => $session,
+            ]);
+        } else {
+            $date = date('Y-m-d H:i:s');
+            create_record($this->db, 'exam_record', [
+                'student_id'    => $studentId,
+                'session_id'    => $session,
+                'student_level' => $level,
+                'gpa'           => '',
+                'cgpa'          => '',
+                'active'        => 0,
+                'date_created'  => $date,
+            ]);
+        }
+
+        logAction('course_registration', $currentUser->user_login);
+
+        $this->db->transComplete();
+    }
+
+    public function deleteRegisteredCourse(int $studentId, int $courseId, int $sessionId, int $levelId): string
+    {
+        EntityLoader::loadClass($this, 'courses');
+        $students = $this->loadStudent($studentId);
+        $courseName = $this->courses->getCourseById($courseId);
+        if ($students->courseHasScore($studentId, $courseId, $sessionId, $levelId)) {
+            throw new \DomainException("An error has occurred, {$courseName} could not be unregistered");
+        }
+
+        $ok = $this->courses->deleteCourseRegistration($studentId, $courseId, $sessionId, $levelId);
+        if (!$ok) {
+            throw new \DomainException('An error has occurred, ' . $courseName . ' could not be unregistered');
+        }
+
+        $academic = $students->academic_record;
+        $courseMap = $students->getCourseMappingDetails($academic->programme_id, $courseId, $levelId);
+
+        $date = date('Y-m-d H:i:s');
+        $user = WebSessionManager::currentAPIUser();
+        create_record($this->db, 'course_registration_log', [
+            'student_id'   => $studentId,
+            'course_id'    => $courseId,
+            'session_id'   => $sessionId,
+            'level'        => $levelId,
+            'username'     => $user->user_login,
+            'date_created' => $date,
+            'operation'    => 'remove_course_registration',
+            'course_unit'  => $courseMap['course_unit'] ?? null,
+            'course_status'=> $courseMap['course_status'] ?? null,
+        ]);
+
+        return $courseName . ' had been unregistered successfully';
+    }
+
 }

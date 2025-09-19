@@ -3,7 +3,10 @@
 namespace App\Controllers\Admin\V1;
 
 use App\Controllers\BaseController;
+use App\Enums\CacheAdminEnum;
+use App\Enums\CacheEnum;
 use App\Libraries\ApiResponse;
+use App\Support\Cache\ShowCacheSupport;
 use App\Traits\Crud\EntityListTrait;
 use App\Services\Admin\StudentService;
 
@@ -137,7 +140,12 @@ class StudentsController extends BaseController
         }
 
         try {
-            $sessions = $this->svc->getAllPaidSessions((int)$studentId);
+            $sessions = ShowCacheSupport::remember(
+                CacheAdminEnum::STUDENT_ALL_PAID_SESSION->value,
+                600,
+                fn() => $this->svc->getAllPaidSessions($studentId),
+                $studentId
+            );
             return ApiResponse::success('success', $sessions);
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage(), null, 400);
@@ -147,11 +155,42 @@ class StudentsController extends BaseController
         }
     }
 
-    // POST /admin/v1/courses/student/register
-    // body: { student_id: int, session: int, courses: [int,int,...] }
+    public function registrationCourses()
+    {
+        $studentId = (int) ($this->request->getGet('student_id') ?? 0);
+        $sessionId = (int) ($this->request->getGet('session') ?? 0);
+        $semesterQ = (string) ($this->request->getGet('semester') ?? '');
+
+        if ($studentId <= 0) {
+            return ApiResponse::error('Please choose a student', null, 400);
+        }
+        if ($sessionId <= 0) {
+            return ApiResponse::error('Please choose a session', null, 400);
+        }
+        if ($semesterQ === '') {
+            return ApiResponse::error('Please choose a semester', null, 400);
+        }
+
+        $semester = ($semesterQ === 'first') ? 1 : 2;
+
+        try {
+            $payload = $this->svc->getRegistrationCoursesForSemester(
+                $studentId,
+                $sessionId,
+                $semester
+            );
+            return ApiResponse::success('Student courses fetched successfully', $payload);
+        } catch (\DomainException $e) {
+            return ApiResponse::error($e->getMessage(), null, 400);
+        } catch (\Throwable $e) {
+            log_message('error', 'admin.studentRegistrationCoursesGet: {m}', ['m' => $e->getMessage()]);
+            return ApiResponse::error('Unable to fetch registration courses right now.', null, 500);
+        }
+    }
+
     public function registerForStudent()
     {
-        $in = $this->request->getJSON(true) ?? $this->request->getPost();
+        $in = requestPayload();
 
         $studentId = (int)($in['student_id'] ?? 0);
         $session   = (int)($in['session'] ?? 0);
@@ -162,7 +201,7 @@ class StudentsController extends BaseController
         if (!is_array($courses)) return ApiResponse::error('Courses cannot be registered, something went wrong!', null, 400);
 
         try {
-            $this->svc->adminRegisterCourses($studentId, $session, $courses);
+            $this->svc->registerCourses($studentId, $session, $courses);
             return ApiResponse::success('Course registration was successfully', null);
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage(), null, 400);
@@ -172,11 +211,9 @@ class StudentsController extends BaseController
         }
     }
 
-    // DELETE /admin/v1/courses/student/registered
-    // body: { student_id, course_id, course_session, course_level }
     public function deleteStudentRegistered()
     {
-        $in = $this->request->getJSON(true) ?? $this->request->getPost();
+        $in = requestPayload();
 
         $studentId = (int)($in['student_id'] ?? 0);
         $courseId  = (int)($in['course_id'] ?? 0);
@@ -189,13 +226,13 @@ class StudentsController extends BaseController
         if ($levelId   <= 0) return ApiResponse::error('course level is required', null, 400);
 
         try {
-            $msg = $this->svc->adminDeleteRegisteredCourse($studentId, $courseId, $sessionId, $levelId);
+            $msg = $this->svc->deleteRegisteredCourse($studentId, $courseId, $sessionId, $levelId);
             return ApiResponse::success($msg, null);
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage(), null, 400);
         } catch (\Throwable $e) {
             log_message('error', 'admin.deleteStudentRegistered: {m}', ['m'=>$e->getMessage()]);
-            return ApiResponse::error('An error has occured, course could not be unregistered', null, 500);
+            return ApiResponse::error('An error has occurred, course could not be unregistered', null, 500);
         }
     }
 

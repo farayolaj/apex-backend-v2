@@ -88,6 +88,15 @@ $routes->group('v1/web/', [
     $routes->get('students/course/registered', 'StudentsController::studentAllRegistered', [
         'filter' => 'authorize:student_edit'
     ]);
+    $routes->get('students/course/registration', 'StudentsController::registrationCourses', [
+        'filter' => 'authorize:student_edit'
+    ]);
+    $routes->post('students/course/registration', 'StudentsController::registerForStudent', [
+        'filter' => 'authorize:student_course_reg'
+    ]);
+    $routes->delete('students/course/registration', 'StudentsController::deleteStudentRegistered', [
+        'filter' => 'authorize:student_delete_course_registration'
+    ]);
 
     // applicants management
     $routes::post('admissions/single/admission', 'AdmissionController::singleAdmission');

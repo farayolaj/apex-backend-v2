@@ -342,7 +342,7 @@ class Students extends Crud
     public function getAllPaidTransactionSession($code = false, $semester = null)
     {
         $code = $code ?: get_setting('school_fees_code');
-        $semesterName = ($semester && $semester == 'first') ? 1 : 2;
+        $semesterName = ($semester == 'first') ? 1 : 2;
         $query = "SELECT distinct sessions.id,date,transaction.level FROM sessions left join transaction on 
 			transaction.session=sessions.id left join fee_description on fee_description.id=transaction.payment_id 
             where transaction.student_id=? and fee_description.code=? and payment_status in ('00', '01') ";
@@ -2545,18 +2545,19 @@ class Students extends Crud
     public function getRegistrationCourses($student_id, $level, $programme, $entryMode, $session, $semester)
     {
         // make sure student cannot register for courses that is higher
-        $query = "SELECT *,courses.id  as cid from course_mapping join courses on courses.id=course_mapping.course_id where programme_id=? and course_mapping.mode_of_entry=? and course_mapping.semester = ?  and not exists (select * from course_enrollment where student_id=? and  course_id=courses.id and session_id=?)";
+        $query = "SELECT *,courses.id  as cid from course_mapping 
+            join courses on courses.id=course_mapping.course_id 
+            where programme_id=? and course_mapping.mode_of_entry=? and course_mapping.semester = ? 
+            and not exists (select * from course_enrollment where student_id=? and  course_id=courses.id and session_id=?)";
         $result = $this->query($query, [$programme, $entryMode, $semester, $student_id, $session]);
         if (!$result) {
             return [];
         }
         $return = [];
-        $academicRecord = $this->academic_record;
         foreach ($result as $res) {
             $lev = json_decode($res['level']);
             $maxLevel = max($lev);
             if ($level >= $maxLevel) {
-                // ensuring higher level course doesn't show up above current level
                 $return[] = $res;
             }
         }
@@ -2604,7 +2605,7 @@ class Students extends Crud
             } else {
                 $results[$content['session_id'] . "_" . $content['student_level']][] = $content;
             }
-            $tmp[] = $content['session_id'] . "_" . $content['semester']; // to remove edge case duplicate when level varies
+            $tmp[] = $content['session_id'] . "_" . $content['semester']; // to handle edge case duplicate when level varies
         }
 
         $contents = [];
@@ -2638,7 +2639,7 @@ class Students extends Crud
                 "$courseSemesterLabel" => [
                     'semester' => $semester,
                     'has_payment' => $this->hasPayment($student_id, $session['session_id'], $session['semester']),
-                    'print_url' => site_url("web/courseregistrationAll/{$student_id}/{$session['session_id']}/{$session['semester']}"),
+                    'print_url' => generateBaseUrl("courseregistrationAll/{$student_id}/{$session['session_id']}/{$session['semester']}"),
                 ],
                 'courses_data' => $courses,
             ];
@@ -2646,7 +2647,7 @@ class Students extends Crud
         }
 
         if (!empty($result)) {
-            $result = array_merge(...$result); // flatten the array to two-dimensional array
+            $result = array_merge(...$result); // flatten the array to a two-dimensional array
         }
         return $result;
     }
@@ -2662,10 +2663,13 @@ class Students extends Crud
 		join sessions on  sessions.id=course_registration_log.session_id join courses on courses.id=course_registration_log.course_id
         left join staffs on staffs.id=users_new.user_table_id order by course_registration_log.id desc limit 200";
         if ($student_id) {
-            $query = "SELECT courses.code,course_registration_log.operation,course_registration_log.date_created,concat_ws(' ',staffs.firstname,staffs.lastname) as name from
-            course_registration_log join students on students.id=course_registration_log.student_id join users_new on users_new.user_login=course_registration_log.username
-            join sessions on  sessions.id=course_registration_log.session_id join courses on courses.id=course_registration_log.course_id
-           left join staffs on staffs.id=users_new.user_table_id where students.id='$student_id' order by course_registration_log.id desc limit 200";
+            $query = "SELECT e.code,a.operation,a.date_created, concat_ws(' ',f.firstname,f.lastname) as name from course_registration_log a
+            join students b on b.id=a.student_id 
+            join users_new c on c.user_login=a.username
+            join sessions d on  d.id=a.session_id 
+            join courses e on e.id=a.course_id
+            left join staffs f on f.id=c.user_table_id 
+            where b.id='$student_id' order by a.id desc limit 100";
         }
         $result = $this->query($query);
         return $result ?: [];
