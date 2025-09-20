@@ -429,6 +429,11 @@ class WebinarController extends BaseController
             return ApiResponse::error('Webinar not found', code: ResponseInterface::HTTP_NOT_FOUND);
         }
 
+        if (!$webinar['start_time']) {
+            // Do nothing if webinar has not started
+            return ApiResponse::success();
+        }
+
         $endTimeTimestamp = time() + self::WEBINAR_END_DELAY_SECONDS;
         $this->webinars->updateWebinar($webinar['id'], ['end_time' => date('Y-m-d H:i:s', $endTimeTimestamp)]);
 
