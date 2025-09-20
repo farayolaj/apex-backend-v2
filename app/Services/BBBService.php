@@ -19,9 +19,6 @@ class BBBService
 {
     private BigBlueButton $bbb;
 
-    // Delay in minutes before ending meeting when no moderator is present
-    public const END_WHEN_NO_MODERATOR_DELAY_MINUTES = 1;
-
     public function __construct()
     {
         $this->bbb = new BigBlueButton();
@@ -74,8 +71,6 @@ class BBBService
         $createParams->setAllowStartStopRecording(false);
         $createParams->setAllowModsToUnmuteUsers(true);
         $createParams->setGuestPolicy(GuestPolicy::ASK_MODERATOR);
-        $createParams->setEndWhenNoModerator(true);
-        $createParams->setEndWhenNoModeratorDelayInMinutes(self::END_WHEN_NO_MODERATOR_DELAY_MINUTES);
         $createParams->setMeetingEndedURL($meetingEndedUrl);
         $createParams->setRecordingReadyCallbackUrl($recordingReadyUrl);
 
@@ -139,7 +134,5 @@ class BBBPresentation
      * @param string $url Publicly accessible url to get presentation file
      * @param string $name Presentation file name
      */
-    public function __construct(public string $url, public string $name)
-    {
-    }
+    public function __construct(public string $url, public string $name) {}
 }
