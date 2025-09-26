@@ -32,7 +32,7 @@ class CourseMappingController extends BaseController
     public function create()
     {
         $entity  = new \App\Entities\Course_mapping();
-        $payload = $this->request->getPost();
+        $payload = requestPayload();
 
         $row = $entity->insertSingle(
             $payload ?? [],
