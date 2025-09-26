@@ -38,6 +38,12 @@ class Webinars extends Crud
     {
         if ($webinar) {
             $webinar['recordings'] = json_decode($webinar['recordings'], true) ?: [];
+
+            // if end_time is set and is in the future, set to null else keep as is.
+            $webinar['end_time'] = $webinar['end_time'] && \DateTime::createFromFormat(
+                "Y-m-d H:i:s",
+                $webinar['end_time']
+            )->format('U') > time() ? null : $webinar['end_time'];
         }
 
         return $webinar;

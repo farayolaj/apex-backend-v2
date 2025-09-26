@@ -49,8 +49,11 @@ $routes->group('v1/web/', [
     $routes->post('courses/bulk_course_enrollment_upload', 'CoursesController::importCourseEnrollment');
     $routes->get('courses/stats', 'CoursesController::stats');
 
-    $routes->post('courses/(:num)/course_guide', 'CoursesController::uploadCourseGuide/$1');
-    $routes->delete('courses/(:num)/course_guide', 'CoursesController::deleteCourseGuide/$1');
+    // course settings management (session-based)
+    $routes->get('courses/(:num)/(:num)/settings', 'CourseSettingsController::getSettings/$1/$2');
+    $routes->put('courses/(:num)/(:num)/settings', 'CourseSettingsController::upsertSettings/$1/$2');
+    $routes->post('courses/(:num)/(:num)/course_guide', 'CourseSettingsController::uploadCourseGuide/$1/$2');
+    $routes->delete('courses/(:num)/(:num)/course_guide', 'CourseSettingsController::deleteCourseGuide/$1/$2');
 
     $routes->resource('course_mapping', [
         'controller' => 'CourseMappingController',

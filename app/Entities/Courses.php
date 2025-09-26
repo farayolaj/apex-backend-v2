@@ -24,7 +24,7 @@ class Courses extends Crud
 
     protected static string $tablename = 'Courses';
     /* this array contains the field that can be null*/
-    static array $nullArray = array('course_guide_url', 'course_guide_id', 'date_created');
+    static array $nullArray = array('course_guide_url', 'date_created');
     static array $compositePrimaryKey = array();
     static array $uploadDependency = array();
     /*this array contains the fields that are unique*/
@@ -35,7 +35,6 @@ class Courses extends Crud
         'title' => 'text',
         'description' => 'text',
         'course_guide_url' => 'text',
-        'course_guide_id' => 'varchar',
         'active' => 'tinyint',
         'date_created' => 'varchar',
         'type' => 'varchar',
@@ -48,7 +47,6 @@ class Courses extends Crud
         'title' => '',
         'description' => '',
         'course_guide_url' => '',
-        'course_guide_id' => '',
         'active' => '',
         'date_created' => '',
         'type' => '',
@@ -67,7 +65,7 @@ class Courses extends Crud
 
     static array $tableAction = array('delete' => 'delete/courses', 'edit' => 'edit/courses');
 
-    static array $apiSelectClause = ['id', 'title', 'code', 'active', 'course_guide_url', 'course_guide_id'];
+    static array $apiSelectClause = ['id', 'title', 'code', 'active', 'course_guide_url'];
     protected array  $searchable = ['a.title', 'a.code'];
     protected array  $sortable   = ['code' => 'a.code', 'title' => 'a.title'];
 
@@ -289,7 +287,7 @@ class Courses extends Crud
     {
         $semester = strtolower($semester);
         $semester = ($semester != '' && $semester == 'first') ? 1 : 2;
-        $query = "SELECT a.id as main_course_id, a.code, a.title, a.description, a.course_guide_url, a.course_guide_id, a.active,
+        $query = "SELECT a.id as main_course_id, a.code, a.title, a.description, a.course_guide_url, a.active,
         b.id as course_mapping_id, b.programme_id, b.semester, b.course_unit, b.course_status, b.level, b.mode_of_entry,
         b.pass_score, b.pre_select FROM courses a left join course_mapping b on a.id = b.course_id where b.programme_id = ?
     	and b.semester = ? and a.active = ? order by a.code asc";
@@ -310,7 +308,6 @@ class Courses extends Crud
                         'unit' => (int)$course['course_unit'],
                         'status' => $course['course_status'],
                         'pre_select' => (int)$course['pre_select'],
-                        'course_guide' => GoogleDriveStorageService::getPublicUrl($course['course_guide_id']),
                     );
                     $result[] = $courseData;
                 }
@@ -665,11 +662,6 @@ class Courses extends Crud
             'type' => 'written',
             'department_id' => '1',
         ]);
-    }
-
-    public function updateCourseGuideId(string $courseId, ?string $fileId = null)
-    {
-        return $this->db->table('courses')->where('id', $courseId)->update(['course_guide_id' => $fileId]);
     }
 
     /**

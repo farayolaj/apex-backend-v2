@@ -2,13 +2,13 @@
 
 namespace App\Controllers\Student\V1;
 
-use App\Controllers\Api;
 use App\Controllers\BaseController;
 use App\Entities\Courses;
 use App\Enums\CacheEnum;
 use App\Libraries\ApiResponse;
 use App\Libraries\EntityLoader;
 use App\Models\WebSessionManager;
+use App\Services\Admin\CourseSettingsService;
 use App\Services\GoogleDriveStorageService;
 use App\Services\Student\CourseService;
 use App\Support\Cache\ShowCacheSupport;
@@ -28,25 +28,26 @@ class CoursesController extends BaseController
     public function courseDetails($id)
     {
         $result = $this->courses->getDetails($id);
-        if(isset($result['course_guide_id'])){
-            $result['course_guide'] = GoogleDriveStorageService::getPublicUrl(
-                $result['course_guide_id']
-            );
-        }
+        $currentSession = get_setting('active_session_student_portal');
+        $courseSettingsService = new CourseSettingsService();
+        $courseSettings = $courseSettingsService->getSettings($result['main_course_id'], $currentSession);
+        $courseSettings['course_guide'] = $courseSettings['course_guide_url'];
+        unset($courseSettings['course_guide_url']);
+        $result = array_merge($result, $courseSettings);
 
-        if(isset($result['main_course_id'])){
+        if (isset($result['main_course_id'])) {
             $result['course_room_url'] = Services::courseRoomModel()->getCourseRoomLink(
                 $result['main_course_id']
             );
         }
-        
+
         return ApiResponse::success('success', $result);
     }
 
     public function enrollment($session = null, $semester = null)
     {
         try {
-            if (!in_array($semester, ['first','second'], true)) {
+            if (!in_array($semester, ['first', 'second'], true)) {
                 return ApiResponse::error('Please provide a valid semester');
             }
 
@@ -94,7 +95,8 @@ class CoursesController extends BaseController
         }
     }
 
-    public function preload($semester = null){
+    public function preload($semester = null)
+    {
 
         if (!in_array($semester, ['first', 'second'], true)) {
             return ApiResponse::error('Please provide a valid semester');
@@ -109,7 +111,7 @@ class CoursesController extends BaseController
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage(), null, 400);
         } catch (\Throwable $e) {
-            log_message('error','course.preload: {m}', ['m'=>$e->getMessage()]);
+            log_message('error', 'course.preload: {m}', ['m' => $e->getMessage()]);
             return ApiResponse::error('Unable to load courses', null, 500);
         }
     }
@@ -117,7 +119,8 @@ class CoursesController extends BaseController
     /**
      * This search for course less or equal to the student current level
      */
-    public function search(){
+    public function search()
+    {
         $q = trim((string)($this->request->getGet('course') ?? ''));
         if ($q === '') {
             return ApiResponse::error('Please provide a search name', null, 400);
@@ -175,7 +178,7 @@ class CoursesController extends BaseController
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage());
         } catch (\Throwable $e) {
-            log_message('error','coursereg.register: {m}', ['m'=>$e->getMessage()]);
+            log_message('error', 'coursereg.register: {m}', ['m' => $e->getMessage()]);
             return ApiResponse::error('Course could not be registered at the moment, try again later', null, 500);
         }
     }
@@ -199,7 +202,7 @@ class CoursesController extends BaseController
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage());
         } catch (\Throwable $e) {
-            log_message('error','coursereg.unregister: {m}', ['m'=>$e->getMessage()]);
+            log_message('error', 'coursereg.unregister: {m}', ['m' => $e->getMessage()]);
             return ApiResponse::error('Course could not be deleted at the moment, try again later', null, 500);
         }
     }
@@ -214,29 +217,29 @@ class CoursesController extends BaseController
         }
     }
 
-    public function tourEnrollment(){
+    public function tourEnrollment()
+    {
         try {
             $res = $this->svc->createTourEnrollment();
             return ApiResponse::success('Student enrolled successfully', $res);
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage());
         } catch (\Throwable $e) {
-            log_message('error','students.tour.create: {m}', ['m'=>$e->getMessage()]);
+            log_message('error', 'students.tour.create: {m}', ['m' => $e->getMessage()]);
             return ApiResponse::error('Student cannot be enrolled, something went wrong!');
         }
     }
 
-    public function tourEnrollmentRemoved(){
+    public function tourEnrollmentRemoved()
+    {
         try {
             $this->svc->removeTourEnrollment();
             return ApiResponse::success('Student unenrolled successfully');
         } catch (\DomainException $e) {
             return ApiResponse::error($e->getMessage());
         } catch (\Throwable $e) {
-            log_message('error','students.tour.delete: {m}', ['m'=>$e->getMessage()]);
+            log_message('error', 'students.tour.delete: {m}', ['m' => $e->getMessage()]);
             return ApiResponse::error('Student cannot be unenrolled, something went wrong!');
         }
     }
-
-
 }

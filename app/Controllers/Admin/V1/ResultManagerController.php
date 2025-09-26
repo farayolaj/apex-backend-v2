@@ -95,9 +95,6 @@ class ResultManagerController extends BaseController
         $payload = $this->examination_courses->getLecturersAssignCourses($session, $currentUser);
 
         foreach ($payload as $key => $course) {
-            $payload[$key]['course_guide'] = GoogleDriveStorageService::getPublicUrl(
-                $course['course_guide_id']
-            );
             $payload[$key]['course_room_url'] = Services::courseRoomModel()->getCourseRoomLink(
                 $course['course_id']
             );
@@ -555,7 +552,7 @@ class ResultManagerController extends BaseController
         return $logPath;
     }
 
-    private function sendUploadEmailCopy(object $currentUser, ?array $course, string $sessionName, $filename = null, string $progressLog = null)
+    private function sendUploadEmailCopy(object $currentUser, ?array $course, string $sessionName, $filename = null, ?string $progressLog = null)
     {
         $this->load->model('Mailer');
         $courseName = '"' . $course['code'] . ' - ' . $course['title'] . '"';
