@@ -492,6 +492,13 @@ class FormConfig
                     'preload_query' => null,
                 ),
             ),
+            'templates' => array(
+                array(
+                    'filter_label' => 'a.type',
+                    'filter_display' => 'type',
+                    'preload_query' => null,
+                ),
+            ),
         );
         if (array_key_exists($tablename, $result)) {
             return $result[$tablename];

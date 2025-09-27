@@ -190,7 +190,7 @@ trait CrudTrait {
         if (is_array($select)) {
             $builder->select(implode(',', $select), $escape);
         } else {
-            if ($select !== '') $builder->select($select, $escape); // pass $escape=false for raw functions/aliases
+            if ($select !== '') $builder->select($select, $escape);
         }
         $rows = $builder->get()->getResultArray();
         $rows = $this->postProcess($rows);
