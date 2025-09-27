@@ -3016,9 +3016,7 @@ class AdminModel
      */
     public function getAllPayments()
     {
-        $query = "SELECT a.id, b.description, c.date as session, a.fee_category, a.payment_code from payment a 
-            left join fee_description b on b.id = a.description 
-			left join sessions c on c.id = a.session order by id desc";
+        $query = "SELECT a.id, a.description from fee_description a order by description asc";
         $result = $this->db->query($query);
         if ($result->getNumRows() <= 0) {
             return null;
